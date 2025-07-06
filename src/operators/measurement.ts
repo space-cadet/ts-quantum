@@ -35,6 +35,10 @@ export class ProjectionOperator implements IOperator {
         this._operator = new MatrixOperator(matrix, 'projection', false);
     }
 
+    get objectType(): 'operator' {
+        return 'operator';
+    }
+
     get dimension(): number {
         return this._dimension;
     }
@@ -48,6 +52,10 @@ export class ProjectionOperator implements IOperator {
      */
     isZero(tolerance?: number): boolean {
         return this._operator.isZero(tolerance);
+    }
+
+    norm(): number {
+        return this._operator.norm();
     }
 
     apply(state: StateVector): StateVector {

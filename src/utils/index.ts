@@ -7,5 +7,12 @@ export * from './matrixOperations';
 export * from './matrixFunctions';
 export * from './information';
 export * from './oscillator';
-export * from './math';
+export { 
+    logFactorial,
+    factorial,
+    doubleFactorial,
+    triangleCoefficient,
+    legendrePolynomial,
+    singularValueDecomposition
+} from './math';
 export * from './validation';

@@ -14,7 +14,6 @@ export * from './composition';
 export * from './hamiltonian';
 export * from './information';
 export * from './operatorAlgebra';
-export * from './qgraph';
 
 // Re-export specific examples
 export { angularBasisConversion } from './angularBasisConversion';

@@ -18,8 +18,22 @@ export * from './operators/measurement';
 export * from './operators/hamiltonian';
 export * from './operators/circuit';
 
-// Export utilities
-export * from './utils/matrixOperations';
+// Export utilities (excluding conflicting exports)
+export { 
+    ComplexMatrix, 
+    IMatrixDimensions, 
+    IValidationResult,
+    multiplyMatrices,
+    transpose,
+    tensorProduct,
+    eigenDecomposition,
+    addMatrices,
+    scaleMatrix,
+    normalizeMatrix,
+    isHermitian,
+    isUnitary,
+    orthogonalizeStateVectors
+} from './utils/matrixOperations';
 export * from './utils/matrixFunctions';
 export * from './utils/information';
 export * from './utils/oscillator';
@@ -29,6 +43,3 @@ export * from './angularMomentum';
 
 // Export geometry module
 export * from './geometry';
-
-// Export algorithms module (excluding graph-dependent components)
-export * from './algorithms/quantumWalk/types';

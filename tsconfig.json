@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "ESNext",
-    "lib": ["ESNext", "DOM"],
+    "target": "ES2020",
+    "module": "CommonJS",
+    "lib": ["ES2020", "DOM"],
     "moduleResolution": "node",
     "strict": true,
     "sourceMap": true,
@@ -10,7 +10,8 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "outDir": "dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "allowSyntheticDefaultImports": true
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist", "__tests__"]
