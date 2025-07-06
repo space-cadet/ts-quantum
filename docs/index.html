@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ts-quantum Documentation</title>
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -68,9 +69,27 @@
             font-size: 0.9rem;
             margin-top: 0.5rem;
         }
+        .markdown-content {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 1rem;
+            color: #3498db;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
+    <div id="main-content">
     <h1>ts-quantum Documentation</h1>
     
     <p>A TypeScript library for quantum mechanics calculations and utilities.</p>
@@ -193,5 +212,54 @@
         <p>ts-quantum - TypeScript Quantum Mechanics Library</p>
         <p><a href="https://github.com/space-cadet/ts-quantum" style="color: #3498db;">GitHub Repository</a></p>
     </footer>
+    </div>
+
+    <div id="markdown-content" class="markdown-content" style="display: none;">
+        <a href="#" class="back-link" onclick="showMainContent()">&larr; Back to Documentation</a>
+        <div id="rendered-markdown"></div>
+    </div>
+
+    <script>
+        const md = markdownit();
+        
+        function showMainContent() {
+            document.getElementById('main-content').style.display = 'block';
+            document.getElementById('markdown-content').style.display = 'none';
+            window.history.pushState({}, '', window.location.pathname);
+        }
+        
+        function showMarkdown(file) {
+            fetch(file)
+                .then(response => {
+                    if (!response.ok) throw new Error('File not found');
+                    return response.text();
+                })
+                .then(text => {
+                    document.getElementById('rendered-markdown').innerHTML = md.render(text);
+                    document.getElementById('main-content').style.display = 'none';
+                    document.getElementById('markdown-content').style.display = 'block';
+                    window.history.pushState({}, '', `?file=${file}`);
+                })
+                .catch(error => {
+                    alert('Could not load markdown file: ' + file);
+                });
+        }
+        
+        // Handle .md links
+        document.addEventListener('click', function(e) {
+            if (e.target.tagName === 'A' && e.target.href.endsWith('.md')) {
+                e.preventDefault();
+                const file = e.target.getAttribute('href');
+                showMarkdown(file);
+            }
+        });
+        
+        // Handle direct .md file URLs
+        const urlParams = new URLSearchParams(window.location.search);
+        const file = urlParams.get('file');
+        if (file && file.endsWith('.md')) {
+            showMarkdown(file);
+        }
+    </script>
 </body>
 </html>
