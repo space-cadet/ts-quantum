@@ -1,6 +1,16 @@
 # Edit History
 *Created: 2025-07-06*
 
+### 2025-07-07
+
+#### 00:11 - T3: Documentation updates for standalone package
+- Fixed `README.md` - Updated import examples from './quantum' to 'ts-quantum'
+- Fixed `examples/basic/state-demo.ts` - Replaced relative imports with package imports
+- Fixed `examples/basic/measurement-demo.ts` - Replaced relative imports with package imports  
+- Fixed `examples/basic/composition-demo.ts` - Replaced relative imports with package imports
+- Updated `package.json` - Changed author and GitHub repository URLs
+- Created `docs/index.html` - Documentation landing page with links to all docs and API
+
 ### 2025-07-06
 
 #### 18:45 - T2: COMPLETED - Package validation tests added
