@@ -1,8 +1,4 @@
-import { HilbertSpace } from '../../src/core/hilbertSpace';
-import { createPlusState, createBasisState } from '../../src/states/states';
-import { ProjectionOperator } from '../../src/operators/measurement';
-import { measureState } from '../../src/operators/measurement';
-import { Complex, IMeasurementOutcome, IOperator } from '../../src/core/types';
+import { HilbertSpace, createPlusState, createBasisState, ProjectionOperator, measureState, Complex, IMeasurementOutcome, IOperator } from 'ts-quantum';
 
 // Demonstrates quantum measurement operations
 function demoMeasurement() {

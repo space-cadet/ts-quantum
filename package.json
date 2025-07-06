@@ -4,7 +4,7 @@
   "description": "TypeScript library for quantum mechanics calculations and utilities",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "author": "Your Name",
+  "author": "Deepak Vaid",
   "license": "MIT",
   "keywords": [
     "quantum",
@@ -19,12 +19,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yourusername/ts-quantum.git"
+    "url": "git+https://github.com/space-cadet/ts-quantum.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/ts-quantum/issues"
+    "url": "https://github.com/space-cadet/ts-quantum/issues"
   },
-  "homepage": "https://github.com/yourusername/ts-quantum#readme",
+  "homepage": "https://github.com/space-cadet/ts-quantum#readme",
   "scripts": {
     "build": "tsc --build --verbose",
     "clean": "rm -rf dist node_modules coverage",

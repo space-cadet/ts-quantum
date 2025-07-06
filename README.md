@@ -20,7 +20,7 @@ A TypeScript library for quantum mechanics calculations and utilities.
 
 ### State Vectors
 ```typescript
-import { StateVector } from './quantum';
+import { StateVector } from 'ts-quantum';
 
 // Create a 2-dimensional quantum state
 const state = new StateVector(2);
@@ -32,7 +32,7 @@ const oneState = StateVector.computationalBasis(2, 1);  // |1⟩
 
 ### Quantum Gates
 ```typescript
-import { PauliX, Hadamard } from './quantum';
+import { PauliX, Hadamard } from 'ts-quantum';
 
 // Apply X gate (NOT gate)
 const flippedState = PauliX.apply(zeroState);
@@ -43,7 +43,7 @@ const superposition = Hadamard.apply(zeroState);
 
 ### Measurements
 ```typescript
-import { measure } from './quantum';
+import { measure } from 'ts-quantum';
 
 // Measure a state in computational basis
 const outcome = measure(state);

@@ -1,4 +1,4 @@
-import { HilbertSpace } from '../../src/core/hilbertSpace';
+import { HilbertSpace } from 'ts-quantum';
 
 // Simple demonstration of Hilbert space composition
 function demoHilbertComposition() {
