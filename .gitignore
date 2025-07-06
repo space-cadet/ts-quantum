@@ -25,3 +25,4 @@ coverage/
 # Editor files
 *.swp
 *~
+tests/package-validation/node_modules
