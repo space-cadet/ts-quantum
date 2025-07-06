@@ -11,5 +11,14 @@ kramdown:
 defaults:
   - scope:
       path: "docs"
+      type: "pages"
     values:
       layout: "default"
+
+# Force Jekyll to process files without front matter
+include:
+  - "_*"
+
+# Enable processing of markdown files without front matter
+plugins:
+  - jekyll-optional-front-matter
