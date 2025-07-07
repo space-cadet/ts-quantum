@@ -1,5 +1,5 @@
 # Task Registry
-*Last Updated: 2025-07-07 00:34:30 IST*
+*Last Updated: 2025-07-07 20:16:32 IST*
 
 ## Active Tasks
 | ID | Title | Status | Priority | Started | Dependencies |
@@ -8,6 +8,7 @@
 | T2 | Package validation | ✅ | HIGH | 2025-07-06 | T1 |
 | T3 | Documentation review | ✅ | MEDIUM | 2025-07-07 | T1 |
 | T4 | Prepare for publishing | ✅ | HIGH | 2025-07-07 | T1,T2,T3 |
+| T5 | Generate Interactive Webpages | 🔄 | MEDIUM | 2025-07-07 | T4 |
 
 ## Task Details
 
@@ -52,6 +53,13 @@
 - ✅ Successfully published to npm registry
 **Files**: `package.json`, `LICENSE`, `README.md`
 **Notes**: COMPLETED - ts-quantum@0.9.0 successfully published and available worldwide
+
+### T5: Generate Interactive Webpages for ts-quantum Library
+**Description**: Create interactive HTML webpages demonstrating ts-quantum library capabilities
+**Status**: 🔄 **Last**: 2025-07-07 20:16:32 IST
+**Criteria**: Interactive demos for basic gates, Bell states, angular momentum, and time evolution
+**Files**: `docs/examples/basic-gates.html`, `docs/examples/styles/basic-gates.css`
+**Notes**: Basic gates demo improved with better layout, phase circle alignment, and code display. Original demo by Claude 3.5, layout improvements by Claude 4.
 
 ## Completed Tasks
 | ID | Title | Completed |

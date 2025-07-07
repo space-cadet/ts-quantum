@@ -3,6 +3,12 @@
 
 ### 2025-07-07
 
+#### 20:16 - T5: Basic gates demo improvements  
+- Updated `docs/examples/basic-gates.html` - Reorganized layout with gates above visualization, aligned phase circles above bars, added code display showing ts-quantum API usage
+- Updated `docs/examples/styles/basic-gates.css` - Moved all inline CSS to external file, added styling for code display box and improved layout
+- Updated `memory-bank/tasks/T5.md` - Added progress step for basic gates improvements, updated timestamps
+- Updated `memory-bank/tasks.md` - Added T5 task entry with current status and notes crediting Claude 3.5 for original demo
+
 #### 00:35 - T4: COMPLETED - Package publishing and memory bank updates
 - Created `memory-bank/tasks/T4.md` - Complete task file documenting successful publication
 - Updated `memory-bank/tasks.md` - Changed T4 status to completed with publication details
