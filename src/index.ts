@@ -5,6 +5,7 @@
 export * from './core/types';
 
 // Export from states
+export { StateVector } from './states/stateVector';
 export * from './states/stateVector';
 export * from './states/states';
 export * from './states/composite';
@@ -17,6 +18,8 @@ export * from './operators/gates';
 export * from './operators/measurement';
 export * from './operators/hamiltonian';
 export * from './operators/circuit';
+export * from './operators/sparse';
+export * from './operators/sparseOperator';
 
 // Export utilities (excluding conflicting exports)
 export { 

@@ -6,6 +6,8 @@ import * as math from 'mathjs';
 import { Complex } from 'mathjs';
 import { ISparseMatrix, ISparseEntry } from '../core/types';
 
+export { ISparseMatrix, ISparseEntry };
+
 /**
  * Create an empty sparse matrix
  */

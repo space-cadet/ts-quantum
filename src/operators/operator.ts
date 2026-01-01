@@ -7,6 +7,8 @@ import { StateVector } from '../states/stateVector';
 import { validateMatDims, validateMatchDims, validatePartialTrace } from '../utils/validation';
 import { eigenDecomposition } from '../utils/matrixOperations';
 import { IdentityOperator, DiagonalOperator, isDiagonalMatrix } from './specialized';
+import { SparseOperator } from './sparseOperator';
+import { denseToSparse } from './sparse';
 import * as math from 'mathjs';
 
 // Define ComplexMatrix type using math.js Complex type
@@ -433,6 +435,21 @@ export class MatrixOperator implements IOperator {
     if (isDiagonalMatrix(matrix)) {
       const diagonal = matrix.map((row, i) => math.clone(row[i]));
       return new DiagonalOperator(diagonal);
+    }
+    
+    // Check for high sparsity (e.g., density < 10%)
+    const totalElements = dimension * dimension;
+    let nonZeroCount = 0;
+    for (let i = 0; i < dimension; i++) {
+      for (let j = 0; j < dimension; j++) {
+        if (math.abs(matrix[i][j]) as unknown as number > 1e-12) {
+          nonZeroCount++;
+        }
+      }
+    }
+    
+    if (nonZeroCount / totalElements < 0.1) {
+      return new SparseOperator(denseToSparse(matrix), type);
     }
     
     // Default to standard matrix operator

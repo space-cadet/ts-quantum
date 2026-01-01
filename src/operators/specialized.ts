@@ -6,6 +6,8 @@ import { Complex, IStateVector, OperatorType, IOperator } from '../core/types';
 import { StateVector } from '../states/stateVector';
 import { validateMatchDims } from '../utils/validation';
 import { MatrixOperator } from "./operator";
+import { SparseOperator } from "./sparseOperator";
+import { denseToSparse } from "./sparse";
 import * as math from 'mathjs';
 
 /**
@@ -57,12 +59,11 @@ export class IdentityOperator implements IOperator {
   }
 
   tensorProduct(other: IOperator): IOperator {
-    const { MatrixOperator } = require('./operator');
-    return new MatrixOperator(this.toMatrix()).tensorProduct(other);
+    const sparseId = new SparseOperator(denseToSparse(this.toMatrix()), 'unitary');
+    return sparseId.tensorProduct(other);
   }
 
   partialTrace(dims: number[], traceOutIndices: number[]): IOperator {
-    // const { MatrixOperator } = require('./operator');
     return new MatrixOperator(this.toMatrix()).partialTrace(dims, traceOutIndices);
   }
 
@@ -157,12 +158,11 @@ export class DiagonalOperator implements IOperator {
   }
 
   tensorProduct(other: IOperator): IOperator {
-    const { MatrixOperator } = require('./operator');
-    return new MatrixOperator(this.toMatrix()).tensorProduct(other);
+    const sparseDiag = new SparseOperator(denseToSparse(this.toMatrix()), 'diagonal');
+    return sparseDiag.tensorProduct(other);
   }
 
   partialTrace(dims: number[], traceOutIndices: number[]): IOperator {
-    const { MatrixOperator } = require('./operator');
     return new MatrixOperator(this.toMatrix()).partialTrace(dims, traceOutIndices);
   }
 

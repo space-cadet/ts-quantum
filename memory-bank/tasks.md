@@ -8,7 +8,8 @@
 | T2 | Package validation | ✅ | HIGH | 2025-07-06 | T1 |
 | T3 | Documentation review | ✅ | MEDIUM | 2025-07-07 | T1 |
 | T4 | Prepare for publishing | ✅ | HIGH | 2025-07-07 | T1,T2,T3 |
-| T5 | Generate Interactive Webpages | 🔄 | MEDIUM | 2025-07-07 | T4 |
+| T5 | Generate Interactive Webpages | 🔄 | MEDIUM | 2025-07-07 | T4 | [Details](tasks/T5.md) |
+| T6 | Native Sparse Operator Support | ✅ | HIGH | 2026-01-01 | - | [Details](tasks/T6.md) |
 
 ## Task Details
 
