@@ -1,5 +1,5 @@
 # Changelog
-*Last Updated: 2026-01-04 11:11:11 IST*
+*Last Updated: 2026-01-04 20:23:01 IST*
 
 ## [0.9.0] - 2025-07-07
 
@@ -56,13 +56,25 @@
 - Bundle building system with esbuild integration
 - Vercel deployment configuration and documentation
 - Web serve capability for local testing
+- **1D Quantum Random Walk simulation** with interactive visualization
+  - Hadamard coin operator with proper tensor product
+  - Sparse shift operator with boundary reflection
+  - Real-time animated graph (500ms per step)
+  - Step-by-step evolution mode
+  - Run all steps with animation control
+  - Probability distribution visualization
+  - Quantum statistics (center of mass, variance, normalization)
 
 ### Changed
 - Enhanced bundle loading and module export system
 - Fixed window.simulations export for browser compatibility
 - Added deployment-ready infrastructure
+- Increased quantum walk evolution step limit: 20 → 100 steps
 
 ### Technical Details
-- Web bundle: 3.2 MB (includes source maps)
+- Web bundle: 3.1 MB (includes source maps)
 - Showcase includes multiple quantum demonstrations
+- Quantum random walk tests: 100% probability conservation
+- Sparse operators enable efficient 1D walk simulations
 - Ready for deployment on Vercel and other platforms
+- Comprehensive memory bank documentation for all features

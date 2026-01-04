@@ -629,6 +629,7 @@
                 </div>
                 <div class="category-items">
                     <a class="demo-link" data-demo="angular-momentum">Angular Momentum</a>
+                    <a class="demo-link" data-demo="quantum-walk-1d">1D Quantum Walk</a>
                 </div>
             </div>
 
@@ -881,6 +882,77 @@
 
                     <div class="equation">
                         $$J_z |j,m\rangle = \hbar m |j,m\rangle, \quad J^2 |j,m\rangle = \hbar^2 j(j+1) |j,m\rangle$$
+                    </div>
+                </div>
+
+                <!-- 1D Quantum Random Walk -->
+                <div class="simulation-card" id="quantum-walk-1d" data-demo="quantum-walk-1d">
+                    <h2>1D Quantum Random Walk</h2>
+                    <p class="description">Simulate a quantum particle on a 1D lattice using a Hadamard coin operator. Observe quantum spreading behavior through step-by-step evolution.</p>
+
+                    <div class="info-box">
+                        A quantum random walk combines coin flips (coin operator) with conditional position shifts. Unlike classical walks with peaked distributions, quantum walks show interference and spread faster across the lattice.
+                    </div>
+
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Lattice Size:</label>
+                            <input type="number" id="qw1dLatticeSize" value="11" min="5" max="31" step="2">
+                            <span class="control-hint">(5-31, odd numbers work best)</span>
+                        </div>
+                        <div class="control-group">
+                            <label>Evolution Steps:</label>
+                            <input type="number" id="qw1dSteps" value="10" min="1" max="100">
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button onclick="runQuantumWalk1D()">Run Simulation</button>
+                        <button onclick="stepQuantumWalk1D()">Step (single)</button>
+                        <button onclick="resetQuantumWalk1D()">Reset</button>
+                        <button id="qw1dCancelBtn" onclick="cancelQuantumWalk1DAnimation()" style="display: none; background-color: #e74c3c;">Cancel Animation</button>
+                    </div>
+
+                    <div class="results" id="qw1dResults">
+                        <div id="qw1dVisualization" style="margin: 20px 0; text-align: center;">
+                            <!-- Bar chart will be inserted here -->
+                        </div>
+
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-label">Current Step:</div>
+                                <div class="stat-value" id="qw1dCurrentStep">0</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Total Probability:</div>
+                                <div class="stat-value" id="qw1dTotalProb">1.0000</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Center of Mass:</div>
+                                <div class="stat-value" id="qw1dCOM">—</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Variance:</div>
+                                <div class="stat-value" id="qw1dVariance">0.0000</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Max Probability:</div>
+                                <div class="stat-value" id="qw1dMaxProb">—</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Spread Width:</div>
+                                <div class="stat-value" id="qw1dSpread">—</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 15px; font-size: 0.9em; color: var(--text-secondary);">
+                            <strong>Position Distribution:</strong>
+                            <div id="qw1dDistribution" style="font-family: monospace; margin-top: 8px; font-size: 0.85em;"></div>
+                        </div>
+                    </div>
+
+                    <div class="equation">
+                        $$|\psi(t+1)\rangle = S(C \otimes I)|\psi(t)\rangle$$
                     </div>
                 </div>
 
@@ -1221,6 +1293,226 @@
                 console.error('Error:', e);
                 alert('Error: ' + e.message);
             }
+        }
+
+        // Animation control for quantum walk
+        let qw1dAnimationRunning = false;
+        let qw1dAnimationCancelled = false;
+
+        async function runQuantumWalk1D() {
+            try {
+                if (!ensureSimulationsReady()) throw new Error('Simulations not ready');
+                const latticeSize = parseInt(document.getElementById('qw1dLatticeSize').value);
+                const numSteps = parseInt(document.getElementById('qw1dSteps').value);
+
+                if (latticeSize < 5 || latticeSize > 31) {
+                    throw new Error('Lattice size must be between 5 and 31');
+                }
+                if (numSteps < 1 || numSteps > 100) {
+                    throw new Error('Steps must be between 1 and 100');
+                }
+
+                if (qw1dAnimationRunning) {
+                    alert('Animation already running. Click Cancel to stop.');
+                    return;
+                }
+
+                qw1dAnimationRunning = true;
+                qw1dAnimationCancelled = false;
+
+                // Disable controls during animation
+                document.getElementById('qw1dLatticeSize').disabled = true;
+                document.getElementById('qw1dSteps').disabled = true;
+                document.querySelector('[onclick="runQuantumWalk1D()"]').disabled = true;
+                document.querySelector('[onclick="stepQuantumWalk1D()"]').disabled = true;
+
+                // Show cancel button
+                const cancelBtn = document.getElementById('qw1dCancelBtn');
+                if (cancelBtn) cancelBtn.style.display = 'inline-block';
+
+                // Initialize walk
+                window.simulations.initializeQuantumWalk1D(latticeSize);
+                updateQuantumWalk1DDisplay(window.simulations.getQuantumWalk1DState());
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                // Animate each step
+                for (let step = 0; step < numSteps; step++) {
+                    if (qw1dAnimationCancelled) break;
+
+                    const data = window.simulations.stepQuantumWalk1D();
+                    updateQuantumWalk1DDisplay(data);
+                    MathJax.typesetPromise().catch(e => console.log(e));
+
+                    // Delay between steps (500ms = comfortable viewing speed)
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+
+                // Re-enable controls
+                qw1dAnimationRunning = false;
+                document.getElementById('qw1dLatticeSize').disabled = false;
+                document.getElementById('qw1dSteps').disabled = false;
+                document.querySelector('[onclick="runQuantumWalk1D()"]').disabled = false;
+                document.querySelector('[onclick="stepQuantumWalk1D()"]').disabled = false;
+                if (cancelBtn) cancelBtn.style.display = 'none';
+
+            } catch (e) {
+                console.error('Error:', e);
+                alert('Error: ' + e.message);
+                qw1dAnimationRunning = false;
+                const cancelBtn = document.getElementById('qw1dCancelBtn');
+                if (cancelBtn) cancelBtn.style.display = 'none';
+            }
+        }
+
+        function cancelQuantumWalk1DAnimation() {
+            qw1dAnimationCancelled = true;
+            qw1dAnimationRunning = false;
+
+            // Re-enable controls
+            document.getElementById('qw1dLatticeSize').disabled = false;
+            document.getElementById('qw1dSteps').disabled = false;
+            document.querySelector('[onclick="runQuantumWalk1D()"]').disabled = false;
+            document.querySelector('[onclick="stepQuantumWalk1D()"]').disabled = false;
+
+            const cancelBtn = document.getElementById('qw1dCancelBtn');
+            if (cancelBtn) cancelBtn.style.display = 'none';
+        }
+
+        async function stepQuantumWalk1D() {
+            try {
+                if (!ensureSimulationsReady()) throw new Error('Simulations not ready');
+
+                // Check if walk is initialized
+                let data;
+                try {
+                    data = window.simulations.getQuantumWalk1DState();
+                } catch (e) {
+                    // Not initialized yet, initialize first
+                    const latticeSize = parseInt(document.getElementById('qw1dLatticeSize').value);
+                    window.simulations.initializeQuantumWalk1D(latticeSize);
+                    data = window.simulations.getQuantumWalk1DState();
+                }
+
+                // Step once
+                data = window.simulations.stepQuantumWalk1D();
+                updateQuantumWalk1DDisplay(data);
+                MathJax.typesetPromise().catch(e => console.log(e));
+            } catch (e) {
+                console.error('Error:', e);
+                alert('Error: ' + e.message);
+            }
+        }
+
+        function resetQuantumWalk1D() {
+            try {
+                if (!ensureSimulationsReady()) throw new Error('Simulations not ready');
+                window.simulations.resetQuantumWalk1D();
+                document.getElementById('qw1dVisualization').innerHTML = '';
+                document.getElementById('qw1dCurrentStep').textContent = '0';
+                document.getElementById('qw1dTotalProb').textContent = '1.0000';
+                document.getElementById('qw1dCOM').textContent = '—';
+                document.getElementById('qw1dVariance').textContent = '0.0000';
+                document.getElementById('qw1dMaxProb').textContent = '—';
+                document.getElementById('qw1dSpread').textContent = '—';
+                document.getElementById('qw1dDistribution').textContent = '';
+            } catch (e) {
+                console.error('Error:', e);
+                alert('Error: ' + e.message);
+            }
+        }
+
+        function updateQuantumWalk1DDisplay(data) {
+            // Update statistics
+            document.getElementById('qw1dCurrentStep').textContent = data.step;
+            document.getElementById('qw1dTotalProb').textContent = data.totalProbability.toFixed(4);
+            document.getElementById('qw1dCOM').textContent = data.centerOfMass.toFixed(2);
+            document.getElementById('qw1dVariance').textContent = data.variance.toFixed(4);
+            document.getElementById('qw1dMaxProb').textContent = data.maxProbability.toFixed(4);
+
+            // Calculate spread width (distance from center to max probability positions)
+            const probs = data.probabilities;
+            const threshold = data.maxProbability * 0.1; // 10% of max
+            let minSpread = data.centerOfMass;
+            let maxSpread = data.centerOfMass;
+            for (let i = 0; i < probs.length; i++) {
+                if (probs[i].probability > threshold) {
+                    minSpread = Math.min(minSpread, i);
+                    maxSpread = Math.max(maxSpread, i);
+                }
+            }
+            document.getElementById('qw1dSpread').textContent = (maxSpread - minSpread).toFixed(1);
+
+            // Create visualization
+            createQuantumWalk1DVisualization(data);
+
+            // Create distribution table
+            createQuantumWalk1DDistribution(data);
+
+            document.getElementById('qw1dResults').classList.add('show');
+        }
+
+        function createQuantumWalk1DVisualization(data) {
+            const container = document.getElementById('qw1dVisualization');
+            const maxProb = data.maxProbability || 0.1;
+            const barHeight = 200; // pixels
+            const barWidth = Math.max(8, Math.floor(600 / data.probabilities.length));
+
+            let svg = `<svg width="100%" height="250" style="border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-secondary);">`;
+            svg += `<text x="10" y="20" font-size="12" fill="var(--text-secondary)">Probability Distribution</text>`;
+
+            // Y-axis scale
+            svg += `<line x1="30" y1="40" x2="30" y2="220" stroke="var(--text-secondary)" stroke-width="1"/>`;
+            svg += `<text x="0" y="225" font-size="10" fill="var(--text-secondary)">0</text>`;
+            svg += `<text x="0" y="50" font-size="10" fill="var(--text-secondary)">${maxProb.toFixed(2)}</text>`;
+
+            // X-axis
+            svg += `<line x1="30" y1="220" x2="100%" y2="220" stroke="var(--text-secondary)" stroke-width="1"/>`;
+
+            // Bars
+            const startX = 40;
+            for (let i = 0; i < data.probabilities.length; i++) {
+                const prob = data.probabilities[i].probability;
+                const height = Math.max(1, (prob / maxProb) * barHeight);
+                const x = startX + i * barWidth;
+                const y = 220 - height;
+
+                // Color gradient based on probability
+                const intensity = prob / maxProb;
+                const color = `rgba(70, 130, 180, ${0.3 + 0.7 * intensity})`;
+
+                svg += `<rect x="${x}" y="${y}" width="${barWidth - 2}" height="${height}" fill="${color}" stroke="var(--text-secondary)" stroke-width="0.5"/>`;
+            }
+
+            // Center of mass line
+            const comX = startX + (data.centerOfMass / data.probabilities.length) * (barWidth * data.probabilities.length);
+            svg += `<line x1="${comX}" y1="40" x2="${comX}" y2="220" stroke="red" stroke-width="2" stroke-dasharray="4,4" opacity="0.7"/>`;
+            svg += `<text x="${comX - 15}" y="35" font-size="10" fill="red">COM</text>`;
+
+            svg += `</svg>`;
+            container.innerHTML = svg;
+        }
+
+        function createQuantumWalk1DDistribution(data) {
+            const container = document.getElementById('qw1dDistribution');
+            let html = '';
+
+            // Show only positions with significant probability
+            const threshold = data.maxProbability * 0.01; // 1% of max
+
+            for (let i = 0; i < data.probabilities.length; i++) {
+                const prob = data.probabilities[i].probability;
+                if (prob > threshold) {
+                    const barLength = Math.round(prob / data.maxProbability * 40);
+                    const bar = '█'.repeat(barLength);
+                    html += `Position ${i.toString().padStart(2)}: ${bar} ${prob.toFixed(4)}<br>`;
+                }
+            }
+
+            if (html === '') {
+                html = '<span style="opacity: 0.5;">No positions above 1% threshold</span>';
+            }
+
+            container.innerHTML = html;
         }
     </script>
 </body>

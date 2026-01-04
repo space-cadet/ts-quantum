@@ -29,7 +29,12 @@ import {
   jmExpectationValue,
   getValidM,
   createJplus,
-  createJminus
+  createJminus,
+  MatrixOperator,
+  createSparseMatrix,
+  setSparseEntry,
+  SparseOperator,
+  denseToSparse
 } from '../dist/index.js';
 import * as math from 'mathjs';
 
@@ -441,6 +446,232 @@ export function computeFidelity(stateAStr: string, stateBStr: string): {
 }
 
 // ============================================================================
+// 1D QUANTUM RANDOM WALK
+// ============================================================================
+
+interface QuantumWalk1DState {
+  state: StateVector;
+  coinOp: MatrixOperator;
+  shiftOp: SparseOperator;
+  latticeSize: number;
+  currentStep: number;
+  totalSteps: number;
+  history: Array<{ step: number; data: QuantumWalk1DData }>;
+}
+
+interface QuantumWalk1DData {
+  step: number;
+  probabilities: { position: number; probability: number }[];
+  centerOfMass: number;
+  variance: number;
+  totalProbability: number;
+  maxProbability: number;
+}
+
+// Store quantum walk state for step-by-step functionality
+let qw1dStateBuffer: QuantumWalk1DState | null = null;
+
+/**
+ * Initialize a 1D quantum random walk
+ */
+export function initializeQuantumWalk1D(latticeSize: number): QuantumWalk1DData {
+  const dimension = 2 * latticeSize; // 2 coin states × latticeSize positions
+
+  // Create Hadamard coin operator (2×2)
+  const hadamardMatrix: any[][] = [
+    [math.complex(1 / Math.sqrt(2), 0), math.complex(1 / Math.sqrt(2), 0)],
+    [math.complex(1 / Math.sqrt(2), 0), math.complex(-1 / Math.sqrt(2), 0)]
+  ];
+  const coinOp = new MatrixOperator(hadamardMatrix, 'unitary');
+
+  // Create shift operator as sparse matrix
+  // Shift operator maps (coin, position) → (coin', position')
+  // LEFT (0) at pos i → RIGHT (1) at pos i-1
+  // RIGHT (1) at pos i → LEFT (0) at pos i+1
+  const shiftMatrix = createSparseMatrix(dimension, dimension);
+
+  for (let pos = 0; pos < latticeSize; pos++) {
+    // LEFT coin at position pos
+    const leftIndex = pos; // coin 0
+    // Maps to RIGHT coin at position pos-1 (or reflects if at boundary)
+    if (pos > 0) {
+      // Move left: (LEFT, pos) → (RIGHT, pos-1)
+      const rightIndexPrev = latticeSize + (pos - 1);
+      setSparseEntry(shiftMatrix, rightIndexPrev, leftIndex, math.complex(1, 0));
+    } else {
+      // Boundary reflection: (LEFT, 0) → (RIGHT, 0)
+      const rightIndex = latticeSize + 0;
+      setSparseEntry(shiftMatrix, rightIndex, leftIndex, math.complex(1, 0));
+    }
+
+    // RIGHT coin at position pos
+    const rightIndex = latticeSize + pos; // coin 1
+    // Maps to LEFT coin at position pos+1 (or reflects if at boundary)
+    if (pos < latticeSize - 1) {
+      // Move right: (RIGHT, pos) → (LEFT, pos+1)
+      const leftIndexNext = pos + 1;
+      setSparseEntry(shiftMatrix, leftIndexNext, rightIndex, math.complex(1, 0));
+    } else {
+      // Boundary reflection: (RIGHT, L-1) → (LEFT, L-1)
+      const leftIndexBound = pos;
+      setSparseEntry(shiftMatrix, leftIndexBound, rightIndex, math.complex(1, 0));
+    }
+  }
+
+  const shiftOp = new SparseOperator(shiftMatrix, 'unitary');
+
+  // Create initial state: superposition at center position
+  const center = Math.floor(latticeSize / 2);
+  const initialAmplitudes: any[] = new Array(dimension).fill(null).map(() => math.complex(0, 0));
+
+  // Start in superposition of both coin directions at center position
+  const invSqrt2 = 1 / Math.sqrt(2);
+  initialAmplitudes[center] = math.complex(invSqrt2, 0); // LEFT at center
+  initialAmplitudes[latticeSize + center] = math.complex(invSqrt2, 0); // RIGHT at center
+
+  const initialState = new StateVector(dimension, initialAmplitudes);
+
+  // Store state for step-by-step evolution
+  qw1dStateBuffer = {
+    state: initialState,
+    coinOp,
+    shiftOp,
+    latticeSize,
+    currentStep: 0,
+    totalSteps: 0,
+    history: []
+  };
+
+  // Extract and store initial data
+  const initialData = extractQuantumWalk1DData(initialState, latticeSize, 0);
+  qw1dStateBuffer.history.push({ step: 0, data: initialData });
+
+  return initialData;
+}
+
+/**
+ * Execute one step of the quantum walk
+ */
+export function stepQuantumWalk1D(): QuantumWalk1DData {
+  if (!qw1dStateBuffer) {
+    throw new Error('Quantum walk not initialized. Call initializeQuantumWalk1D first.');
+  }
+
+  const { state, coinOp, shiftOp, latticeSize } = qw1dStateBuffer;
+
+  // Create identity operator for position space
+  const identityMatrix: any[][] = [];
+  for (let i = 0; i < latticeSize; i++) {
+    const row: any[] = [];
+    for (let j = 0; j < latticeSize; j++) {
+      row.push(i === j ? math.complex(1, 0) : math.complex(0, 0));
+    }
+    identityMatrix.push(row);
+  }
+  const identityOp = new MatrixOperator(identityMatrix, 'unitary');
+
+  // Apply coin ⊗ identity to position space
+  const coinFullOp = coinOp.tensorProduct(identityOp);
+
+  // Apply coin then shift
+  let nextState = coinFullOp.apply(state);
+  nextState = shiftOp.apply(nextState);
+  nextState = nextState.normalize();
+
+  qw1dStateBuffer.state = nextState;
+  qw1dStateBuffer.currentStep++;
+
+  const data = extractQuantumWalk1DData(nextState, latticeSize, qw1dStateBuffer.currentStep);
+  qw1dStateBuffer.history.push({ step: qw1dStateBuffer.currentStep, data });
+
+  return data;
+}
+
+/**
+ * Run quantum walk for specified number of steps
+ */
+export function runQuantumWalk1D(latticeSize: number, numSteps: number): {
+  final: QuantumWalk1DData;
+  history: Array<{ step: number; data: QuantumWalk1DData }>;
+} {
+  initializeQuantumWalk1D(latticeSize);
+
+  if (!qw1dStateBuffer) {
+    throw new Error('Failed to initialize quantum walk');
+  }
+
+  for (let i = 0; i < numSteps; i++) {
+    stepQuantumWalk1D();
+  }
+
+  return {
+    final: qw1dStateBuffer.history[qw1dStateBuffer.history.length - 1].data,
+    history: qw1dStateBuffer.history
+  };
+}
+
+/**
+ * Reset quantum walk state
+ */
+export function resetQuantumWalk1D(): void {
+  qw1dStateBuffer = null;
+}
+
+/**
+ * Get current quantum walk state (for step-by-step display)
+ */
+export function getQuantumWalk1DState(): QuantumWalk1DData {
+  if (!qw1dStateBuffer || qw1dStateBuffer.history.length === 0) {
+    throw new Error('Quantum walk not initialized');
+  }
+  return qw1dStateBuffer.history[qw1dStateBuffer.history.length - 1].data;
+}
+
+/**
+ * Extract probability data from quantum walk state
+ */
+function extractQuantumWalk1DData(state: StateVector, latticeSize: number, step: number): QuantumWalk1DData {
+  const probabilities: { position: number; probability: number }[] = [];
+  let totalProb = 0;
+  let centerOfMass = 0;
+  let maxProb = 0;
+
+  // Sum probabilities across both coin states for each position
+  for (let pos = 0; pos < latticeSize; pos++) {
+    const leftAmp = state.amplitudes[pos];
+    const rightAmp = state.amplitudes[latticeSize + pos];
+
+    const leftProb = Math.abs(leftAmp.re) ** 2 + Math.abs(leftAmp.im) ** 2;
+    const rightProb = Math.abs(rightAmp.re) ** 2 + Math.abs(rightAmp.im) ** 2;
+
+    const posProb = leftProb + rightProb;
+    probabilities.push({ position: pos, probability: posProb });
+    totalProb += posProb;
+    centerOfMass += pos * posProb;
+    maxProb = Math.max(maxProb, posProb);
+  }
+
+  // Normalize center of mass
+  centerOfMass = totalProb > 0 ? centerOfMass / totalProb : latticeSize / 2;
+
+  // Calculate variance
+  let variance = 0;
+  for (let pos = 0; pos < latticeSize; pos++) {
+    const posProb = probabilities[pos].probability;
+    variance += (pos - centerOfMass) ** 2 * posProb;
+  }
+
+  return {
+    step,
+    probabilities,
+    centerOfMass,
+    variance,
+    totalProbability: totalProb,
+    maxProbability: maxProb
+  };
+}
+
+// ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
 
@@ -504,7 +735,12 @@ const simulationFunctions = {
   generateAngularMomentumState,
   runQuantumCircuit,
   exploreSuperposition,
-  computeFidelity
+  computeFidelity,
+  initializeQuantumWalk1D,
+  stepQuantumWalk1D,
+  runQuantumWalk1D,
+  resetQuantumWalk1D,
+  getQuantumWalk1DState
 };
 
 // Make functions available to HTML
