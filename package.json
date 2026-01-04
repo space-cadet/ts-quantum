@@ -11,7 +11,7 @@
   "license": "MIT",
   "keywords": [
     "quantum",
-    "quantum-mechanics", 
+    "quantum-mechanics",
     "quantum-computing",
     "physics",
     "typescript",
@@ -32,10 +32,13 @@
     "build": "tsc --build --verbose",
     "clean": "rm -rf dist node_modules coverage",
     "test": "vitest run",
-    "test:watch": "vitest watch", 
+    "test:watch": "vitest watch",
     "test:coverage": "vitest run --coverage",
     "docs": "typedoc",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "web:build": "pnpm build && node web/build-bundle.js",
+    "web:serve": "pnpm web:build && cd web && npx http-server -p 8080",
+    "deploy:vercel": "vercel"
   },
   "dependencies": {
     "@types/mathjs": "^9.4.2",
@@ -44,6 +47,7 @@
   "devDependencies": {
     "@types/node": "^20.0.0",
     "@vitest/coverage-v8": "^0.34.0",
+    "esbuild": "^0.27.2",
     "typedoc": "^0.25.13",
     "typescript": "^5.0.0",
     "vitest": "^0.34.0"
