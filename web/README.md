@@ -1,231 +1,257 @@
 # ts-quantum Interactive Simulation Showcase
 
-This directory contains an interactive web-based showcase of the ts-quantum library's capabilities. The showcase demonstrates quantum mechanics simulations using actual ts-quantum functionality.
+This directory contains an interactive web-based showcase of the ts-quantum library's capabilities. **All simulations use the actual ts-quantum library functions compiled to browser-compatible JavaScript.**
 
-## Features
+## How It Works
 
-The showcase includes 10 interactive simulations showcasing different aspects of the library:
+The showcase uses a three-part architecture:
+
+1. **simulations.ts** - TypeScript module that imports and uses real ts-quantum functions
+2. **bundle.js** - Compiled JavaScript bundle (created with esbuild) that runs in browsers
+3. **showcase.html** - Interactive web page that loads the bundle and calls the simulations
+
+## Quick Start
+
+Simply open `showcase.html` in a modern web browser. All simulations run entirely in the browser with the actual ts-quantum library code.
+
+```bash
+# To rebuild the bundle after modifying simulations.ts:
+pnpm build  # First build the library
+node web/build-bundle.js  # Then bundle for the web
+```
+
+## Simulations
+
+The showcase includes 7 interactive simulations, each powered by real ts-quantum library functions:
 
 ### 1. **Bell State Creator**
-- Create and analyze the four Bell states (maximally entangled two-qubit states)
-- Visualize measurement probabilities
-- Calculate entanglement entropy
-- Shows: Φ⁺, Φ⁻, Ψ⁺, Ψ⁻ states
+- **Library Functions Used:**
+  - `createBellState()` - Creates Bell states (Φ⁺, Φ⁻, Ψ⁺, Ψ⁻)
+  - `entanglementEntropy()` - Calculates entanglement entropy
+  - `StateVector.amplitudes` - Access state components
 
-**Demonstrates:** Quantum entanglement, basis states, quantum state properties
+- **Features:**
+  - Create maximally entangled two-qubit states
+  - Visualize measurement probabilities
+  - View state vectors and entanglement metrics
+
+**Mathematics:** Bell states are maximally entangled pure states with entanglement entropy S = ln(2)
 
 ### 2. **Quantum Gate Visualizer**
-- Apply fundamental quantum gates to arbitrary initial states
-- Visualize amplitude changes after gate application
-- Explore how gates transform quantum states
-- Supports: Pauli X/Y/Z, Hadamard, Phase S, T gates
+- **Library Functions Used:**
+  - `PauliX`, `PauliY`, `PauliZ` - Pauli operators
+  - `Hadamard` - Hadamard gate
+  - `PhaseGate`, `TGate` - Phase and T gates
+  - `.apply(state)` - Gate application
 
-**Demonstrates:** Unitary transformations, gate algebra, quantum state evolution
+- **Features:**
+  - Apply fundamental quantum gates to initial states
+  - Observe amplitude transformations
+  - Visualize gate effects on |0⟩, |1⟩, |+⟩ states
 
-### 3. **Measurement Simulator**
-- Create superposition states with adjustable probability ratios
-- Simulate 1000 measurements to verify Born rule
-- Interactive probability slider
-- Observe statistical distributions
+**Mathematics:** Unitary transformations preserving normalization and hermiticity
 
-**Demonstrates:** Quantum measurement, Born rule, state collapse
+### 3. **Entanglement Analysis**
+- **Library Functions Used:**
+  - `entanglementEntropy()` - Calculates von Neumann entropy
+  - `concurrence()` - Bipartite entanglement measure
+  - `negativity()` - PPT criterion for entanglement
+  - `DensityMatrixOperator` - Mixed state representation
 
-### 4. **Entanglement Analysis**
-- Analyze two-qubit states using multiple entanglement measures:
-  - **Entanglement Entropy**: Quantifies information loss
-  - **Concurrence**: Bipartite entanglement measure
-  - **Negativity**: Detects non-separability
-- Classify entanglement type
+- **Features:**
+  - Analyze two-qubit states with multiple entanglement measures
+  - Compare product states, Bell states, and partial entanglement
+  - Classify entanglement type
 
-**Demonstrates:** Quantum information theory, entanglement detection, mixed states
+**Mathematics:**
+- Entropy: S = -Σ λᵢ ln(λᵢ)
+- Concurrence: C = max(0, λ₁ - Σᵢ>₁ λᵢ)
+- Negativity: N = (||ρ_T_A|| - 1) / 2
 
-### 5. **Multi-Qubit States**
-- Generate GHZ and W states
-- Visualize multi-particle entanglement
-- Compare different entanglement structures
-- Analyze basis component distributions
+### 4. **Multi-Qubit States**
+- **Library Functions Used:**
+  - `createGHZState()` - Creates GHZ states
+  - `createWState()` - Creates W states
+  - `StateVector` - Multi-qubit state representation
+  - `.dimension` - Hilbert space dimension
 
-**Demonstrates:** Multi-particle systems, tensor products, composite quantum states
+- **Features:**
+  - Generate genuine multi-partite entangled states
+  - Compare GHZ and W entanglement structures
+  - View basis component distributions
 
-### 6. **Angular Momentum States**
-- Create angular momentum eigenstates |j,m⟩
-- Explore spin-1/2, spin-1, and spin-3/2 systems
-- Calculate eigenvalues for Jz and J² operators
-- Angular momentum algebra basics
+**Mathematics:**
+- GHZ: |GHZ_n⟩ = 1/√2 (|0⟩^⊗n + |1⟩^⊗n)
+- W: |W_n⟩ = 1/√n Σᵢ |i⟩
 
-**Demonstrates:** Angular momentum operators, SU(2) algebra, spin systems
+### 5. **Angular Momentum States**
+- **Library Functions Used:**
+  - `createJmState(j, m)` - Creates |j,m⟩ states
+  - `createJz(j)` - Z-component operator
+  - `createJ2(j)` - Total angular momentum operator
+  - `jmExpectationValue()` - Eigenvalue calculation
 
-### 7. **Quantum Circuit Simulator**
-- Build quantum circuits step-by-step
-- Create Bell states using Hadamard + CNOT gates
-- Visualize state evolution through circuit
-- Understand quantum circuit construction
+- **Features:**
+  - Create spin-1/2 and spin-1 eigenstates
+  - Calculate operator eigenvalues
+  - Explore angular momentum algebra
 
-**Demonstrates:** Quantum circuit gates, CNOT entanglement, circuit design
+**Mathematics:**
+- Eigenvalue equations:
+  - Jz|j,m⟩ = ℏm|j,m⟩
+  - J²|j,m⟩ = ℏ²j(j+1)|j,m⟩
 
-### 8. **Superposition Explorer**
-- Create arbitrary single-qubit superpositions
-- Control amplitude and phase relationships
-- Visualize complex amplitude distributions
-- Interactive phase control
+### 6. **Quantum Circuit Simulator**
+- **Library Functions Used:**
+  - `createBasisState()` - Initial state |00⟩
+  - `Hadamard.extend(n)` - Extended single-qubit gate
+  - `CNOT` - Two-qubit entangling gate
+  - `.apply()` - Gate application
 
-**Demonstrates:** Quantum superposition, complex amplitudes, Bloch sphere concepts
+- **Features:**
+  - Build Bell states step-by-step
+  - Visualize quantum circuit evolution
+  - See how quantum entanglement is created
 
-### 9. **Quantum Fidelity & Distance Measures**
-- Compare quantum states using multiple metrics
-- Calculate fidelity between states
-- Compute trace distance
-- Measure similarity percentages
+**Circuit:** |00⟩ → (H₁ ⊗ I₂) → CNOT → |Φ⁺⟩
 
-**Demonstrates:** Quantum state comparison, distance metrics, state space geometry
+### 7. **Quantum Fidelity Analyzer**
+- **Library Functions Used:**
+  - `innerProduct()` - State overlap calculation
+  - `createBasisState()` - Basis states
+  - `createPlusState()` - Superposition states
 
-### 10. **Measurement Probabilities** (Interactive)
-- Dynamically adjust superposition parameters
-- Observe probability distributions
-- Verify quantum mechanical predictions
+- **Features:**
+  - Compare quantum states using overlap
+  - Calculate fidelity measures
+  - Quantify state similarity
 
-**Demonstrates:** Probability amplitudes, quantum measurements
+**Mathematics:** Fidelity: F(ψ, φ) = |⟨ψ|φ⟩|²
 
-## How to Use
-
-### View the Showcase
-
-1. Open `index.html` in a modern web browser
-2. The page will load with all simulations visible
-3. Use navigation buttons to filter by category:
-   - **All Simulations** - Show all demonstrations
-   - **Basic States** - Fundamental quantum concepts
-   - **Quantum Gates** - Gate operations and transformations
-   - **Entanglement** - Multi-qubit and entanglement measures
-   - **Dynamics** - Time evolution and quantum circuits
-   - **Advanced** - Angular momentum and complex operations
-
-### Interact with Simulations
-
-Each simulation card includes:
-- **Description**: Brief explanation of the quantum concept
-- **Info Box**: Key quantum mechanics principles
-- **Controls**: Sliders, dropdowns, and buttons to configure the simulation
-- **Results**: Displays simulation outcomes and measurements
-- **Equations**: Mathematical representations of quantum operations
-
-### Example Interactions
-
-1. **Bell State Creator**:
-   - Select a Bell state from the dropdown
-   - Click "Create State"
-   - View the state vector and entanglement properties
-
-2. **Gate Visualizer**:
-   - Choose an initial state (|0⟩, |1⟩, |+⟩, etc.)
-   - Click a quantum gate button
-   - See how the state transforms
-
-3. **Entanglement Analysis**:
-   - Select a two-qubit state
-   - Click "Analyze"
-   - Compare entanglement measures (entropy, concurrence, negativity)
-
-## Technical Details
-
-### Technology Stack
-- **Pure HTML/CSS/JavaScript** - No external dependencies required
-- **Responsive Design** - Works on desktop, tablet, and mobile
-- **Modern CSS Grid** - Professional layout system
-- **Interactive Visualizations** - Real-time state calculations
-
-### Browser Compatibility
-- Chrome/Chromium (latest)
-- Firefox (latest)
-- Safari (latest)
-- Edge (latest)
-
-### Performance
-- All simulations compute instantly in the browser
-- Client-side only - no network requests needed
-- Optimized for systems up to ~15 qubits
-
-## Integration with ts-quantum
-
-This showcase is designed to be updated with actual ts-quantum library calls for production use. Currently, the simulations use JavaScript implementations of quantum mechanics calculations.
-
-To integrate with the actual ts-quantum library:
-
-1. Build the ts-quantum library:
-   ```bash
-   pnpm build
-   ```
-
-2. Bundle the library for browser use using a bundler (Webpack, Vite, etc.)
-
-3. Update JavaScript functions in the `<script>` section to import and use actual ts-quantum functions:
-   ```javascript
-   import { StateVector, Hadamard, createBellState } from 'ts-quantum';
-
-   function generateBellState() {
-       const state = createBellState('Phi+');
-       // ... use actual library
-   }
-   ```
-
-## Quantum Concepts Covered
-
-### Core Concepts
-- **Quantum States**: Superposition, normalization, amplitude
-- **Quantum Gates**: Unitary transformations, gate algebr
-- **Measurement**: Born rule, wave function collapse, projectors
-- **Entanglement**: Schmidt decomposition, Bell states, GHZ/W states
-
-### Advanced Topics
-- **Quantum Information**: Entropy, fidelity, distance measures
-- **Angular Momentum**: Spin states, ladder operators, coupling
-- **Multi-Qubit Systems**: Tensor products, composite states
-- **Quantum Circuits**: Gate sequences, state preparation
-
-## Educational Value
-
-This showcase is ideal for:
-- **Learning quantum mechanics** - Visual demonstrations of abstract concepts
-- **Understanding ts-quantum** - Practical examples of library usage
-- **Quantum computing education** - Interactive exploration of key principles
-- **Algorithm prototyping** - Testing quantum concepts before implementation
-
-## Mathematics References
-
-All simulations are based on standard quantum mechanics:
-- State vectors in Hilbert space: |ψ⟩ ∈ ℂⁿ
-- Unitary operators: U†U = I
-- Born rule: P(x) = |⟨x|ψ⟩|²
-- Entanglement entropy: S = -Σᵢ λᵢ ln(λᵢ)
-- Fidelity: F(ρ,σ) = Tr(√(√ρ σ √ρ))²
-
-## Source Code Structure
+## File Structure
 
 ```
 web/
-├── index.html          # Main simulation showcase
-├── README.md          # This file
-└── (styles & scripts are embedded in index.html)
+├── showcase.html           # Main interactive page (OPEN THIS!)
+├── simulations.ts          # TypeScript simulation code
+├── bundle.js              # Compiled browser bundle (3.1 MB)
+├── bundle.js.map          # Source map for debugging
+├── README.md              # This file
+└── build-bundle.js        # Build script (for rebuilding bundle)
 ```
+
+## Building the Bundle
+
+The bundle.js file is pre-built and ready to use. To rebuild it after modifying simulations.ts:
+
+```bash
+# From project root
+pnpm install  # Ensure dependencies
+pnpm build    # Build ts-quantum library
+node web/build-bundle.js  # Bundle for web
+```
+
+The build script uses esbuild to:
+1. Import ts-quantum library functions from dist/
+2. Include all mathjs dependencies
+3. Create browser-compatible JavaScript bundle
+4. Generate source maps for debugging
+
+## Technical Stack
+
+- **Language:** TypeScript with actual ts-quantum imports
+- **Compilation:** esbuild for browser bundling
+- **Runtime:** Vanilla JavaScript (no frameworks)
+- **Browser Support:** All modern browsers (ES2020+)
+- **Dependencies:** All included in bundle (mathjs, ts-quantum)
+
+## Real Library Usage Examples
+
+### Bell State Example
+```typescript
+// From simulations.ts
+const bellState = createBellState('Phi+');  // Real library call
+const entropy = entanglementEntropy(bellState, 2, 2);  // Real calculation
+```
+
+### Gate Application Example
+```typescript
+// From simulations.ts
+let resultState = PauliX.apply(initialState);  // Real gate
+resultState = Hadamard.apply(resultState);     // Real transformation
+```
+
+### Angular Momentum Example
+```typescript
+// From simulations.ts
+const state = createJmState(0.5, 0.5);      // Real |1/2, +1/2⟩ state
+const jz = createJz(0.5);                   // Real Jz operator
+const eigenval = jmExpectationValue(jz, 0.5, 0.5);  // Real eigenvalue
+```
+
+## Key Features
+
+✅ **Real Library Execution** - All calculations use actual ts-quantum functions
+✅ **Browser-Based** - Runs entirely in the browser, no server needed
+✅ **Interactive** - Real-time simulation with instant results
+✅ **Educational** - Learn quantum mechanics by seeing real calculations
+✅ **Source Maps** - Debug using TypeScript source with bundle.js.map
+
+## Performance
+
+- Bundle Size: 3.1 MB (includes mathjs)
+- Execution: Instant (runs on client machine)
+- Supported Systems: Up to ~15 qubits effectively
+- Memory: Varies with state size, typically < 100 MB
+
+## Debugging
+
+1. Open `showcase.html` in a browser
+2. Open Developer Tools (F12)
+3. Check Console for any errors
+4. Use Source Maps to see TypeScript source
+5. Check Network tab to verify bundle.js loaded
+
+## Integration with Projects
+
+To use these simulations in your own project:
+
+1. Include the bundle: `<script src="bundle.js"></script>`
+2. Call functions: `window.simulations.generateBellState('Phi+')`
+3. Or use TypeScript by building the library for your target environment
+
+## Limitations
+
+- Browser environment limits to JavaScript number precision
+- Large quantum systems (>15 qubits) may be slow
+- Complex entanglement calculations use numerical methods
+- Some advanced features may need Node.js environment
 
 ## Future Enhancements
 
-Potential improvements to the showcase:
-- [ ] Export state vectors to JSON/CSV
-- [ ] Visualization of quantum walks
 - [ ] Real-time Bloch sphere visualization
-- [ ] 3D visualization of multi-qubit systems
 - [ ] Circuit diagram rendering
-- [ ] Animation of time evolution
-- [ ] Custom state input interface
+- [ ] Animated time evolution
+- [ ] 3D multi-qubit visualizations
+- [ ] Export state vectors to JSON
 - [ ] Performance benchmarking tools
+
+## Mathematics References
+
+All implementations follow standard quantum mechanics:
+
+- Dirac Notation: |ψ⟩ ∈ ℂⁿ (state vectors in Hilbert spaces)
+- Unitary Operators: U†U = I (preserve normalization)
+- Born Rule: P(x) = |⟨x|ψ⟩|² (measurement probabilities)
+- Eigenvalue Equation: Â|ψ⟩ = λ|ψ⟩ (operator eigenstates)
+- Entanglement Entropy: S = -Tr(ρ ln ρ) (information measure)
 
 ## Support
 
-For questions or issues:
-- Check the [ts-quantum documentation](../docs/)
-- Review [example programs](../examples/)
-- Visit the [GitHub repository](https://github.com/space-cadet/ts-quantum)
+- **Issues:** https://github.com/space-cadet/ts-quantum/issues
+- **Documentation:** See ../docs/ directory
+- **Examples:** See ../examples/ directory
+- **Library:** https://github.com/space-cadet/ts-quantum
 
 ## License
 
@@ -234,5 +260,5 @@ This showcase is part of ts-quantum, distributed under the MIT License.
 ---
 
 **Version:** 0.9.0
-**Last Updated:** January 2026
-**Library:** ts-quantum - TypeScript Quantum Mechanics Library
+**Created:** January 2026
+**Powered by:** ts-quantum - TypeScript Quantum Mechanics Library
