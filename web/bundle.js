@@ -28,29 +28,29 @@
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/interopRequireDefault.js
   var require_interopRequireDefault = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/interopRequireDefault.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/interopRequireDefault.js"(exports, module) {
       function _interopRequireDefault(e) {
         return e && e.__esModule ? e : {
           "default": e
         };
       }
-      module2.exports = _interopRequireDefault, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = _interopRequireDefault, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/extends.js
   var require_extends = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/extends.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/extends.js"(exports, module) {
       function _extends2() {
-        return module2.exports = _extends2 = Object.assign ? Object.assign.bind() : function(n) {
+        return module.exports = _extends2 = Object.assign ? Object.assign.bind() : function(n) {
           for (var e = 1; e < arguments.length; e++) {
             var t = arguments[e];
             for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]);
           }
           return n;
-        }, module2.exports.__esModule = true, module2.exports["default"] = module2.exports, _extends2.apply(null, arguments);
+        }, module.exports.__esModule = true, module.exports["default"] = module.exports, _extends2.apply(null, arguments);
       }
-      module2.exports = _extends2, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = _extends2, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
@@ -86,16 +86,16 @@
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/typeof.js
   var require_typeof = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/typeof.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/typeof.js"(exports, module) {
       function _typeof(o) {
         "@babel/helpers - typeof";
-        return module2.exports = _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(o2) {
+        return module.exports = _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(o2) {
           return typeof o2;
         } : function(o2) {
           return o2 && "function" == typeof Symbol && o2.constructor === Symbol && o2 !== Symbol.prototype ? "symbol" : typeof o2;
-        }, module2.exports.__esModule = true, module2.exports["default"] = module2.exports, _typeof(o);
+        }, module.exports.__esModule = true, module.exports["default"] = module.exports, _typeof(o);
       }
-      module2.exports = _typeof, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = _typeof, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
@@ -627,9 +627,9 @@
 
   // node_modules/.pnpm/typed-function@4.2.2/node_modules/typed-function/lib/umd/typed-function.js
   var require_typed_function = __commonJS({
-    "node_modules/.pnpm/typed-function@4.2.2/node_modules/typed-function/lib/umd/typed-function.js"(exports, module2) {
+    "node_modules/.pnpm/typed-function@4.2.2/node_modules/typed-function/lib/umd/typed-function.js"(exports, module) {
       (function(global, factory2) {
-        typeof exports === "object" && typeof module2 !== "undefined" ? module2.exports = factory2() : typeof define === "function" && define.amd ? define(factory2) : (global = typeof globalThis !== "undefined" ? globalThis : global || self, global.typed = factory2());
+        typeof exports === "object" && typeof module !== "undefined" ? module.exports = factory2() : typeof define === "function" && define.amd ? define(factory2) : (global = typeof globalThis !== "undefined" ? globalThis : global || self, global.typed = factory2());
       })(exports, (function() {
         "use strict";
         function ok() {
@@ -2341,40 +2341,40 @@
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/arrayLikeToArray.js
   var require_arrayLikeToArray = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/arrayLikeToArray.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/arrayLikeToArray.js"(exports, module) {
       function _arrayLikeToArray(r, a) {
         (null == a || a > r.length) && (a = r.length);
         for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e];
         return n;
       }
-      module2.exports = _arrayLikeToArray, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = _arrayLikeToArray, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/arrayWithoutHoles.js
   var require_arrayWithoutHoles = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/arrayWithoutHoles.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/arrayWithoutHoles.js"(exports, module) {
       var arrayLikeToArray = require_arrayLikeToArray();
       function _arrayWithoutHoles(r) {
         if (Array.isArray(r)) return arrayLikeToArray(r);
       }
-      module2.exports = _arrayWithoutHoles, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = _arrayWithoutHoles, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/iterableToArray.js
   var require_iterableToArray = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/iterableToArray.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/iterableToArray.js"(exports, module) {
       function _iterableToArray(r) {
         if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r);
       }
-      module2.exports = _iterableToArray, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = _iterableToArray, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/unsupportedIterableToArray.js
   var require_unsupportedIterableToArray = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/unsupportedIterableToArray.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/unsupportedIterableToArray.js"(exports, module) {
       var arrayLikeToArray = require_arrayLikeToArray();
       function _unsupportedIterableToArray(r, a) {
         if (r) {
@@ -2383,23 +2383,23 @@
           return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? arrayLikeToArray(r, a) : void 0;
         }
       }
-      module2.exports = _unsupportedIterableToArray, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = _unsupportedIterableToArray, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/nonIterableSpread.js
   var require_nonIterableSpread = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/nonIterableSpread.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/nonIterableSpread.js"(exports, module) {
       function _nonIterableSpread() {
         throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
       }
-      module2.exports = _nonIterableSpread, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = _nonIterableSpread, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/toConsumableArray.js
   var require_toConsumableArray = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/toConsumableArray.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/toConsumableArray.js"(exports, module) {
       var arrayWithoutHoles = require_arrayWithoutHoles();
       var iterableToArray = require_iterableToArray();
       var unsupportedIterableToArray = require_unsupportedIterableToArray();
@@ -2407,23 +2407,23 @@
       function _toConsumableArray(r) {
         return arrayWithoutHoles(r) || iterableToArray(r) || unsupportedIterableToArray(r) || nonIterableSpread();
       }
-      module2.exports = _toConsumableArray, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = _toConsumableArray, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/classCallCheck.js
   var require_classCallCheck = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/classCallCheck.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/classCallCheck.js"(exports, module) {
       function _classCallCheck(a, n) {
         if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function");
       }
-      module2.exports = _classCallCheck, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = _classCallCheck, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/toPrimitive.js
   var require_toPrimitive = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/toPrimitive.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/toPrimitive.js"(exports, module) {
       var _typeof = require_typeof()["default"];
       function toPrimitive(t, r) {
         if ("object" != _typeof(t) || !t) return t;
@@ -2435,26 +2435,26 @@
         }
         return ("string" === r ? String : Number)(t);
       }
-      module2.exports = toPrimitive, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = toPrimitive, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/toPropertyKey.js
   var require_toPropertyKey = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/toPropertyKey.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/toPropertyKey.js"(exports, module) {
       var _typeof = require_typeof()["default"];
       var toPrimitive = require_toPrimitive();
       function toPropertyKey(t) {
         var i = toPrimitive(t, "string");
         return "symbol" == _typeof(i) ? i : i + "";
       }
-      module2.exports = toPropertyKey, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = toPropertyKey, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/createClass.js
   var require_createClass = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/createClass.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/createClass.js"(exports, module) {
       var toPropertyKey = require_toPropertyKey();
       function _defineProperties(e, r) {
         for (var t = 0; t < r.length; t++) {
@@ -2467,7 +2467,7 @@
           writable: false
         }), e;
       }
-      module2.exports = _createClass, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = _createClass, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
@@ -3306,7 +3306,7 @@
 
   // node_modules/.pnpm/decimal.js@10.6.0/node_modules/decimal.js/decimal.js
   var require_decimal = __commonJS({
-    "node_modules/.pnpm/decimal.js@10.6.0/node_modules/decimal.js/decimal.js"(exports, module2) {
+    "node_modules/.pnpm/decimal.js@10.6.0/node_modules/decimal.js/decimal.js"(exports, module) {
       (function(globalScope) {
         "use strict";
         var EXP_LIMIT2 = 9e15, MAX_DIGITS2 = 1e9, NUMERALS2 = "0123456789abcdef", LN102 = "2.3025850929940456840179914546843642076011014886287729760333279009675726096773524802359972050895982983419677840422862486334095254650828067566662873690987816894829072083255546808437998948262331985283935053089653777326288461633662222876982198867465436674744042432743651550489343149393914796194044002221051017141748003688084012647080685567743216228355220114804663715659121373450747856947683463616792101806445070648000277502684916746550586856935673420670581136429224554405758925724208241314695689016758940256776311356919292033376587141660230105703089634572075440370847469940168269282808481184289314848524948644871927809676271275775397027668605952496716674183485704422507197965004714951050492214776567636938662976979522110718264549734772662425709429322582798502585509785265383207606726317164309505995087807523710333101197857547331541421808427543863591778117054309827482385045648019095610299291824318237525357709750539565187697510374970888692180205189339507238539205144634197265287286965110862571492198849978748873771345686209167058", PI2 = "3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679821480865132823066470938446095505822317253594081284811174502841027019385211055596446229489549303819644288109756659334461284756482337867831652712019091456485669234603486104543266482133936072602491412737245870066063155881748815209209628292540917153643678925903600113305305488204665213841469519415116094330572703657595919530921861173819326117931051185480744623799627495673518857527248912279381830119491298336733624406566430860213949463952247371907021798609437027705392171762931767523846748184676694051320005681271452635608277857713427577896091736371787214684409012249534301465495853710507922796892589235420199561121290219608640344181598136297747713099605187072113499999983729780499510597317328160963185950244594553469083026425223082533446850352619311881710100031378387528865875332083814206171776691473035982534904287554687311595628638823537875937519577818577805321712268066130019278766111959092164201989380952572010654858632789", DEFAULTS2 = {
@@ -5462,12 +5462,12 @@
           define(function() {
             return Decimal2;
           });
-        } else if (typeof module2 != "undefined" && module2.exports) {
+        } else if (typeof module != "undefined" && module.exports) {
           if (typeof Symbol == "function" && typeof Symbol.iterator == "symbol") {
             P3[Symbol["for"]("nodejs.util.inspect.custom")] = P3.toString;
             P3[Symbol.toStringTag] = "Decimal";
           }
-          module2.exports = Decimal2;
+          module.exports = Decimal2;
         } else {
           if (!globalScope) {
             globalScope = typeof self != "undefined" && self && self.self == self ? self : window;
@@ -5532,7 +5532,7 @@
 
   // node_modules/.pnpm/complex.js@2.4.3/node_modules/complex.js/dist/complex.js
   var require_complex = __commonJS({
-    "node_modules/.pnpm/complex.js@2.4.3/node_modules/complex.js/dist/complex.js"(exports, module2) {
+    "node_modules/.pnpm/complex.js@2.4.3/node_modules/complex.js/dist/complex.js"(exports, module) {
       "use strict";
       var cosh3 = Math.cosh || function(x) {
         return Math.abs(x) < 1e-9 ? 1 - x : (Math.exp(x) + Math.exp(-x)) * 0.5;
@@ -6563,7 +6563,7 @@
       Object.defineProperty(Complex3, "__esModule", { "value": true });
       Complex3["default"] = Complex3;
       Complex3["Complex"] = Complex3;
-      module2["exports"] = Complex3;
+      module["exports"] = Complex3;
     }
   });
 
@@ -6706,7 +6706,7 @@
 
   // node_modules/.pnpm/fraction.js@4.3.4/node_modules/fraction.js/fraction.js
   var require_fraction = __commonJS({
-    "node_modules/.pnpm/fraction.js@4.3.4/node_modules/fraction.js/fraction.js"(exports, module2) {
+    "node_modules/.pnpm/fraction.js@4.3.4/node_modules/fraction.js/fraction.js"(exports, module) {
       (function(root) {
         "use strict";
         var MAX_CYCLE_LEN = 2e3;
@@ -7341,7 +7341,7 @@
           Object.defineProperty(Fraction3, "__esModule", { "value": true });
           Fraction3["default"] = Fraction3;
           Fraction3["Fraction"] = Fraction3;
-          module2["exports"] = Fraction3;
+          module["exports"] = Fraction3;
         } else {
           root["Fraction"] = Fraction3;
         }
@@ -7644,17 +7644,17 @@
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/OverloadYield.js
   var require_OverloadYield = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/OverloadYield.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/OverloadYield.js"(exports, module) {
       function _OverloadYield(e, d) {
         this.v = e, this.k = d;
       }
-      module2.exports = _OverloadYield, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = _OverloadYield, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/regeneratorDefine.js
   var require_regeneratorDefine = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/regeneratorDefine.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/regeneratorDefine.js"(exports, module) {
       function _regeneratorDefine(e, r, n, t) {
         var i = Object.defineProperty;
         try {
@@ -7662,7 +7662,7 @@
         } catch (e2) {
           i = 0;
         }
-        module2.exports = _regeneratorDefine = function regeneratorDefine(e2, r2, n3, t2) {
+        module.exports = _regeneratorDefine = function regeneratorDefine(e2, r2, n3, t2) {
           function o(r3, n4) {
             _regeneratorDefine(e2, r3, function(e3) {
               return this._invoke(r3, n4, e3);
@@ -7674,15 +7674,15 @@
             configurable: !t2,
             writable: !t2
           }) : e2[r2] = n3 : (o("next", 0), o("throw", 1), o("return", 2));
-        }, module2.exports.__esModule = true, module2.exports["default"] = module2.exports, _regeneratorDefine(e, r, n, t);
+        }, module.exports.__esModule = true, module.exports["default"] = module.exports, _regeneratorDefine(e, r, n, t);
       }
-      module2.exports = _regeneratorDefine, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = _regeneratorDefine, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/regenerator.js
   var require_regenerator = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/regenerator.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/regenerator.js"(exports, module) {
       var regeneratorDefine = require_regeneratorDefine();
       function _regenerator() {
         var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag";
@@ -7751,20 +7751,20 @@
           return this;
         }), regeneratorDefine(u, "toString", function() {
           return "[object Generator]";
-        }), (module2.exports = _regenerator = function _regenerator2() {
+        }), (module.exports = _regenerator = function _regenerator2() {
           return {
             w: i,
             m: f
           };
-        }, module2.exports.__esModule = true, module2.exports["default"] = module2.exports)();
+        }, module.exports.__esModule = true, module.exports["default"] = module.exports)();
       }
-      module2.exports = _regenerator, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = _regenerator, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/regeneratorAsyncIterator.js
   var require_regeneratorAsyncIterator = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/regeneratorAsyncIterator.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/regeneratorAsyncIterator.js"(exports, module) {
       var OverloadYield = require_OverloadYield();
       var regeneratorDefine = require_regeneratorDefine();
       function AsyncIterator(t, e) {
@@ -7796,25 +7796,25 @@
           return r = r ? r.then(f, f) : f();
         }, true);
       }
-      module2.exports = AsyncIterator, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = AsyncIterator, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/regeneratorAsyncGen.js
   var require_regeneratorAsyncGen = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/regeneratorAsyncGen.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/regeneratorAsyncGen.js"(exports, module) {
       var regenerator = require_regenerator();
       var regeneratorAsyncIterator = require_regeneratorAsyncIterator();
       function _regeneratorAsyncGen(r, e, t, o, n) {
         return new regeneratorAsyncIterator(regenerator().w(r, e, t, o), n || Promise);
       }
-      module2.exports = _regeneratorAsyncGen, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = _regeneratorAsyncGen, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/regeneratorAsync.js
   var require_regeneratorAsync = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/regeneratorAsync.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/regeneratorAsync.js"(exports, module) {
       var regeneratorAsyncGen = require_regeneratorAsyncGen();
       function _regeneratorAsync(n, e, r, t, o) {
         var a = regeneratorAsyncGen(n, e, r, t, o);
@@ -7822,13 +7822,13 @@
           return n3.done ? n3.value : a.next();
         });
       }
-      module2.exports = _regeneratorAsync, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = _regeneratorAsync, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/regeneratorKeys.js
   var require_regeneratorKeys = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/regeneratorKeys.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/regeneratorKeys.js"(exports, module) {
       function _regeneratorKeys(e) {
         var n = Object(e), r = [];
         for (var t in n) r.unshift(t);
@@ -7837,13 +7837,13 @@
           return e2.done = true, e2;
         };
       }
-      module2.exports = _regeneratorKeys, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = _regeneratorKeys, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/regeneratorValues.js
   var require_regeneratorValues = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/regeneratorValues.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/regeneratorValues.js"(exports, module) {
       var _typeof = require_typeof()["default"];
       function _regeneratorValues(e) {
         if (null != e) {
@@ -7861,13 +7861,13 @@
         }
         throw new TypeError(_typeof(e) + " is not iterable");
       }
-      module2.exports = _regeneratorValues, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = _regeneratorValues, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/regeneratorRuntime.js
   var require_regeneratorRuntime = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/regeneratorRuntime.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/regeneratorRuntime.js"(exports, module) {
       var OverloadYield = require_OverloadYield();
       var regenerator = require_regenerator();
       var regeneratorAsync = require_regeneratorAsync();
@@ -7922,7 +7922,7 @@
             }
           };
         }
-        return (module2.exports = _regeneratorRuntime = function _regeneratorRuntime2() {
+        return (module.exports = _regeneratorRuntime = function _regeneratorRuntime2() {
           return {
             wrap: function wrap(e2, t2, n3, o2) {
               return r.w(a(e2), t2, n3, o2 && o2.reverse());
@@ -7939,17 +7939,17 @@
             keys: regeneratorKeys,
             values: regeneratorValues
           };
-        }, module2.exports.__esModule = true, module2.exports["default"] = module2.exports)();
+        }, module.exports.__esModule = true, module.exports["default"] = module.exports)();
       }
-      module2.exports = _regeneratorRuntime, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = _regeneratorRuntime, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/regenerator/index.js
   var require_regenerator2 = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/regenerator/index.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/regenerator/index.js"(exports, module) {
       var runtime = require_regeneratorRuntime()();
-      module2.exports = runtime;
+      module.exports = runtime;
       try {
         regeneratorRuntime = runtime;
       } catch (accidentalStrictMode) {
@@ -12811,17 +12811,17 @@
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/arrayWithHoles.js
   var require_arrayWithHoles = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/arrayWithHoles.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/arrayWithHoles.js"(exports, module) {
       function _arrayWithHoles(r) {
         if (Array.isArray(r)) return r;
       }
-      module2.exports = _arrayWithHoles, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = _arrayWithHoles, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/iterableToArrayLimit.js
   var require_iterableToArrayLimit = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/iterableToArrayLimit.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/iterableToArrayLimit.js"(exports, module) {
       function _iterableToArrayLimit(r, l) {
         var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"];
         if (null != t) {
@@ -12843,23 +12843,23 @@
           return a;
         }
       }
-      module2.exports = _iterableToArrayLimit, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = _iterableToArrayLimit, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/nonIterableRest.js
   var require_nonIterableRest = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/nonIterableRest.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/nonIterableRest.js"(exports, module) {
       function _nonIterableRest() {
         throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
       }
-      module2.exports = _nonIterableRest, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = _nonIterableRest, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/slicedToArray.js
   var require_slicedToArray = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/slicedToArray.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/slicedToArray.js"(exports, module) {
       var arrayWithHoles = require_arrayWithHoles();
       var iterableToArrayLimit = require_iterableToArrayLimit();
       var unsupportedIterableToArray = require_unsupportedIterableToArray();
@@ -12867,7 +12867,7 @@
       function _slicedToArray(r, e) {
         return arrayWithHoles(r) || iterableToArrayLimit(r, e) || unsupportedIterableToArray(r, e) || nonIterableRest();
       }
-      module2.exports = _slicedToArray, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = _slicedToArray, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
@@ -13507,7 +13507,7 @@
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/defineProperty.js
   var require_defineProperty = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/defineProperty.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/defineProperty.js"(exports, module) {
       var toPropertyKey = require_toPropertyKey();
       function _defineProperty(e, r, t) {
         return (r = toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
@@ -13517,7 +13517,7 @@
           writable: true
         }) : e[r] = t, e;
       }
-      module2.exports = _defineProperty, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = _defineProperty, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
@@ -21267,8 +21267,8 @@
 
   // node_modules/.pnpm/javascript-natural-sort@0.7.1/node_modules/javascript-natural-sort/naturalSort.js
   var require_naturalSort = __commonJS({
-    "node_modules/.pnpm/javascript-natural-sort@0.7.1/node_modules/javascript-natural-sort/naturalSort.js"(exports, module2) {
-      module2.exports = function naturalSort(a, b) {
+    "node_modules/.pnpm/javascript-natural-sort@0.7.1/node_modules/javascript-natural-sort/naturalSort.js"(exports, module) {
+      module.exports = function naturalSort(a, b) {
         "use strict";
         var re = /(^([+\-]?(?:0|[1-9]\d*)(?:\.\d*)?(?:[eE][+\-]?\d+)?)?$|^0x[0-9a-f]+$|\d+)/gi, sre = /(^[ ]*|[ ]*$)/g, dre = /(^([\w ]+,?[\w ]+)?[\w ]+,?[\w ]+\d+:\d+(:\d+)?[\w ]?|^\d{1,4}[\/\-]\d{1,4}[\/\-]\d{1,4}|^\w+, \w+ \d+, \d{4})/, hre = /^0x[0-9a-f]+$/i, ore = /^0/, i = function(s) {
           return naturalSort.insensitive && ("" + s).toLowerCase() || "" + s;
@@ -28481,18 +28481,18 @@
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/assertThisInitialized.js
   var require_assertThisInitialized = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/assertThisInitialized.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/assertThisInitialized.js"(exports, module) {
       function _assertThisInitialized(e) {
         if (void 0 === e) throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
         return e;
       }
-      module2.exports = _assertThisInitialized, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = _assertThisInitialized, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/possibleConstructorReturn.js
   var require_possibleConstructorReturn = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/possibleConstructorReturn.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/possibleConstructorReturn.js"(exports, module) {
       var _typeof = require_typeof()["default"];
       var assertThisInitialized = require_assertThisInitialized();
       function _possibleConstructorReturn(t, e) {
@@ -28500,37 +28500,37 @@
         if (void 0 !== e) throw new TypeError("Derived constructors may only return object or undefined");
         return assertThisInitialized(t);
       }
-      module2.exports = _possibleConstructorReturn, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = _possibleConstructorReturn, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/getPrototypeOf.js
   var require_getPrototypeOf = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/getPrototypeOf.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/getPrototypeOf.js"(exports, module) {
       function _getPrototypeOf(t) {
-        return module2.exports = _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function(t2) {
+        return module.exports = _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function(t2) {
           return t2.__proto__ || Object.getPrototypeOf(t2);
-        }, module2.exports.__esModule = true, module2.exports["default"] = module2.exports, _getPrototypeOf(t);
+        }, module.exports.__esModule = true, module.exports["default"] = module.exports, _getPrototypeOf(t);
       }
-      module2.exports = _getPrototypeOf, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = _getPrototypeOf, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/setPrototypeOf.js
   var require_setPrototypeOf = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/setPrototypeOf.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/setPrototypeOf.js"(exports, module) {
       function _setPrototypeOf(t, e) {
-        return module2.exports = _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function(t2, e2) {
+        return module.exports = _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function(t2, e2) {
           return t2.__proto__ = e2, t2;
-        }, module2.exports.__esModule = true, module2.exports["default"] = module2.exports, _setPrototypeOf(t, e);
+        }, module.exports.__esModule = true, module.exports["default"] = module.exports, _setPrototypeOf(t, e);
       }
-      module2.exports = _setPrototypeOf, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = _setPrototypeOf, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/inherits.js
   var require_inherits = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/inherits.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/inherits.js"(exports, module) {
       var setPrototypeOf = require_setPrototypeOf();
       function _inherits(t, e) {
         if ("function" != typeof e && null !== e) throw new TypeError("Super expression must either be null or a function");
@@ -28544,7 +28544,7 @@
           writable: false
         }), e && setPrototypeOf(t, e);
       }
-      module2.exports = _inherits, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = _inherits, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
@@ -30216,7 +30216,7 @@
 
   // node_modules/.pnpm/escape-latex@1.2.0/node_modules/escape-latex/dist/index.js
   var require_dist = __commonJS({
-    "node_modules/.pnpm/escape-latex@1.2.0/node_modules/escape-latex/dist/index.js"(exports, module2) {
+    "node_modules/.pnpm/escape-latex@1.2.0/node_modules/escape-latex/dist/index.js"(exports, module) {
       "use strict";
       var _extends2 = Object.assign || function(target) {
         for (var i = 1; i < arguments.length; i++) {
@@ -30252,7 +30252,7 @@
       var defaultEscapeMapFn = function defaultEscapeMapFn2(defaultEscapes2, formatEscapes2) {
         return _extends2({}, defaultEscapes2, formatEscapes2);
       };
-      module2.exports = function(str) {
+      module.exports = function(str) {
         var _ref = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {}, _ref$preserveFormatti = _ref.preserveFormatting, preserveFormatting = _ref$preserveFormatti === void 0 ? false : _ref$preserveFormatti, _ref$escapeMapFn = _ref.escapeMapFn, escapeMapFn = _ref$escapeMapFn === void 0 ? defaultEscapeMapFn : _ref$escapeMapFn;
         var runningStr = String(str);
         var result = "";
@@ -33304,30 +33304,30 @@
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/superPropBase.js
   var require_superPropBase = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/superPropBase.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/superPropBase.js"(exports, module) {
       var getPrototypeOf = require_getPrototypeOf();
       function _superPropBase(t, o) {
         for (; !{}.hasOwnProperty.call(t, o) && null !== (t = getPrototypeOf(t)); ) ;
         return t;
       }
-      module2.exports = _superPropBase, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = _superPropBase, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
   // node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/get.js
   var require_get = __commonJS({
-    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/get.js"(exports, module2) {
+    "node_modules/.pnpm/@babel+runtime@7.28.4/node_modules/@babel/runtime/helpers/get.js"(exports, module) {
       var superPropBase = require_superPropBase();
       function _get() {
-        return module2.exports = _get = "undefined" != typeof Reflect && Reflect.get ? Reflect.get.bind() : function(e, t, r) {
+        return module.exports = _get = "undefined" != typeof Reflect && Reflect.get ? Reflect.get.bind() : function(e, t, r) {
           var p = superPropBase(e, t);
           if (p) {
             var n = Object.getOwnPropertyDescriptor(p, t);
             return n.get ? n.get.call(arguments.length < 3 ? e : r) : n.value;
           }
-        }, module2.exports.__esModule = true, module2.exports["default"] = module2.exports, _get.apply(null, arguments);
+        }, module.exports.__esModule = true, module.exports["default"] = module.exports, _get.apply(null, arguments);
       }
-      module2.exports = _get, module2.exports.__esModule = true, module2.exports["default"] = module2.exports;
+      module.exports = _get, module.exports.__esModule = true, module.exports["default"] = module.exports;
     }
   });
 
@@ -45502,8 +45502,8 @@
 
   // node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/alea.js
   var require_alea = __commonJS({
-    "node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/alea.js"(exports, module2) {
-      (function(global, module3, define2) {
+    "node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/alea.js"(exports, module) {
+      (function(global, module2, define2) {
         function Alea(seed) {
           var me = this, mash = Mash();
           me.next = function() {
@@ -45572,8 +45572,8 @@
           };
           return mash;
         }
-        if (module3 && module3.exports) {
-          module3.exports = impl;
+        if (module2 && module2.exports) {
+          module2.exports = impl;
         } else if (define2 && define2.amd) {
           define2(function() {
             return impl;
@@ -45583,7 +45583,7 @@
         }
       })(
         exports,
-        typeof module2 == "object" && module2,
+        typeof module == "object" && module,
         // present in node.js
         typeof define == "function" && define
         // present with an AMD loader
@@ -45593,8 +45593,8 @@
 
   // node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/xor128.js
   var require_xor128 = __commonJS({
-    "node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/xor128.js"(exports, module2) {
-      (function(global, module3, define2) {
+    "node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/xor128.js"(exports, module) {
+      (function(global, module2, define2) {
         function XorGen(seed) {
           var me = this, strseed = "";
           me.x = 0;
@@ -45645,8 +45645,8 @@
           }
           return prng;
         }
-        if (module3 && module3.exports) {
-          module3.exports = impl;
+        if (module2 && module2.exports) {
+          module2.exports = impl;
         } else if (define2 && define2.amd) {
           define2(function() {
             return impl;
@@ -45656,7 +45656,7 @@
         }
       })(
         exports,
-        typeof module2 == "object" && module2,
+        typeof module == "object" && module,
         // present in node.js
         typeof define == "function" && define
         // present with an AMD loader
@@ -45666,8 +45666,8 @@
 
   // node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/xorwow.js
   var require_xorwow = __commonJS({
-    "node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/xorwow.js"(exports, module2) {
-      (function(global, module3, define2) {
+    "node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/xorwow.js"(exports, module) {
+      (function(global, module2, define2) {
         function XorGen(seed) {
           var me = this, strseed = "";
           me.next = function() {
@@ -45725,8 +45725,8 @@
           }
           return prng;
         }
-        if (module3 && module3.exports) {
-          module3.exports = impl;
+        if (module2 && module2.exports) {
+          module2.exports = impl;
         } else if (define2 && define2.amd) {
           define2(function() {
             return impl;
@@ -45736,7 +45736,7 @@
         }
       })(
         exports,
-        typeof module2 == "object" && module2,
+        typeof module == "object" && module,
         // present in node.js
         typeof define == "function" && define
         // present with an AMD loader
@@ -45746,8 +45746,8 @@
 
   // node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/xorshift7.js
   var require_xorshift7 = __commonJS({
-    "node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/xorshift7.js"(exports, module2) {
-      (function(global, module3, define2) {
+    "node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/xorshift7.js"(exports, module) {
+      (function(global, module2, define2) {
         function XorGen(seed) {
           var me = this;
           me.next = function() {
@@ -45816,8 +45816,8 @@
           }
           return prng;
         }
-        if (module3 && module3.exports) {
-          module3.exports = impl;
+        if (module2 && module2.exports) {
+          module2.exports = impl;
         } else if (define2 && define2.amd) {
           define2(function() {
             return impl;
@@ -45827,7 +45827,7 @@
         }
       })(
         exports,
-        typeof module2 == "object" && module2,
+        typeof module == "object" && module,
         // present in node.js
         typeof define == "function" && define
         // present with an AMD loader
@@ -45837,8 +45837,8 @@
 
   // node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/xor4096.js
   var require_xor4096 = __commonJS({
-    "node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/xor4096.js"(exports, module2) {
-      (function(global, module3, define2) {
+    "node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/xor4096.js"(exports, module) {
+      (function(global, module2, define2) {
         function XorGen(seed) {
           var me = this;
           me.next = function() {
@@ -45924,8 +45924,8 @@
           }
           return prng;
         }
-        if (module3 && module3.exports) {
-          module3.exports = impl;
+        if (module2 && module2.exports) {
+          module2.exports = impl;
         } else if (define2 && define2.amd) {
           define2(function() {
             return impl;
@@ -45936,7 +45936,7 @@
       })(
         exports,
         // window object or global
-        typeof module2 == "object" && module2,
+        typeof module == "object" && module,
         // present in node.js
         typeof define == "function" && define
         // present with an AMD loader
@@ -45946,8 +45946,8 @@
 
   // node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/tychei.js
   var require_tychei = __commonJS({
-    "node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/tychei.js"(exports, module2) {
-      (function(global, module3, define2) {
+    "node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/lib/tychei.js"(exports, module) {
+      (function(global, module2, define2) {
         function XorGen(seed) {
           var me = this, strseed = "";
           me.next = function() {
@@ -46004,8 +46004,8 @@
           }
           return prng;
         }
-        if (module3 && module3.exports) {
-          module3.exports = impl;
+        if (module2 && module2.exports) {
+          module2.exports = impl;
         } else if (define2 && define2.amd) {
           define2(function() {
             return impl;
@@ -46015,7 +46015,7 @@
         }
       })(
         exports,
-        typeof module2 == "object" && module2,
+        typeof module == "object" && module,
         // present in node.js
         typeof define == "function" && define
         // present with an AMD loader
@@ -46031,7 +46031,7 @@
 
   // node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/seedrandom.js
   var require_seedrandom = __commonJS({
-    "node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/seedrandom.js"(exports, module2) {
+    "node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/seedrandom.js"(exports, module) {
       (function(global, pool, math) {
         var width = 256, chunks = 6, digits2 = 52, rngname = "random", startdenom = math.pow(width, chunks), significance = math.pow(2, digits2), overflow = significance * 2, mask = width - 1, nodecrypto;
         function seedrandom(seed, options, callback) {
@@ -46152,8 +46152,8 @@
           return String.fromCharCode.apply(0, a);
         }
         mixkey(math.random(), pool);
-        if (typeof module2 == "object" && module2.exports) {
-          module2.exports = seedrandom;
+        if (typeof module == "object" && module.exports) {
+          module.exports = seedrandom;
           try {
             nodecrypto = require_crypto();
           } catch (ex) {
@@ -46179,7 +46179,7 @@
 
   // node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/index.js
   var require_seedrandom2 = __commonJS({
-    "node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/index.js"(exports, module2) {
+    "node_modules/.pnpm/seedrandom@3.0.5/node_modules/seedrandom/index.js"(exports, module) {
       var alea = require_alea();
       var xor128 = require_xor128();
       var xorwow = require_xorwow();
@@ -46193,7 +46193,7 @@
       sr.xorshift7 = xorshift7;
       sr.xor4096 = xor4096;
       sr.tychei = tychei;
-      module2.exports = sr;
+      module.exports = sr;
     }
   });
 
@@ -67121,7 +67121,7 @@
 
   // node_modules/.pnpm/tiny-emitter@2.1.0/node_modules/tiny-emitter/index.js
   var require_tiny_emitter = __commonJS({
-    "node_modules/.pnpm/tiny-emitter@2.1.0/node_modules/tiny-emitter/index.js"(exports, module2) {
+    "node_modules/.pnpm/tiny-emitter@2.1.0/node_modules/tiny-emitter/index.js"(exports, module) {
       function E() {
       }
       E.prototype = {
@@ -67167,8 +67167,8 @@
           return this;
         }
       };
-      module2.exports = E;
-      module2.exports.TinyEmitter = E;
+      module.exports = E;
+      module.exports.TinyEmitter = E;
     }
   });
 
@@ -81300,7 +81300,22 @@
     }
     return entropy;
   }
-  Object.assign(window, { simulations: module });
+  var simulationFunctions = {
+    generateBellState,
+    applyGate,
+    simulateMeasurement,
+    analyzeEntanglement,
+    generateMultiQubitState,
+    generateAngularMomentumState,
+    runQuantumCircuit,
+    exploreSuperposition,
+    computeFidelity
+  };
+  globalThis.simulations = simulationFunctions;
+  if (typeof window !== "undefined") {
+    window.simulations = simulationFunctions;
+  }
+  var simulations_default = simulationFunctions;
 })();
 /*! Bundled license information:
 

@@ -493,11 +493,36 @@ function calculateEntanglementEntropy(
   return entropy;
 }
 
-// Export all for use in HTML
+// ============================================================================
+// EXPORTS AND WINDOW BINDING
+// ============================================================================
+
+// Collect all exported functions
+const simulationFunctions = {
+  generateBellState,
+  applyGate,
+  simulateMeasurement,
+  analyzeEntanglement,
+  generateMultiQubitState,
+  generateAngularMomentumState,
+  runQuantumCircuit,
+  exploreSuperposition,
+  computeFidelity
+};
+
+// Make functions available to HTML
 declare global {
   interface Window {
-    simulations: typeof import('./simulations');
+    simulations: typeof simulationFunctions;
   }
 }
 
-Object.assign(window, { simulations: module });
+// Assign to window for browser access
+(globalThis as any).simulations = simulationFunctions;
+
+// Also try assigning to window for fallback
+if (typeof window !== 'undefined') {
+  (window as any).simulations = simulationFunctions;
+}
+
+export default simulationFunctions;

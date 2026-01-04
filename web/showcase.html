@@ -660,10 +660,35 @@
 
     <script src="bundle.js"></script>
     <script>
+        // Check if simulations loaded and show loading state
+        let simulationsReady = false;
+
+        // Function to check if simulations are ready
+        function ensureSimulationsReady() {
+            if (typeof window.simulations === 'undefined') {
+                console.error('ERROR: window.simulations not found. Bundle may not have loaded.');
+                alert('Error loading simulations. Please refresh the page.');
+                return false;
+            }
+            return true;
+        }
+
         // Wait for bundle to load
         window.addEventListener('load', function() {
-            console.log('Simulations module loaded');
+            if (ensureSimulationsReady()) {
+                simulationsReady = true;
+                console.log('✓ Simulations module loaded successfully');
+                console.log('Available functions:', Object.keys(window.simulations));
+            }
         });
+
+        // Give bundle time to initialize
+        setTimeout(() => {
+            if (typeof window.simulations !== 'undefined' && !simulationsReady) {
+                simulationsReady = true;
+                console.log('✓ Simulations initialized');
+            }
+        }, 1000);
 
         // Category filtering
         document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -699,6 +724,9 @@
         // Bell State Simulator
         async function generateBellState() {
             try {
+                if (!ensureSimulationsReady()) {
+                    throw new Error('Simulations not ready yet. Please wait...');
+                }
                 const stateType = document.getElementById('bellStateSelect').value;
                 const result = window.simulations.generateBellState(stateType);
 
@@ -719,6 +747,9 @@
         // Gate Visualizer
         async function applyGate(gateName) {
             try {
+                if (!ensureSimulationsReady()) {
+                    throw new Error('Simulations not ready yet. Please wait...');
+                }
                 const initialState = document.getElementById('initialStateSelect').value;
                 const result = window.simulations.applyGate(initialState, gateName);
 
@@ -738,6 +769,9 @@
         // Entanglement Analysis
         async function analyzeEntanglement() {
             try {
+                if (!ensureSimulationsReady()) {
+                    throw new Error('Simulations not ready yet. Please wait...');
+                }
                 const stateType = document.getElementById('twoQubitStateSelect').value;
                 const result = window.simulations.analyzeEntanglement(stateType);
 
@@ -755,6 +789,9 @@
         // Multi-Qubit States
         async function generateMultiQubitState() {
             try {
+                if (!ensureSimulationsReady()) {
+                    throw new Error('Simulations not ready yet. Please wait...');
+                }
                 const stateType = document.getElementById('multiQubitStateSelect').value;
                 const result = window.simulations.generateMultiQubitState(stateType);
 
@@ -774,6 +811,9 @@
         // Angular Momentum
         async function generateAngularMomentumState() {
             try {
+                if (!ensureSimulationsReady()) {
+                    throw new Error('Simulations not ready yet. Please wait...');
+                }
                 const j = parseFloat(document.getElementById('jSelect').value);
                 const m = parseFloat(document.getElementById('mSelect').value);
                 const result = window.simulations.generateAngularMomentumState(j, m);
@@ -791,6 +831,9 @@
         // Circuit Simulator
         async function runQuantumCircuit() {
             try {
+                if (!ensureSimulationsReady()) {
+                    throw new Error('Simulations not ready yet. Please wait...');
+                }
                 const result = window.simulations.runQuantumCircuit();
 
                 const desc = `
@@ -814,6 +857,9 @@
         // Fidelity Analyzer
         async function computeFidelity() {
             try {
+                if (!ensureSimulationsReady()) {
+                    throw new Error('Simulations not ready yet. Please wait...');
+                }
                 const stateA = document.getElementById('stateASelect').value;
                 const stateB = document.getElementById('stateBSelect').value;
                 const result = window.simulations.computeFidelity(stateA, stateB);
