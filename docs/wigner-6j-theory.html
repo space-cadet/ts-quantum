@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wigner 6j Symbols - Theory and Implementation</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\(', '\)']],
+                displayMath: [['$$', '$$'], ['\[', '\]']]
+            },
+            startup: {
+                ready: () => {
+                    console.log('MathJax is loaded');
+                    MathJax.startup.defaultReady();
+                }
+            }
+        };
+    </script>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #64748b;
+            --background: #ffffff;
+            --surface: #f8fafc;
+            --border: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+        }
+        
+        [data-theme="dark"] {
+            --primary-color: #3b82f6;
+            --secondary-color: #94a3b8;
+            --background: #0f172a;
+            --surface: #1e293b;
+            --border: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .back-link:hover {
+            transform: translateX(-2px);
+        }
+        
+        h1 {
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+        
+        h2 {
+            color: var(--text-primary);
+            margin-top: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.3rem;
+        }
+        
+        h3 {
+            color: var(--text-primary);
+        }
+        
+        code {
+            background: var(--surface);
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.875rem;
+        }
+        
+        pre {
+            background: var(--surface);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+        }
+        
+        blockquote {
+            border-left: 4px solid var(--primary-color);
+            padding-left: 1rem;
+            margin: 1rem 0;
+            color: var(--text-secondary);
+        }
+        
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1rem 0;
+        }
+        
+        th, td {
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            text-align: left;
+        }
+        
+        th {
+            background: var(--surface);
+            font-weight: 600;
+        }
+        
+        .last-updated {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: 3rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">&larr; Back to Documentation</a>
+    <h1>Wigner 6j Symbols - Theory and Implementation</h1>
+<p><em>Extracted from Varshalovich, Moskalev, and Khersonskii - &quot;Quantum Theory of Angular Momentum&quot;</em></p>
+<h2>1. Introduction &amp; Definition</h2>
+<h3>1.1 Physical Interpretation</h3>
+<p>The Wigner 6j symbols are related to the coefficients of transformations between different coupling schemes of three angular momenta. The angular momenta $j_1$, $j_2$, $j_3$ may be coupled to give a resultant angular momentum $j$ and its projection $m$ in three different ways:</p>
+<p>I) $j_1 + j_2 = j_{12}$,    $j_{12} + j_3 = j$
+II) $j_2 + j_3 = j_{23}$,   $j_1 + j_{23} = j$<br>III) $j_1 + j_3 = j_{13}$,  $j_{13} + j_2 = j$</p>
+<p>States belonging to each coupling scheme form a complete set of states. A transition from one coupling scheme to another is performed by some unitary transformation which relates the states with the same total angular momentum $j$ and projection $m$.</p>
+<h3>1.2 Mathematical Definition</h3>
+<p>One defines the Wigner 6j symbols $\left{\begin{array}{ccc} a &amp; b &amp; c \ d &amp; e &amp; f \end{array}\right}$ by the relation:</p>
+<p>$\langle j_1j_2(j_{12})j_3jm|j_1j_3(j_{13})j_2jm\rangle = \delta_{jj&#39;}\delta_{mm&#39;}(-1)^{j_1+j_2+j_3+j} \sqrt{(2j_{12} + 1)(2j_{13} + 1)} \left{\begin{array}{ccc} j_1 &amp; j_2 &amp; j_{12} \ j_3 &amp; j &amp; j_{13} \end{array}\right}$</p>
+<p>According to this definition, the 6j symbols may be given in terms of the Clebsch-Gordan coefficients. Here the sum is over $m_1,m_2,m_3,m_{12},m_{23}$ while $m$ and $m&#39;$ are fixed. This relation completely determines absolute values and phases of the 6j symbols. The 6j symbols turn out to be real just as the Clebsch-Gordan coefficients are.</p>
+<h3>1.3 Relationship to Racah Coefficients</h3>
+<p>Instead of the Wigner 6j symbols the Racah coefficients are often used, especially in spectroscopy theory. These coefficients differ from the 6j symbols only by a phase factor:</p>
+<p>$\left{\begin{array}{ccc} a &amp; b &amp; c \ d &amp; e &amp; f \end{array}\right} = (-1)^{a+b+d+e} W(abed;cf)$</p>
+<p>The Racah coefficients were introduced independently of the 6j symbols. The phase of the Racah coefficients coincides with the phase of the coefficients which describe the transformation between I and II coupling schemes.</p>
+<h3>1.4 R-Symbol Notation</h3>
+<p>The 6j symbols and the Racah coefficients may be written in the form of a 3×4 array $||R_{ia}||$ ($i = 1,2,3$; $\alpha = 1,2,3,4$) which is called the R-symbol:</p>
+<p>$\left{\begin{array}{ccc} a &amp; b &amp; c \ d &amp; e &amp; f \end{array}\right} = (-1)^{r} \prod_{i=1}^{3} \prod_{\alpha=1}^{4} \frac{(R_{i\alpha})!}{\prod_{i=1}^{3} \prod_{\alpha=1}^{4} (R_{i\alpha})!}$</p>
+<p>where the elements $R_{i\alpha}$ are:</p>
+<p>$R_{11} = -c + d + e$, $R_{12} = b + d - f$, $R_{13} = a + c - f$, $R_{14} = a + b - c$</p>
+<p>$R_{21} = -b + d + f$, $R_{22} = c + d - e$, $R_{23} = a - b + c$, $R_{24} = a - e + f$</p>
+<p>$R_{31} = -a + e + f$, $R_{32} = -a + b + c$, $R_{33} = c - d + e$, $R_{34} = b - d + f$</p>
+<p>All 12 elements $R_{i\alpha}$ are integer nonnegative numbers.</p>
+<h2>2. Mathematical Properties</h2>
+<h3>2.1 Triangular Conditions and Validity</h3>
+<p>The quantum-mechanical rules of vector addition impose some restrictions on possible values of momenta which are arguments of the 6j symbol $\left{\begin{array}{ccc} a &amp; b &amp; c \ d &amp; e &amp; f \end{array}\right}$:</p>
+<p>(a) All momenta are integer or half-integer nonnegative numbers (with one exception considered in Sec. 9.4).</p>
+<p>(b) Each triad ${j_1j_2j_{12}}$, ${j_{23}j_3j}$, ${j_1j_3j_{13}}$ and ${j_{23}j_1j}$ should satisfy the triangular condition.</p>
+<p>The 6j symbols $\left{\begin{array}{ccc} a &amp; b &amp; c \ d &amp; e &amp; f \end{array}\right}$ vanish if at least one of the triads $(abc)$, $(cde)$, $(aef)$ and $(bdf)$ does not obey the triangular conditions.</p>
+<h3>2.2 Reality and Orthogonality Properties</h3>
+<p>The 6j symbols turn out to be real just as the Clebsch-Gordan coefficients are. The unitarity of the recoupling transformations implies the orthogonality and normalization conditions of the 6j symbols.</p>
+<h3>2.3 Symmetry Relations</h3>
+<p>The symmetry properties of the 6j symbols may be formulated using the R symbols. The value of the R symbol is invariant under any permutation of its rows or columns. These symmetry relations involve $3! \times 4! = 144$ generally different Racah coefficients.</p>
+<p><strong>Classical Symmetries</strong>: The 6j symbol is invariant under any permutation of its columns or under interchange of the upper and lower arguments in each of any two columns:</p>
+<p>$\left{\begin{array}{ccc} a &amp; b &amp; c \ d &amp; e &amp; f \end{array}\right} = \left{\begin{array}{ccc} a &amp; c &amp; b \ d &amp; f &amp; e \end{array}\right} = \left{\begin{array}{ccc} b &amp; a &amp; c \ e &amp; d &amp; f \end{array}\right} = \cdots$</p>
+<p>These relations involve $3! \times 4 = 24$ different 6j symbols.</p>
+<p><strong>Regge Symmetries</strong>: The relations below are functional ones, i.e. in general they cannot be obtained by interchanging the 6j symbol arguments:</p>
+<p>$\left{\begin{array}{ccc} a &amp; b &amp; c \ d &amp; e &amp; f \end{array}\right} = \left{\begin{array}{ccc} a &amp; s_1-b &amp; s_1-c \ d &amp; s_1-e &amp; s_1-f \end{array}\right} = \left{\begin{array}{ccc} s_2-a &amp; b &amp; s_2-c \ s_2-d &amp; e &amp; s_2-f \end{array}\right}$</p>
+<p>where $s_1 = a + b + c$, $s_2 = a + d + e$, $s_3 = b + d + f$.</p>
+<p>Combining the Regge symmetries and the classical symmetries, one gets all 144 symmetry relations.</p>
+<h3>2.4 Selection Rules</h3>
+<h2>3. Computational Formulas</h2>
+<h3>3.1 Racah&#39;s Original Formula</h3>
+<p>$\left{\begin{array}{ccc} a &amp; b &amp; c \ d &amp; e &amp; f \end{array}\right} = \Delta(abc)\Delta(cde)\Delta(aef)\Delta(bdf) \sum_n \frac{(-1)^{n+s}}{[n - a - b - c]![n - c - d - e]![n - a - e - f]![n - b - d - f]![a + b + d + e - n]!} \times \frac{1}{[a + c - d + f - n]![b + c + e + f - n]!}$</p>
+<p>where the sums are over all integer nonnegative values of $n$ so that no factorial in denominators has a negative argument. The quantities $\Delta(abc)$ are defined by:</p>
+<p>$\Delta(abc) = \sqrt{\frac{(a+b-c)!(a-b+c)!(-a+b+c)!}{(a+b+c+1)!}}$</p>
+<p>This is the fundamental Racah formula for computing 6j symbols.</p>
+<h3>3.2 Alternative Expressions</h3>
+<p>By the replacement $n \to a + b + d + e - n$ one can rewrite the Racah formula in the form:</p>
+<p>$\left{\begin{array}{ccc} a &amp; b &amp; c \ d &amp; e &amp; f \end{array}\right} = (-1)^{a+b+d+e} \Delta(abc)\Delta(cde)\Delta(aef)\Delta(bdf) \sum_n \frac{(-1)^n (a + b + d + e + 1 - n)!}{n![a + b - c - n]![-c + d + e - n]![a + e - f - n]![b + d - f - n]!} \times \frac{1}{[-a + c - d + f + n]![-b + c - e + f + n]!}$</p>
+<p><strong>Bargmann Formula</strong>: </p>
+<p>$\left{\begin{array}{ccc} a &amp; b &amp; c \ d &amp; e &amp; f \end{array}\right} = \prod_{i=1}^{3} \prod_{\alpha=1}^{4} \frac{(R_{i\alpha})!}{\sum_{n} (-1)^n (n+1)! \prod_{i=1}^{3} \prod_{\alpha=1}^{4} \frac{1}{(x_i + y_\alpha - n)!}}$</p>
+<p>where $R_{i\alpha}$ are elements of the R symbol, $x_i, y_\alpha$ are summation indices, $n = \sum_{i=1}^{3} x_i + \sum_{\alpha=1}^{4} y_\alpha$.</p>
+<h3>3.3 Recursion Relations</h3>
+<p><strong>Relations in which arguments are changed by 1/2:</strong></p>
+<p>$[(a + b + c + 1)(-a + b + c)(c + d + e + 1)(c + d - e)]^{1/2} \left{\begin{array}{ccc} a &amp; b-\frac{1}{2} &amp; c-\frac{1}{2} \ d &amp; e &amp; f \end{array}\right}$</p>
+<p>$= -2c[(b + d + f + 1)(b + d - f)]^{1/2} \left{\begin{array}{ccc} a &amp; b &amp; c \ d &amp; e &amp; f \end{array}\right}$</p>
+<p>$+ [(a + b - c + 1)(a - b + c)(-c + d + e + 1)(c - d + e)]^{1/2} \left{\begin{array}{ccc} a &amp; b+\frac{1}{2} &amp; c-\frac{1}{2} \ d &amp; e &amp; f \end{array}\right}$</p>
+<p><strong>Relations in which arguments are changed by 1:</strong></p>
+<p>$(2c + 1){2[a(a + 1)d(d + 1) + b(b + 1)e(e + 1) - c(c + 1)f(f + 1)] - [a(a + 1) + b(b + 1) - c(c + 1)][d(d + 1) + e(e + 1) - c(c + 1)]} \left{\begin{array}{ccc} a &amp; b &amp; c \ d &amp; e &amp; f \end{array}\right}$</p>
+<p>$= -c[(a + b + c + 2)(-a + b + c + 1)(a - b + c + 1)(a + b - c) \times (d + e + c + 2)(-d + e + c + 1)(d - e + c + 1)(d + e - c)]^{1/2} \left{\begin{array}{ccc} a &amp; b &amp; c+1 \ d &amp; e &amp; f \end{array}\right}$</p>
+<p>$- (c + 1)[(a + b + c + 1)(-a + b + c)(a - b + c)(a + b - c + 1) \times (d + e + c + 1)(-d + e + c)(d - e + c)(d + e - c + 1)]^{1/2} \left{\begin{array}{ccc} a &amp; b &amp; c-1 \ d &amp; e &amp; f \end{array}\right}$</p>
+<h3>3.4 Special Cases</h3>
+<p><strong>One of Arguments is Equal to Zero:</strong></p>
+<p>$\left{\begin{array}{ccc} 0 &amp; b &amp; c \ d &amp; e &amp; f \end{array}\right} = (-1)^{b+e+d} \frac{\delta_{bc}\delta_{ef}}{\sqrt{(2b + 1)(2e + 1)}}$</p>
+<p>$\left{\begin{array}{ccc} a &amp; 0 &amp; c \ d &amp; e &amp; f \end{array}\right} = (-1)^{a+d+e} \frac{\delta_{ac}\delta_{df}}{\sqrt{(2a + 1)(2d + 1)}}$</p>
+<p>$\left{\begin{array}{ccc} a &amp; b &amp; 0 \ d &amp; e &amp; f \end{array}\right} = (-1)^{a+b+e} \frac{\delta_{ab}\delta_{de}}{\sqrt{(2a + 1)(2d + 1)}}$</p>
+<p><strong>One of Arguments is Equal to the Sum of Two Others:</strong></p>
+<p>If one of the 6j symbol arguments is equal to sum of two others from the same triad $(abc)$, $(cde)$, $(aef)$, $(bdf)$, one may use the classical symmetries to express it in the form:</p>
+<p>$\left{\begin{array}{ccc} a &amp; b &amp; a+b \ d &amp; e &amp; a+b \end{array}\right} = (-1)^{a+b+d+e} \frac{(2a)!(2b)!(a + b + d + e + 1)!(a + b - d + e)!(a + b + d - e)!(-a + e + f)!(-b + d + f)!}{(2a + 2b + 1)!(-a - b + d + e)!(a + e - f)!(a - e + f)!(a + e + f + 1)!(b + d - f)!(b - d + f)!(b + d + f + 1)!}$</p>
+<h2>4. Geometric Interpretation</h2>
+<h3>4.1 Tetrahedron Association</h3>
+<p>The asymptotic behaviour of the 6j symbols $\left{\begin{array}{ccc} a &amp; b &amp; c \ d &amp; e &amp; f \end{array}\right}$ for large angular momenta is closely associated with geometric properties of the tetrahedron whose edges are $a + \frac{1}{2}$, $b + \frac{1}{2}$, etc.</p>
+<p>The tetrahedron edges are defined as:</p>
+<ul>
+<li>$j_{12} = a + \frac{1}{2}$, $j_{13} = b + \frac{1}{2}$, $j_{14} = c + \frac{1}{2}$</li>
+<li>$j_{23} = d + \frac{1}{2}$, $j_{24} = e + \frac{1}{2}$, $j_{34} = f + \frac{1}{2}$</li>
+<li>$j_{ii} = 0$</li>
+</ul>
+<h3>4.2 Ponzano-Regge Semiclassical Approximation</h3>
+<p>The Ponzano-Regge Formula (semiclassical approximation to the 6j symbols): If $a, b, c, d, e, f \gg 1$, then</p>
+<p>$\left{\begin{array}{ccc} a &amp; b &amp; c \ d &amp; e &amp; f \end{array}\right} \approx \frac{1}{\sqrt{12\pi V}} \cos\left(\sum_{i&lt;k} j_{ik} \Theta_{ik} + \frac{\pi}{4}\right)$</p>
+<p>where $V$ is the volume of the tetrahedron, $\Theta_{ik}$ is the angle between two external normals to the planes adjacent to the edge $j_{ik}$.</p>
+<p>This formula is valid only if $V^2 &gt; 0$ (classically allowed domain). If $V^2 &lt; 0$ (classically forbidden domain, when an associated tetrahedron does not exist), the asymptotic expression becomes:</p>
+<p>$\left{\begin{array}{ccc} a &amp; b &amp; c \ d &amp; e &amp; f \end{array}\right} \approx \frac{2}{\sqrt{12\pi|V|}} \cos\Phi \exp\left(-\sum_{i,k=1}^{4} j_{ik}|\text{Im}\Theta_{ik}|\right)$</p>
+<p>where $V^2 &lt; 0$, and $\Phi = \sum_{i&lt;k} (\pi - \frac{\pi}{2})\text{Re}\Theta_{ik}$.</p>
+<p>In this case the 6j symbols are exponentially small even if the triangular condition is satisfied.</p>
+<h3>4.3 Volume Formulas and Classical Limits</h3>
+<p>The tetrahedron volume is equal to:</p>
+<p>$288 V^2 = \begin{vmatrix}
+0 &amp; j_{12}^2 &amp; j_{13}^2 &amp; j_{14}^2 &amp; 1 \
+j_{12}^2 &amp; 0 &amp; j_{23}^2 &amp; j_{24}^2 &amp; 1 \
+j_{13}^2 &amp; j_{23}^2 &amp; 0 &amp; j_{34}^2 &amp; 1 \
+j_{14}^2 &amp; j_{24}^2 &amp; j_{34}^2 &amp; 0 &amp; 1 \
+1 &amp; 1 &amp; 1 &amp; 1 &amp; 0
+\end{vmatrix}$</p>
+<p>The angles $\Theta_{ik}$ are given by:
+$5 S_i S_k \sin \Theta_{ik} = -F_{ik}$</p>
+<p>where $S_i$ is the area of the triangle opposite to the vertex $p_i$. One can evaluate $S_i$ using the standard formulas. For example:</p>
+<p>$16 S_1^2 = (j_{12} + j_{13} + j_{14})(j_{12} + j_{13} - j_{14})(j_{12} - j_{13} + j_{14})(-j_{12} + j_{13} + j_{14})$</p>
+<p><strong>Wigner Formula</strong>: In particular, for large angular momenta, one has:</p>
+<p>$\left{\begin{array}{ccc} a &amp; b &amp; c \ d &amp; e &amp; f \end{array}\right} \approx \frac{1}{24\pi V}$</p>
+<p>This formula is valid only on the average because the 6j symbols oscillate rapidly with momentum variations in the region of large angular momenta.</p>
+<h2>5. Implementation Considerations</h2>
+<h3>5.1 Numerical Stability</h3>
+<p>The expressions for the 6j symbols given above are valid if all triangular conditions are satisfied. When implementing these formulas, care must be taken with:</p>
+<ol>
+<li><p><strong>Factorial calculations</strong>: For large arguments, factorials can overflow. Use logarithmic representation or Stirling&#39;s approximation when necessary.</p>
+</li>
+<li><p><strong>Alternating sums</strong>: The Racah formula involves alternating sums which can lead to numerical instability due to cancellation of large terms.</p>
+</li>
+<li><p><strong>Square root calculations</strong>: Ensure arguments of square roots are non-negative, which should be guaranteed by the triangular conditions.</p>
+</li>
+</ol>
+<h3>5.2 Efficient Computation Strategies</h3>
+<ol>
+<li><p><strong>Use recursion relations</strong>: The recursion relations can be more numerically stable than direct calculation for certain parameter ranges.</p>
+</li>
+<li><p><strong>Special cases first</strong>: Always check for special cases (zero arguments, equal arguments, etc.) before applying general formulas.</p>
+</li>
+<li><p><strong>Symmetry relations</strong>: Use the 144 symmetry relations to reduce computational effort by transforming arguments to a canonical form.</p>
+</li>
+<li><p><strong>Caching</strong>: Since 6j symbols appear frequently in calculations, implement caching mechanisms.</p>
+</li>
+</ol>
+<h3>5.3 Symmetry Exploitation</h3>
+<p>The 144 symmetry relations of the 6j symbols can be used to:</p>
+<ol>
+<li><strong>Canonical form</strong>: Transform any 6j symbol to a standard form with specific ordering of arguments</li>
+<li><strong>Reduced computation</strong>: Only compute a subset of all possible 6j symbols and use symmetries to obtain others</li>
+<li><strong>Validation</strong>: Use symmetry relations to check computational results</li>
+<li><strong>Memory optimization</strong>: Store only unique values and generate others via symmetry</li>
+</ol>
+<h3>5.4 Connection to 3j Symbols</h3>
+<p>The 6j symbols may be written as sums of products of the Clebsch-Gordan coefficients or 3jm symbols. The relations between the 6j symbols and the 3jm symbols are:</p>
+<p>$\left{\begin{array}{ccc} a &amp; b &amp; c \ d &amp; e &amp; f \end{array}\right} = \sum_{\alpha,\beta,\gamma,\delta,\epsilon,\phi} (-1)^{s-\alpha-\beta-\gamma} \begin{pmatrix} a &amp; b &amp; c \ \alpha &amp; \beta &amp; \gamma \end{pmatrix} \begin{pmatrix} c &amp; d &amp; e \ \gamma &amp; \delta &amp; \epsilon \end{pmatrix} \begin{pmatrix} a &amp; f &amp; e \ \alpha &amp; \phi &amp; -\epsilon \end{pmatrix} \begin{pmatrix} b &amp; d &amp; f \ \beta &amp; -\delta &amp; -\phi \end{pmatrix}$</p>
+<p>In this equation the sum is over all possible values of $\alpha,\beta,\gamma,\delta,\epsilon,\phi$ with only three summation indices being independent.</p>
+<h2>6. Applications in Quantum Theory</h2>
+<h3>6.1 Spin Network Vertices</h3>
+<p>The 6j symbols appear naturally in the evaluation of spin network vertices. In particular, they are essential for:</p>
+<ol>
+<li><strong>3-valent vertices</strong>: The fundamental building blocks of spin networks</li>
+<li><strong>Vertex amplitude calculations</strong>: Computing the quantum amplitude associated with a vertex</li>
+<li><strong>Recoupling transformations</strong>: Converting between different coupling schemes in complex spin networks</li>
+</ol>
+<h3>6.2 Angular Momentum Coupling</h3>
+<p>The primary application of 6j symbols is in angular momentum coupling theory:</p>
+<ol>
+<li><strong>Recoupling coefficients</strong>: Transform between different ways of coupling three angular momenta</li>
+<li><strong>Matrix elements</strong>: Calculate matrix elements of tensor operators between coupled angular momentum states</li>
+<li><strong>Selection rules</strong>: Determine which matrix elements are non-zero based on angular momentum conservation</li>
+</ol>
+<h3>6.3 Quantum Geometry Applications</h3>
+<p>In quantum geometry and loop quantum gravity:</p>
+<ol>
+<li><strong>Tetrahedron quantum states</strong>: The geometric interpretation connects 6j symbols to quantum tetrahedra</li>
+<li><strong>Volume operators</strong>: The Ponzano-Regge formula relates 6j symbols to classical geometric volumes</li>
+<li><strong>Quantum polyhedra</strong>: 6j symbols appear in the quantum description of polyhedral shapes</li>
+</ol>
+<h2>7. Key Formulas Reference</h2>
+<h3>7.1 Essential Implementation Formulas</h3>
+<p><strong>Racah Formula (most fundamental):</strong>
+$\left{\begin{array}{ccc} a &amp; b &amp; c \ d &amp; e &amp; f \end{array}\right} = \Delta(abc)\Delta(cde)\Delta(aef)\Delta(bdf) \sum_n \frac{(-1)^{n+s}}{[n - a - b - c]![n - c - d - e]![n - a - e - f]![n - b - d - f]![a + b + d + e - n]!} \times \frac{1}{[a + c - d + f - n]![b + c + e + f - n]!}$</p>
+<p><strong>Delta function:</strong>
+$\Delta(abc) = \sqrt{\frac{(a+b-c)!(a-b+c)!(-a+b+c)!}{(a+b+c+1)!}}$</p>
+<p><strong>Triangular condition check:</strong>
+The 6j symbol vanishes unless all four triads $(abc)$, $(cde)$, $(aef)$, $(bdf)$ satisfy:
+$|j_1 - j_2| \leq j_3 \leq j_1 + j_2$</p>
+<p><strong>Phase relation to Racah coefficients:</strong>
+$\left{\begin{array}{ccc} a &amp; b &amp; c \ d &amp; e &amp; f \end{array}\right} = (-1)^{a+b+d+e} W(abed;cf)$</p>
+<h3>7.2 Special Values</h3>
+<p><strong>Zero argument cases:</strong>
+$\left{\begin{array}{ccc} 0 &amp; b &amp; c \ d &amp; e &amp; f \end{array}\right} = (-1)^{b+e+d} \frac{\delta_{bc}\delta_{ef}}{\sqrt{(2b + 1)(2e + 1)}}$</p>
+<p><strong>Sum cases:</strong>
+$\left{\begin{array}{ccc} a &amp; b &amp; a+b \ d &amp; e &amp; a+b \end{array}\right} = (-1)^{a+b+d+e} \frac{(2a)!(2b)!(a + b + d + e + 1)!(a + b - d + e)!(a + b + d - e)!}{(2a + 2b + 1)!(-a - b + d + e)!(a + e - f)!(a - e + f)!(a + e + f + 1)!} \times \frac{(-a + e + f)!(-b + d + f)!}{(b + d - f)!(b - d + f)!(b + d + f + 1)!}$</p>
+<p><strong>Equal pairs:</strong>
+When $a = b$ and $d = e$:
+$\left{\begin{array}{ccc} a &amp; a &amp; c \ d &amp; d &amp; f \end{array}\right} = (-1)^{2a+c+f} \frac{\sqrt{(2a - c)!(2d - c)!}}{[(2a + c + 1)!(2d + c + 1)!]^{1/2}} V_c(a,f,d)$</p>
+<p>where $V_c(a,f,d) = V_c(d,f,a)$ and satisfies specific recursion relations.</p>
+<h3>7.3 Asymptotic Expressions</h3>
+<p><strong>Ponzano-Regge Formula (large arguments):</strong>
+$\left{\begin{array}{ccc} a &amp; b &amp; c \ d &amp; e &amp; f \end{array}\right} \approx \frac{1}{\sqrt{12\pi V}} \cos\left(\sum_{i&lt;k} j_{ik} \Theta_{ik} + \frac{\pi}{4}\right)$</p>
+<p><strong>Edmonds&#39; Formula (specific large argument case):</strong>
+If $f, m, n$ are arbitrary and $a, b, c \gg f, m, n$:
+$\left{\begin{array}{ccc} a &amp; b &amp; c \ f &amp; m &amp; n \end{array}\right} \approx \frac{(-1)^{a+b+c+f+m+n}}{\sqrt{(2a + 1)(2b + 1)}} d^f_{mn}(\theta)$</p>
+<p>where $d^f_{mn}(\theta)$ is the rotation matrix, and $\theta$ is the angle between tetrahedron edges.</p>
+<p><strong>Racah Formula (one large argument):</strong>
+If $a, b, c \gg f$ and $f$ is an arbitrary integer:
+$\left{\begin{array}{ccc} a &amp; b &amp; c \ b &amp; a &amp; f \end{array}\right} \approx \frac{(-1)^{a+b+c+f}}{\sqrt{(2a + 1)(2b + 1)}} P_f(\cos\theta)$</p>
+<p>where $P_f$ is the Legendre polynomial and $\cos\theta = \frac{a(a + 1) + b(b + 1) - c(c + 1)}{2\sqrt{a(a + 1)b(b + 1)}}$.</p>
+<p><strong>Wigner Formula (all large arguments):</strong>
+$\left{\begin{array}{ccc} a &amp; b &amp; c \ d &amp; e &amp; f \end{array}\right} \approx \frac{1}{24\pi V}$</p>
+<p>This formula is valid only on the average due to rapid oscillations.</p>
+<h2>References</h2>
+<ul>
+<li>Varshalovich, D.A., Moskalev, A.N., and Khersonskii, V.K. &quot;Quantum Theory of Angular Momentum&quot;, Chapter 9</li>
+</ul>
+
+    <div class="last-updated">Last Updated: 2025-07-06</div>
+</body>
+</html>

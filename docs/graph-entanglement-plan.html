@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Graph Entanglement Implementation Plan</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\(', '\)']],
+                displayMath: [['$$', '$$'], ['\[', '\]']]
+            },
+            startup: {
+                ready: () => {
+                    console.log('MathJax is loaded');
+                    MathJax.startup.defaultReady();
+                }
+            }
+        };
+    </script>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #64748b;
+            --background: #ffffff;
+            --surface: #f8fafc;
+            --border: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+        }
+        
+        [data-theme="dark"] {
+            --primary-color: #3b82f6;
+            --secondary-color: #94a3b8;
+            --background: #0f172a;
+            --surface: #1e293b;
+            --border: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .back-link:hover {
+            transform: translateX(-2px);
+        }
+        
+        h1 {
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+        
+        h2 {
+            color: var(--text-primary);
+            margin-top: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.3rem;
+        }
+        
+        h3 {
+            color: var(--text-primary);
+        }
+        
+        code {
+            background: var(--surface);
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.875rem;
+        }
+        
+        pre {
+            background: var(--surface);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+        }
+        
+        blockquote {
+            border-left: 4px solid var(--primary-color);
+            padding-left: 1rem;
+            margin: 1rem 0;
+            color: var(--text-secondary);
+        }
+        
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1rem 0;
+        }
+        
+        th, td {
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            text-align: left;
+        }
+        
+        th {
+            background: var(--surface);
+            font-weight: 600;
+        }
+        
+        .last-updated {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: 3rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">&larr; Back to Documentation</a>
+    <h1>Quantum Graph Entanglement Implementation Plan</h1>
+<p><em>Created: 2025-05-30</em>
+<em>Status: Planning Phase</em></p>
+<h2>Overview</h2>
+<p>Extend the QuantumGraph class to support genuine quantum entanglement by implementing composite state storage that spans multiple vertices. Current limitation: individual vertex storage cannot represent entangled states.</p>
+<h2>Current Bell Chain Example</h2>
+<p>The existing Bell chain example demonstrates the limitation:</p>
+<pre><code>Bell State Chain Examples
+
+1. 3-vertex chain (aperiodic):
+   q0 ---- bell_0_1 ---- q1 ---- bell_1_2 ---- q2
+   |0⟩                   |0⟩                   |0⟩
+
+2. 4-vertex ring (periodic):
+        q0 ---- bell_0_1 ---- q1
+        |                      |
+   bell_3_0                bell_1_2
+        |                      |
+        q3 ---- bell_2_3 ---- q2
+       |0⟩                   |0⟩
+
+3. 6-vertex chain (aperiodic):
+   q0 ---- bell_0_1 ---- q1 ---- bell_1_2 ---- q2 ---- bell_2_3 ---- q3 ---- bell_3_4 ---- q4 ---- bell_4_5 ---- q5
+   |1⟩                   |1⟩                   |1⟩                   |1⟩                   |1⟩                   |1⟩
+
+Legend:
+- Vertices (qN): Quantum states (qubits)
+- Edges (bell_i_j): Bell state entanglement operators
+- |0⟩, |1⟩: Initial computational basis states
+</code></pre>
+<p><strong>Issue</strong>: Each vertex stores independent states, edges have only metadata labels.
+<strong>Goal</strong>: Transform into genuine entangled Bell states |00⟩ + |11⟩ spanning vertex pairs.</p>
+<h2>Current Architecture Issues</h2>
+<p><strong>Problem</strong>: One vertex = one quantum object
+<strong>Need</strong>: One quantum object across multiple vertices for entanglement</p>
+<pre><code class="language-typescript">// Current (Limited)
+vertex_q0: StateVector(|0⟩)  // 2D, independent
+vertex_q1: StateVector(|0⟩)  // 2D, independent
+
+// Required (Entangled) 
+composite_system: StateVector(|00⟩ + |11⟩)  // 4D, spanning q0,q1
+</code></pre>
+<h2>Implementation Plan</h2>
+<h3>Phase 1: Core Composite State Storage ✅ COMPLETE</h3>
+<p><strong>Status</strong>: Implemented and validated in <code>entangledGraphPOC.ts</code></p>
+<p><strong>File</strong>: <code>packages/quantum/examples/poc/entangledGraphPOC.ts</code> (~100 lines)</p>
+<pre><code class="language-typescript">class CompositeQuantumManager {
+  private composites: Map&lt;string, QuantumObject&gt;;
+  private elementToComposite: Map&lt;string, string&gt;;
+  
+  // Core operations implemented
+  setComposite(elementIds: string[], obj: QuantumObject): void;
+  getComposite(elementIds: string[]): QuantumObject | undefined;
+  getCompositeForElement(elementId: string): QuantumObject | undefined;
+}
+</code></pre>
+<p><strong>Validation Results</strong>:</p>
+<ul>
+<li>✅ Multi-vertex Bell states: |00⟩ + |11⟩ (dim 4, norm 1.0)</li>
+<li>✅ Multi-edge plaquette operators: |0000⟩ + |1111⟩ (dim 16, norm 1.0)</li>
+<li>✅ Composite priority over individual assignments</li>
+<li>✅ Backward compatibility maintained</li>
+</ul>
+<p><strong>File</strong>: <code>packages/quantum/src/qgraph/types.ts</code> (~80 lines)</p>
+<pre><code class="language-typescript">interface ICompositeSystem {
+  id: string;
+  vertexIds: Set&lt;string&gt;;
+  state: StateVector;
+  dimension: number;
+}
+
+interface EntanglementOperation {
+  sourceVertices: string[];
+  targetVertices: string[];
+  operator: IOperator;
+  resultingComposite: string;
+}
+</code></pre>
+<h3>Phase 2: QuantumGraph Integration ✅ COMPLETE</h3>
+<p><strong>Status</strong>: Implemented and validated in <code>entangledGraphPOC.ts</code></p>
+<p><strong>File</strong>: <code>packages/quantum/examples/poc/entangledGraphPOC.ts</code> (extended implementation)</p>
+<pre><code class="language-typescript">class CompositeQuantumGraph {
+  private compositeManager: CompositeQuantumManager;
+  
+  // Composite methods implemented
+  setCompositeQuantumObject(elementIds: string[], obj: QuantumObject): void;
+  getCompositeQuantumObject(elementIds: string[]): QuantumObject | undefined;
+  
+  // Enhanced backward compatible methods
+  getVertexQuantumObject(nodeId: string): QuantumObject | undefined; // composite priority
+  setVertexQuantumObject(nodeId: string, obj: QuantumObject): void; // prevents overwrites
+}
+</code></pre>
+<p><strong>Integration Status</strong>:</p>
+<ul>
+<li>✅ Composite quantum object management integrated</li>
+<li>✅ Multi-element quantum states working</li>
+<li>✅ Backward compatibility with single-element interface</li>
+<li>✅ Composite priority prevents overlap conflicts</li>
+</ul>
+<p><strong>Next Phase Ready</strong>: Entanglement operations (CNOT, Bell state creation, measurement)</p>
+<h3>Phase 3: Graph-State Entanglement Operations ✅ COMPLETE - 3-4 days)</h3>
+<p><strong>Current Status</strong>: Phase 3C Complete - QuantumGraph class wired to general operations module with test coverage.</p>
+<h4>Phase 3A: General Operation Infrastructure ✅ COMPLETE</h4>
+<p><strong>Implementation Summary</strong>:
+The general operation infrastructure provides a foundation for applying arbitrary quantum operations to arbitrary subsets of graph elements. This addresses the core requirement to create entanglement ON existing graph states rather than attaching pre-entangled objects.</p>
+<p><strong>Files Implemented</strong>:</p>
+<ul>
+<li><code>packages/quantum/src/qgraph/QuantumGraph.ts</code> (+80 lines) - Enhanced with composite manager and operation methods</li>
+<li><code>packages/quantum/src/qgraph/CompositeQuantumManager.ts</code> (30 lines) - Separate class for composite state management  </li>
+<li><code>packages/quantum/src/qgraph/operations/general.ts</code> (150 lines) - General operation functions</li>
+<li><code>packages/quantum/src/qgraph/operations/index.ts</code> (15 lines) - Operations module exports</li>
+<li><code>packages/quantum/src/qgraph/types.ts</code> (updated) - Proper interface separation, removed class definitions</li>
+</ul>
+<p><strong>Key Features Implemented</strong>:</p>
+<ul>
+<li><strong>Three Operation Methods</strong>: <ul>
+<li><code>applyVertexOperation(vertexIds[], operator)</code> - Apply to vertex subsets</li>
+<li><code>applyEdgeOperation(edgeIds[], operator)</code> - Apply to edge subsets  </li>
+<li><code>applyOperation(elementIds[], operator)</code> - Apply to mixed vertex/edge subsets</li>
+</ul>
+</li>
+<li><strong>Composite State Integration</strong>: Get/set methods check composite states first, fall back to individual</li>
+<li><strong>General Operations Module</strong>: Eight functions for arbitrary operations on graph subsets</li>
+<li><strong>Measurement Support</strong>: <code>measureSubsystem(vertexIds[], projector?)</code> for quantum measurements</li>
+<li><strong>Proper Type Organization</strong>: Interfaces in types.ts, class implementations in separate files</li>
+<li><strong>Utility Functions</strong>: Validation, dimension calculation, state extraction/insertion</li>
+</ul>
+<p><strong>Current Capabilities</strong>:</p>
+<ul>
+<li>Apply arbitrary quantum operators to arbitrary vertex/edge subsets</li>
+<li>Automatic composite state creation for multi-element operations  </li>
+<li>State extraction and insertion with composite priority</li>
+<li>Basic measurement operations with outcome calculation</li>
+<li>Validation and dimension calculation for subsystems</li>
+<li>Mixed vertex/edge operations with element type detection</li>
+</ul>
+<p><strong>Architecture Benefits</strong>:</p>
+<ul>
+<li><strong>General vs Specific</strong>: Framework supports arbitrary operations instead of predefined gate sequences</li>
+<li><strong>Type Safety</strong>: Proper separation of interfaces and implementations</li>
+<li><strong>Extensibility</strong>: Operations module can be extended with domain-specific functions</li>
+<li><strong>Composability</strong>: Basic operations can be combined to create complex quantum circuits</li>
+</ul>
+<h4>Phase 3B: Enhanced Operation Implementation ✅ COMPLETE</h4>
+<p><strong>Implementation Summary</strong>:
+Enhanced the general operations module to use existing quantum module functionality instead of placeholder implementations. All multi-element operations now work using proven quantum library components.</p>
+<p><strong>Key Enhancements Made</strong>:</p>
+<ul>
+<li><strong><code>applyQuantumOperation()</code></strong>: Now handles multi-element operations using tensor products instead of throwing errors</li>
+<li><strong><code>tensorProductStates()</code></strong>: Uses existing <code>StateVector.tensorProduct()</code> method for sequential tensor products  </li>
+<li><strong><code>splitCompositeState()</code></strong>: Uses existing <code>DensityMatrixOperator.fromPureState()</code> and <code>partialTrace()</code> methods</li>
+</ul>
+<p><strong>Integration with Existing Quantum Module</strong>:</p>
+<ul>
+<li><strong>StateVector tensor products</strong>: Leverages <code>StateVector.tensorProduct()</code> for combining individual states</li>
+<li><strong>Density matrix operations</strong>: Uses <code>DensityMatrixOperator.fromPureState()</code> for pure state density matrices</li>
+<li><strong>Partial trace operations</strong>: Uses existing <code>partialTrace()</code> implementation for subsystem extraction</li>
+<li><strong>No code duplication</strong>: All functionality reuses existing, tested quantum library components</li>
+</ul>
+<h4>Phase 3C: QuantumGraph Integration ✅ COMPLETE</h4>
+<p><strong>Implementation Summary</strong>:
+Wired up the QuantumGraph class to use the general operations module instead of placeholder implementations. Added comprehensive test coverage and example code.</p>
+<p><strong>Key Integration Made</strong>:</p>
+<ul>
+<li><strong>QuantumGraph.applyVertexOperation()</strong>: Now delegates to <code>applyQuantumOperation()</code></li>
+<li><strong>QuantumGraph.applyEdgeOperation()</strong>: Now delegates to <code>applyQuantumOperation()</code>  </li>
+<li><strong>QuantumGraph.applyOperation()</strong>: Now delegates to <code>applyQuantumOperation()</code></li>
+<li><strong>QuantumGraph.measureSubsystem()</strong>: Now delegates to <code>partialMeasurement()</code></li>
+</ul>
+<p><strong>Test Coverage Added</strong>:</p>
+<ul>
+<li><code>packages/quantum/__tests__/qgraph/general-operations.test.ts</code> (148 lines) - Comprehensive test suite</li>
+<li><code>packages/quantum/examples/qgraph/basicOperations.ts</code> (178 lines) - Working examples</li>
+</ul>
+<p><strong>Current Working Functionality</strong>:</p>
+<ul>
+<li><strong>Multi-element gate application</strong>: Apply CNOT, Hadamard, or any operator to multiple graph elements</li>
+<li><strong>Automatic composite creation</strong>: Multi-element operations automatically create composite states</li>
+<li><strong>State splitting</strong>: Composite states can be split back into individual subsystems via partial trace</li>
+<li><strong>Tensor product composition</strong>: Individual vertex states can be combined into entangled composite states</li>
+<li><strong>Integration consistency</strong>: All operations use the same quantum infrastructure as the rest of the library</li>
+<li><strong>Full test coverage</strong>: Verified functionality through comprehensive test suite</li>
+<li><strong>Working examples</strong>: Demonstrated Bell state creation, mixed operations, measurements</li>
+</ul>
+<h4>Composite System Step-by-Step Operation</h4>
+<p>The current POC composite system works as follows:</p>
+<ol>
+<li><p><strong>Composite Manager Structure</strong></p>
+<ul>
+<li><code>QCompManager</code> maintains two maps: <code>composites</code> (composite ID → quantum object) and <code>elementToComposite</code> (element ID → composite ID)</li>
+<li>Composite ID created by sorting element IDs and joining with underscore for consistent lookup</li>
+</ul>
+</li>
+<li><p><strong>Setting Composite Relationships</strong></p>
+<ul>
+<li><code>setComposite(elementIds[], obj)</code> stores quantum object under composite ID</li>
+<li>Each individual element maps to the composite ID in reverse lookup</li>
+<li>Example: Bell state spanning vertices &quot;0,0&quot; and &quot;0,1&quot; creates composite ID &quot;0,0_0,1&quot;</li>
+</ul>
+</li>
+<li><p><strong>Retrieval with Composite Priority</strong></p>
+<ul>
+<li><code>getCompositeForElement(elementId)</code> returns composite object if element is part of one</li>
+<li><code>getNodeQObj(nodeId)</code> always returns composite state when element belongs to composite</li>
+<li>Individual states only allowed if element not already in composite</li>
+</ul>
+</li>
+<li><p><strong>Composite Object Creation</strong></p>
+<ul>
+<li>Current: Pre-created Bell states and plaquette operators attached to multiple elements</li>
+<li><strong>Issue</strong>: States created externally, then attached to graph - not generated from graph operations</li>
+</ul>
+</li>
+</ol>
+<h4>Required Changes for Graph-State Entanglement</h4>
+<p><strong>Problem</strong>: Current system attaches pre-entangled objects to graph elements instead of creating entanglement from existing graph states.</p>
+<p><strong>Solution</strong>: Transform to act ON graph states themselves:</p>
+<ol>
+<li><p><strong>Initialize Graph with Individual States</strong></p>
+<ul>
+<li>All vertices start with individual |0⟩ states</li>
+<li>All edges start with individual |0⟩ states  </li>
+<li>No composite objects initially - pure product state</li>
+</ul>
+</li>
+<li><p><strong>Graph-Level Gate Operations</strong></p>
+<ul>
+<li><code>applyVertexGate(vertexId, gate)</code> - acts on single vertex state</li>
+<li><code>applyEdgeGate(edgeId, gate)</code> - acts on single edge state</li>
+<li><code>applyTwoVertexGate(vertex1, vertex2, gate)</code> - creates entanglement between vertices</li>
+<li><code>applyMultiEdgeGate(edgeIds[], gate)</code> - creates entanglement between edges</li>
+</ul>
+</li>
+<li><p><strong>Entanglement Creation Process</strong></p>
+<ul>
+<li>Apply Hadamard to vertex A: |0⟩ → (|0⟩ + |1⟩)/√2</li>
+<li>Apply CNOT between vertex A and B: creates Bell state across both</li>
+<li>System automatically converts individual states to composite when entanglement occurs</li>
+</ul>
+</li>
+<li><p><strong>State Management During Operations</strong></p>
+<ul>
+<li>Detect when operations create entanglement</li>
+<li>Automatically merge individual states into composites</li>
+<li>Update composite manager mappings</li>
+<li>Remove individual states that become part of composites</li>
+</ul>
+</li>
+<li><p><strong>Operation Interface</strong></p>
+<ul>
+<li><code>graph.entangleVertices([v1, v2], bellCircuit)</code></li>
+<li><code>graph.createPlaquette([e1, e2, e3, e4], stabilizerOp)</code></li>
+<li>Operations work on existing graph-attached states, not external objects</li>
+</ul>
+</li>
+</ol>
+<p><strong>Current General Implementation</strong>:
+The implemented general operations framework provides flexible quantum operations without requiring specific pre-defined functions:</p>
+<pre><code class="language-typescript">// Create Bell state between vertices using general operations
+graph.applyOperation([vertex1], hadamardOperator);  // Apply H to first vertex
+graph.applyOperation([vertex1, vertex2], cnotOperator);  // Apply CNOT to both
+
+// Create multi-vertex entangled states using general operations
+graph.applyOperation([vertex1, vertex2, vertex3], ghzOperator);  // Any multi-qubit operator
+
+// Apply arbitrary operators to arbitrary element subsets
+graph.applyVertexOperation(vertexIds, operator);  // Vertex-specific operations
+graph.applyEdgeOperation(edgeIds, operator);     // Edge-specific operations
+graph.applyOperation(elementIds, operator);      // Mixed vertex/edge operations
+
+// Measurement operations using general framework
+const result = graph.measureSubsystem(vertexIds, projector);
+</code></pre>
+<p><strong>Design Philosophy</strong>: Instead of implementing specific entanglement functions, the general operations framework allows users to apply any quantum operator to any subset of graph elements, providing maximum flexibility while maintaining the same functionality.</p>
+<h3>Phase 4: Quantum Circuit Operations (2-3 days) <strong>NEXT</strong></h3>
+<p><strong>Proposed Enhancement</strong>: Higher-level convenience functions built on the general operations framework:</p>
+<pre><code class="language-typescript">// Convenience wrappers using the general operations
+function applyCNOT(graph: QuantumGraph, controlVertex: string, targetVertex: string): void {
+  graph.applyOperation([controlVertex, targetVertex], cnotOperator);
+}
+
+function applyHadamard(graph: QuantumGraph, vertex: string): void {
+  graph.applyVertexOperation([vertex], hadamardOperator);
+}
+
+function applyToffoli(graph: QuantumGraph, control1: string, control2: string, target: string): void {
+  graph.applyOperation([control1, control2, target], toffoliOperator);
+}
+
+// Circuit sequence execution using general framework
+interface CircuitOperation {
+  elementIds: string[];
+  operator: IOperator;
+}
+
+function executeCircuit(graph: QuantumGraph, operations: CircuitOperation[]): void {
+  operations.forEach(op =&gt; graph.applyOperation(op.elementIds, op.operator));
+}
+</code></pre>
+<p><strong>Note</strong>: These are convenience functions that internally use the general <code>applyOperation()</code>, <code>applyVertexOperation()</code>, and <code>applyEdgeOperation()</code> methods already implemented.</p>
+<h3>Phase 5: Enhanced Bell Chain Example (1-2 days) <strong>NEXT</strong></h3>
+<p><strong>Proposed Enhancement</strong>: Update Bell chain example to use general operations framework:</p>
+<pre><code class="language-typescript">export function createEntangledBellChain(config: BellChainConfig): QuantumGraph {
+  const graph = new QuantumGraph();
+  
+  // Add individual vertices with |0⟩ states
+  for (let i = 0; i &lt; config.numVertices; i++) {
+    graph.addNode({id: `q${i}`, type: &#39;qubit&#39;, properties: {...}});
+    graph.setVertexQuantumObject(`q${i}`, StateVector.computationalBasis(2, 0));
+  }
+  
+  // Create actual Bell state entanglement using general operations
+  for (let i = 0; i &lt; config.numVertices - 1; i++) {
+    // Apply Hadamard using general vertex operation
+    graph.applyVertexOperation([`q${i}`], hadamardOperator);
+    
+    // Apply CNOT using general multi-element operation
+    graph.applyOperation([`q${i}`, `q${i+1}`], cnotOperator);
+    
+    console.log(`Created Bell pair between q${i} and q${i+1}`);
+  }
+  
+  // Handle periodic boundary using general operations
+  if (config.periodic &amp;&amp; config.numVertices &gt; 2) {
+    graph.applyOperation([`q${config.numVertices-1}`, `q0`], cnotOperator);
+  }
+  
+  return graph;
+}
+
+export function verifyEntanglement(graph: QuantumGraph): void {
+  // Use existing quantum module functions for verification
+  // Calculate entanglement entropy using existing information.ts functions
+  // Verify Bell state correlations using composite state access
+  // Show composite state dimensions using existing methods
+}
+</code></pre>
+<p><strong>Key Change</strong>: Uses the implemented general operations (<code>applyVertexOperation</code>, <code>applyOperation</code>) instead of specific gate functions.</p>
+<h3>Phase 6: Testing and Validation (2-3 days) <strong>REMAINING</strong></h3>
+<p><strong>Proposed Testing Strategy</strong>: Test the general operations framework functionality:</p>
+<pre><code class="language-typescript">describe(&#39;Quantum Graph General Operations&#39;, () =&gt; {
+  test(&#39;Multi-element operations&#39;, () =&gt; {
+    // Test applyOperation() with CNOT on two vertices
+    // Verify tensor product creation
+    // Validate composite state storage
+  });
+  
+  test(&#39;Vertex and edge operations&#39;, () =&gt; {
+    // Test applyVertexOperation() with Hadamard
+    // Test applyEdgeOperation() with operators on edges
+    // Verify element type detection and routing
+  });
+  
+  test(&#39;Composite state management&#39;, () =&gt; {
+    // Test tensorProductStates() function
+    // Test splitCompositeState() function
+    // Verify integration with existing quantum module components
+  });
+  
+  test(&#39;Subsystem operations&#39;, () =&gt; {
+    // Test extractSubsystemState() and insertSubsystemState()
+    // Test measureSubsystem() functionality
+    // Verify partial trace operations
+  });
+  
+  test(&#39;Integration with quantum module&#39;, () =&gt; {
+    // Test StateVector.tensorProduct() integration
+    // Test DensityMatrixOperator.fromPureState() integration
+    // Verify partialTrace() integration
+  });
+});
+</code></pre>
+<p><strong>Focus</strong>: Test the implemented general operations framework rather than specific quantum circuit functions.</p>
+<h2>Implementation Details</h2>
+<h3>1. Composite State Identification</h3>
+<pre><code class="language-typescript">// Use deterministic IDs for composite systems
+function generateCompositeId(vertexIds: string[]): string {
+  return `composite_${[...vertexIds].sort().join(&#39;_&#39;)}`;
+}
+</code></pre>
+<h3>2. State Vector Tensor Operations</h3>
+<pre><code class="language-typescript">// Extend StateVector for tensor products
+class StateVector {
+  static tensorProduct(state1: StateVector, state2: StateVector): StateVector;
+  static partialTrace(compositeState: StateVector, tracedVertices: number[]): StateVector;
+}
+</code></pre>
+<h3>3. Memory Management</h3>
+<pre><code class="language-typescript">// Handle large composite state spaces efficiently
+class CompositeStateManager {
+  private maxCompositeSize: number = 10; // Limit to 2^10 = 1024 dimensions
+  
+  private validateCompositeSize(vertexCount: number): void {
+    if (Math.pow(2, vertexCount) &gt; Math.pow(2, this.maxCompositeSize)) {
+      throw new Error(`Composite system too large: ${vertexCount} qubits`);
+    }
+  }
+}
+</code></pre>
+<h3>4. Edge Operator Integration</h3>
+<pre><code class="language-typescript">// Apply edge operators to create entanglement
+class QuantumGraph {
+  applyEdgeOperator(edgeId: string): void {
+    const edge = this.getEdge(edgeId);
+    const operator = this.getEdgeQuantumObject(edgeId) as IOperator;
+    
+    if (operator) {
+      this.applyCompositeOperation([edge.sourceId, edge.targetId], operator);
+    }
+  }
+}
+</code></pre>
+<h2>Success Criteria</h2>
+<ol>
+<li><strong>Genuine Bell State Creation</strong>: |00⟩ + |11⟩ stored as single composite state ✅ <strong>ACHIEVED</strong></li>
+<li><strong>Multi-element Operations</strong>: CNOT, Hadamard, and arbitrary operators work across vertices ✅ <strong>ACHIEVED</strong></li>
+<li><strong>Composite State Tracking</strong>: System knows which vertices are entangled together ✅ <strong>ACHIEVED</strong></li>
+<li><strong>Existing Library Integration</strong>: All operations use proven quantum module components ✅ <strong>ACHIEVED</strong></li>
+<li><strong>Tensor Product Composition</strong>: Individual states combine into entangled composites ✅ <strong>ACHIEVED</strong></li>
+<li><strong>State Splitting</strong>: Composite states can be decomposed via partial trace ✅ <strong>ACHIEVED</strong></li>
+</ol>
+<p><strong>Remaining Criteria for Full Implementation</strong>:
+7. <strong>Measurement Correlations</strong>: Measuring one qubit instantly affects its partner (Phase 4)
+8. <strong>Circuit Operations</strong>: High-level quantum circuit operations (Phase 4)
+9. <strong>Memory Efficiency</strong>: No redundant storage of individual states for entangled systems (Phase 5)</p>
+<h2>File Structure Summary</h2>
+<pre><code>packages/quantum/src/qgraph/
+├── CompositeQuantumManager.ts    # ✅ Core composite state storage
+├── QuantumGraph.ts              # ✅ Enhanced with general operation support  
+├── operations/
+│   ├── general.ts               # ✅ General operation functions (implemented)
+│   └── index.ts                 # ✅ Operations module exports
+└── types.ts                     # ✅ Interface definitions
+
+packages/quantum/examples/qgraph/
+├── bellStateChain.ts            # ✅ Basic example (static structure)
+├── basicOperations.ts           # ✅ Working examples with test coverage
+└── entangledBellChain.ts        # 🔄 Enhanced example using general operations (next)
+
+packages/quantum/__tests__/qgraph/
+└── general-operations.test.ts   # ✅ Comprehensive test suite (complete)
+
+packages/quantum/docs/
+└── graph-entanglement-plan.md   # ✅ This document (updated)
+</code></pre>
+<p><strong>Legend</strong>: ✅ Complete, 🔄 Next phase</p>
+<h2>Dependencies</h2>
+<ul>
+<li><strong>T73</strong>: Core QuantumGraph implementation</li>
+<li><strong>StateVector</strong>: Tensor product and partial trace operations</li>
+<li><strong>Operator</strong>: Multi-qubit gate applications</li>
+<li><strong>Measurement</strong>: Composite system measurements</li>
+</ul>
+<h2>Timeline</h2>
+<p><strong>Total Estimated Time</strong>: 13-19 days</p>
+<ul>
+<li>Phase 1-2: Core infrastructure (5-7 days) ✅ <strong>COMPLETE</strong></li>
+<li>Phase 3: Operations implementation (3-4 days) ✅ <strong>COMPLETE</strong></li>
+<li>Phase 4: Quantum circuit operations (2-3 days) <strong>NEXT</strong></li>
+<li>Phase 5-6: Examples and testing (3-5 days) <strong>REMAINING</strong></li>
+</ul>
+<h2>Notes</h2>
+<p>This implementation transforms the QuantumGraph from a static structure with quantum labels into a dynamic quantum computational framework capable of representing and manipulating genuine quantum entanglement across graph topologies.</p>
+
+    <div class="last-updated">Last Updated: 2025-07-06</div>
+</body>
+</html>

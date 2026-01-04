@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clebsch-Gordan Coefficient Algorithm</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\(', '\)']],
+                displayMath: [['$$', '$$'], ['\[', '\]']]
+            },
+            startup: {
+                ready: () => {
+                    console.log('MathJax is loaded');
+                    MathJax.startup.defaultReady();
+                }
+            }
+        };
+    </script>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #64748b;
+            --background: #ffffff;
+            --surface: #f8fafc;
+            --border: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+        }
+        
+        [data-theme="dark"] {
+            --primary-color: #3b82f6;
+            --secondary-color: #94a3b8;
+            --background: #0f172a;
+            --surface: #1e293b;
+            --border: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .back-link:hover {
+            transform: translateX(-2px);
+        }
+        
+        h1 {
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+        
+        h2 {
+            color: var(--text-primary);
+            margin-top: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.3rem;
+        }
+        
+        h3 {
+            color: var(--text-primary);
+        }
+        
+        code {
+            background: var(--surface);
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.875rem;
+        }
+        
+        pre {
+            background: var(--surface);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+        }
+        
+        blockquote {
+            border-left: 4px solid var(--primary-color);
+            padding-left: 1rem;
+            margin: 1rem 0;
+            color: var(--text-secondary);
+        }
+        
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1rem 0;
+        }
+        
+        th, td {
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            text-align: left;
+        }
+        
+        th {
+            background: var(--surface);
+            font-weight: 600;
+        }
+        
+        .last-updated {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: 3rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">&larr; Back to Documentation</a>
+    <h1>Clebsch-Gordan Coefficient Algorithm</h1>
+<p><em>Last Updated: May 17, 2025</em></p>
+<h2>Introduction</h2>
+<p>This document describes the algorithm for calculating Clebsch-Gordan coefficients, which are fundamental to quantum angular momentum coupling. They represent the transformation coefficients between uncoupled and coupled basis states in quantum mechanics.</p>
+<h2>Notation and Operators</h2>
+<h3>Coefficient Notation</h3>
+<p>We use two equivalent notations for Clebsch-Gordan coefficients:</p>
+<ol>
+<li><p><strong>Bracket Notation</strong>:
+$\begin{pmatrix} j_1 &amp; j_2 &amp; j \ m_1 &amp; m_2 &amp; m \end{pmatrix}$</p>
+</li>
+<li><p><strong>C-Notation</strong>:
+$C^{j, m}_{j_1, m_1;j_2, m_2}$</p>
+</li>
+</ol>
+<p>These notations are completely equivalent:
+$\begin{pmatrix} j_1 &amp; j_2 &amp; j \ m_1 &amp; m_2 &amp; m \end{pmatrix} = C^{j, m}_{j_1, m_1;j_2, m_2}$</p>
+<h3>Physical Meaning</h3>
+<p>These coefficients represent the expansion of coupled angular momentum states in terms of uncoupled states:</p>
+<p>$|(j_1,j_2)j,m\rangle = \sum_{m_1,m_2} C^{j, m}_{j_1, m_1;j_2, m_2} |j_1,m_1\rangle |j_2,m_2\rangle$</p>
+<p>where:</p>
+<ul>
+<li>$j_1, j_2$ are the angular momentum quantum numbers of two systems</li>
+<li>$m_1, m_2$ are their respective z-components</li>
+<li>$j$ is the total angular momentum quantum number of the coupled system</li>
+<li>$m$ is the z-component of the total angular momentum</li>
+</ul>
+<h3>Abbreviated Notation</h3>
+<p>For brevity, we use the following notation throughout this document:</p>
+<ul>
+<li>$|m_1;m_2\rangle := |j_1,m_1;j_2,m_2\rangle$ (uncoupled basis)</li>
+<li>$|j,m\rangle := |(j_1,j_2)j,m\rangle$ (coupled basis)</li>
+<li>$|j_1;j_2\rangle \equiv |j_1,j_1;j_2,j_2\rangle$ (maximal magnetic quantum numbers: $m_1 = j_1$ and $m_2 = j_2$)</li>
+</ul>
+<h3>Angular Momentum Operators</h3>
+<p>The total angular momentum operators are constructed from the individual angular momentum operators:</p>
+<ol>
+<li><p><strong>z-component</strong>: 
+$J_z = J^1_z + J^2_z$
+where $J^1_z$ acts on the first particle and $J^2_z$ acts on the second particle.</p>
+</li>
+<li><p><strong>Raising and lowering operators</strong>:
+$J_\pm = J^1_\pm + J^2_\pm$
+where $J^i_\pm$ ($i \in {1,2}$) are the ladder operators for each particle.</p>
+</li>
+</ol>
+<p>These operators act on states according to:</p>
+<p>$J^i_\pm|j_i,m_i\rangle = \sqrt{j_i(j_i+1) - m_i(m_i\pm1)}|j_i,m_i\pm1\rangle$</p>
+<p>To derive this, recall that:
+$J^i_\pm = J^i_x \pm iJ^i_y$</p>
+<p>And the commutation relations:
+$[J^i_z, J^i_\pm] = \pm J^i_\pm$</p>
+<p>The eigenvalue equation for $J^i_z$ is:
+$J^i_z|j_i,m_i\rangle = m_i|j_i,m_i\rangle$</p>
+<p>For the combined system, the z-component eigenvalue is additive:
+$J_z|j_1,m_1;j_2,m_2\rangle = (m_1 + m_2)|j_1,m_1;j_2,m_2\rangle$</p>
+<p>This follows directly from:
+$(J^1_z + J^2_z)|j_1,m_1;j_2,m_2\rangle = J^1_z|j_1,m_1\rangle \otimes |j_2,m_2\rangle + |j_1,m_1\rangle \otimes J^2_z|j_2,m_2\rangle$
+$= m_1|j_1,m_1\rangle \otimes |j_2,m_2\rangle + |j_1,m_1\rangle \otimes m_2|j_2,m_2\rangle$
+$= (m_1 + m_2)|j_1,m_1;j_2,m_2\rangle$</p>
+<h2>Selection Rules</h2>
+<p>A Clebsch-Gordan coefficient $C^{j, m}_{j_1, m_1;j_2, m_2}$ is zero if any of these conditions are met:</p>
+<ol>
+<li><p>$m \neq m_1 + m_2$ (magnetic quantum number conservation)</p>
+<p>This follows from the fact that $J_z = J^1_z + J^2_z$, so the eigenvalue of $J_z$ must be the sum of the eigenvalues of $J^1_z$ and $J^2_z$.</p>
+</li>
+<li><p>$j &gt; j_1 + j_2$ (triangle inequality upper bound)</p>
+<p>This arises from the quantum mechanical rules for adding angular momenta, which limit the maximum total angular momentum.</p>
+</li>
+<li><p>$j &lt; |j_1 - j_2|$ (triangle inequality lower bound)</p>
+<p>Similarly, this sets the minimum possible total angular momentum when coupling two systems.</p>
+</li>
+</ol>
+<p>These selection rules can be visualized as requiring the three angular momenta $(j_1, j_2, j)$ to form a triangle in vector space.</p>
+<h2>Algorithm</h2>
+<p>The algorithm proceeds recursively, starting from maximal $j$ values and using lowering operators to generate all coefficients.</p>
+<h3>1. Maximal J Case ($j = j_1 + j_2$)</h3>
+<h4>a) Initial State</h4>
+<p>For the state with maximal $j$ and maximal $m = j$:</p>
+<p>$|j,j\rangle = |j_1;j_2\rangle = |j_1,j_1\rangle|j_2,j_2\rangle$</p>
+<p>This means that the highest weight state in the coupled basis is exactly equal to the product of the highest weight states in the uncoupled basis. Therefore:</p>
+<p>$C^{j_1+j_2,j_1+j_2}_{j_1,j_1;j_2,j_2} = \begin{pmatrix} j_1 &amp; j_2 &amp; j_1+j_2 \ j_1 &amp; j_2 &amp; j_1+j_2 \end{pmatrix} = 1$</p>
+<p>This choice of +1 (rather than -1) establishes our phase convention, known as the Condon-Shortley convention.</p>
+<h4>b) Apply Lowering Operator</h4>
+<p>We use the total lowering operator $J_- = J^1_- + J^2_-$ which acts on the highest weight coupled state as:</p>
+<p>$J_-|j,j\rangle = \sqrt{j(j+1) - j(j-1)}|j,j-1\rangle = \sqrt{2j}|j,j-1\rangle$</p>
+<p>Let&#39;s verify this step:</p>
+<ul>
+<li>For a state $|j,m\rangle$, the action of $J_-$ is:
+$J_-|j,m\rangle = \sqrt{j(j+1) - m(m-1)}|j,m-1\rangle$</li>
+<li>With $m = j$, this gives:
+$J_-|j,j\rangle = \sqrt{j(j+1) - j(j-1)}|j,j-1\rangle$</li>
+<li>Simplifying:
+$\sqrt{j(j+1) - j(j-1)} = \sqrt{j(j+1) - j^2 + j} = \sqrt{2j}$</li>
+</ul>
+<p>Now, we apply the operator to the uncoupled basis:
+$J_-|j_1;j_2\rangle = (J^1_- + J^2_-)|j_1,j_1\rangle|j_2,j_2\rangle$</p>
+<p>Using the action of the individual lowering operators:
+$J^1_-|j_1,j_1\rangle = \sqrt{2j_1}|j_1,j_1-1\rangle$
+$J^2_-|j_2,j_2\rangle = \sqrt{2j_2}|j_2,j_2-1\rangle$</p>
+<p>Therefore:
+$J_-|j_1;j_2\rangle = J^1_-|j_1,j_1\rangle \otimes |j_2,j_2\rangle + |j_1,j_1\rangle \otimes J^2_-|j_2,j_2\rangle$
+$= \sqrt{2j_1}|j_1,j_1-1\rangle|j_2,j_2\rangle + \sqrt{2j_2}|j_1,j_1\rangle|j_2,j_2-1\rangle$
+$= \sqrt{2j_1}|j_1-1;j_2\rangle + \sqrt{2j_2}|j_1;j_2-1\rangle$</p>
+<p>Combining our results and equating the two expressions:
+$\sqrt{2j}|j,j-1\rangle = \sqrt{2j_1}|j_1-1;j_2\rangle + \sqrt{2j_2}|j_1;j_2-1\rangle$</p>
+<p>where $j = j_1 + j_2$ in this maximal case.</p>
+<h4>c) Generate Coefficients</h4>
+<p>We can now extract the Clebsch-Gordan coefficients by projecting this equation onto the uncoupled basis states.</p>
+<p>For the projection onto $|j_1-1;j_2\rangle$:
+$\langle j_1-1;j_2|\sqrt{2j}|j,j-1\rangle = \langle j_1-1;j_2|\sqrt{2j_1}|j_1-1;j_2\rangle + \langle j_1-1;j_2|\sqrt{2j_2}|j_1;j_2-1\rangle$</p>
+<p>Since the uncoupled basis states are orthonormal, we have:
+$\langle j_1-1;j_2|\sqrt{2j}|j,j-1\rangle = \sqrt{2j_1}$</p>
+<p>Therefore:
+$\sqrt{2j} \cdot C^{j,j-1}_{j_1,j_1 - 1;j_2,j_2} = \sqrt{2j_1}$</p>
+<p>Solving for the coefficient:
+$C^{j,j-1}_{j_1,j_1 - 1;j_2,j_2} = \sqrt{\frac{j_1}{j}} = \sqrt{\frac{j_1}{j_1+j_2}}$</p>
+<p>Similarly, projecting onto $|j_1;j_2-1\rangle$:
+$\langle j_1;j_2-1|\sqrt{2j}|j,j-1\rangle = \langle j_1;j_2-1|\sqrt{2j_1}|j_1-1;j_2\rangle + \langle j_1;j_2-1|\sqrt{2j_2}|j_1;j_2-1\rangle$</p>
+<p>This yields:
+$\sqrt{2j} \cdot C^{j,j-1}_{j_1,j_1;j_2,j_2-1} = \sqrt{2j_2}$</p>
+<p>Solving:
+$C^{j,j-1}_{j_1,j_1;j_2,j_2-1} = \sqrt{\frac{j_2}{j}} = \sqrt{\frac{j_2}{j_1+j_2}}$</p>
+<p>In bracket notation:
+$\begin{pmatrix} j_1 &amp; j_2 &amp; j_1+j_2 \ j_1-1 &amp; j_2 &amp; j_1+j_2-1 \end{pmatrix} = \sqrt{\frac{j_1}{j_1+j_2}}$</p>
+<p>$\begin{pmatrix} j_1 &amp; j_2 &amp; j_1+j_2 \ j_1 &amp; j_2-1 &amp; j_1+j_2-1 \end{pmatrix} = \sqrt{\frac{j_2}{j_1+j_2}}$</p>
+<h4>d) Generate All Coefficients</h4>
+<p>We continue this process by repeatedly applying the $J_-$ operator. Each application lowers the $m$ value by 1.</p>
+<p>For $|j,j-2\rangle$, we can apply $J_-$ to $|j,j-1\rangle$:
+$J_-|j,j-1\rangle = \sqrt{j(j+1) - (j-1)(j-2)}|j,j-2\rangle = \sqrt{2j-1}|j,j-2\rangle$</p>
+<p>We again express this in terms of the action on the uncoupled basis states, which gives us equations for the next set of coefficients.</p>
+<p>By continuing this process, applying $J_-$ operator a total of $2j = 2(j_1+j_2)$ times (to cover all possible $m$ values from $j$ down to $-j$), we can generate all coefficients for this $j$ value.</p>
+<h3>2. Next J Value ($j = j_1 + j_2 - 1$)</h3>
+<p>For the next highest $j$ value, the approach is slightly different because we need to first determine the form of the state $|j,j\rangle$ where $j = j_1 + j_2 - 1$.</p>
+<h4>a) State Expression</h4>
+<p>We begin by expressing the state $|j,j\rangle$ where $j = j_1 + j_2 - 1$ and $m = j$ as a linear combination of uncoupled basis states. Since $m = j = j_1 + j_2 - 1$, we need to combine states where $m_1 + m_2 = j_1 + j_2 - 1$.</p>
+<p>There are two such states:</p>
+<ol>
+<li>$|j_1-1;j_2\rangle = |j_1,j_1-1\rangle|j_2,j_2\rangle$ with $m_1 = j_1-1$ and $m_2 = j_2$</li>
+<li>$|j_1;j_2-1\rangle = |j_1,j_1\rangle|j_2,j_2-1\rangle$ with $m_1 = j_1$ and $m_2 = j_2-1$</li>
+</ol>
+<p>Therefore:
+$|j,j\rangle = \alpha|j_1;j_2-1\rangle + \beta|j_1-1;j_2\rangle$</p>
+<p>where $\alpha$ and $\beta$ are real coefficients that we need to determine (Clebsch-Gordan coefficients are real by definition in the standard convention).</p>
+<h4>b) Determine Coefficients</h4>
+<p>Three conditions determine $\alpha$ and $\beta$:</p>
+<ol>
+<li><p><strong>Normalization</strong>:
+Since $|j,j\rangle$ is normalized, and the uncoupled basis states are orthonormal:
+$\langle j,j|j,j\rangle = |\alpha|^2 + |\beta|^2 = 1$</p>
+</li>
+<li><p><strong>Condon-Shortley phase convention</strong>:
+We choose $\alpha \geq 0$ to fix the phase.</p>
+</li>
+<li><p><strong>Orthogonality to the maximum $j$ state</strong>:
+The state $|j,j\rangle$ with $j = j_1 + j_2 - 1$ must be orthogonal to the maximum $j$ state $|j&#39;,j&#39;\rangle$ with $j&#39; = j_1 + j_2$.</p>
+<p>We can use the raising operator $J_+$ to express this condition. Since $J_+|j,j\rangle = 0$ (because raising the highest weight state gives zero), we get:</p>
+<p>$0 = J_+|j,j\rangle = (J^1_+ + J^2_+)(\alpha|j_1;j_2-1\rangle + \beta|j_1-1;j_2\rangle)$</p>
+<p>Let&#39;s expand this:</p>
+<p>$J^1_+|j_1,j_1\rangle = 0$ (raising the highest weight state gives zero)</p>
+<p>$J^2_+|j_2,j_2\rangle = 0$ (raising the highest weight state gives zero)</p>
+<p>$J^1_+|j_1,j_1-1\rangle = \sqrt{2j_1}|j_1,j_1\rangle$</p>
+<p>$J^2_+|j_2,j_2-1\rangle = \sqrt{2j_2}|j_2,j_2\rangle$</p>
+<p>Therefore:</p>
+<p>$0 = \alpha J^2_+|j_1,j_1\rangle|j_2,j_2-1\rangle + \beta J^1_+|j_1,j_1-1\rangle|j_2,j_2\rangle$</p>
+<p>$= \alpha\sqrt{2j_2}|j_1,j_1\rangle|j_2,j_2\rangle + \beta\sqrt{2j_1}|j_1,j_1\rangle|j_2,j_2\rangle$</p>
+<p>$= (\alpha\sqrt{2j_2} + \beta\sqrt{2j_1})|j_1;j_2\rangle$</p>
+<p>For this to equal zero, we need:</p>
+<p>$\alpha\sqrt{j_2} + \beta\sqrt{j_1} = 0$</p>
+<p>Solving this equation along with the normalization condition and phase convention:</p>
+<p>$\beta = -\alpha\frac{\sqrt{j_2}}{\sqrt{j_1}}$</p>
+<p>$\alpha^2 + \alpha^2\frac{j_2}{j_1} = 1$</p>
+<p>$\alpha^2(1 + \frac{j_2}{j_1}) = \alpha^2\frac{j_1 + j_2}{j_1} = 1$</p>
+<p>$\alpha^2 = \frac{j_1}{j_1 + j_2}$</p>
+<p>$\alpha = \sqrt{\frac{j_1}{j_1 + j_2}}$ (taking the positive root due to our phase convention)</p>
+<p>$\beta = -\sqrt{\frac{j_2}{j_1 + j_2}}$</p>
+</li>
+</ol>
+<p>Therefore, we have:</p>
+<p>$C^{j_1+j_2-1,j_1+j_2-1}_{j_1,j_1;j_2,j_2-1} = \alpha = \sqrt{\frac{j_1}{j_1+j_2}}$</p>
+<p>$C^{j_1+j_2-1,j_1+j_2-1}_{j_1,j_1-1;j_2,j_2} = \beta = -\sqrt{\frac{j_2}{j_1+j_2}}$</p>
+<h4>c) Generate Remaining Coefficients</h4>
+<p>Once we have the coefficients for $|j,j\rangle$ with $j = j_1 + j_2 - 1$, we can repeatedly apply the $J_-$ operator to generate all coefficients for this $j$ value, following the same procedure as for the maximal $j$ case.</p>
+<p>We apply $J_-$ operator a total of $2j = 2(j_1+j_2-1)$ times to cover all possible $m$ values from $j$ down to $-j$.</p>
+<h3>3. Continue Process</h3>
+<p>We repeat this process for each allowed $j$ value:</p>
+<ul>
+<li>$j = j_1 + j_2 - 2$</li>
+<li>$j = j_1 + j_2 - 3$</li>
+<li>...and so on, until $j = |j_1 - j_2|$</li>
+</ul>
+<p>For each $j$ value, we first determine the coefficients for the highest weight state $|j,j\rangle$, ensuring orthogonality to all states with higher $j$ values. Then we use the lowering operator $J_-$ to generate all coefficients for that $j$ value.</p>
+<h2>Properties</h2>
+<h3>1. Selection Rules</h3>
+<p>$C^{j, m}_{j_1, m_1;j_2, m_2} = \begin{pmatrix} j_1 &amp; j_2 &amp; j \ m_1 &amp; m_2 &amp; m \end{pmatrix} = 0$
+if any of:</p>
+<ul>
+<li>$m \neq m_1 + m_2$</li>
+<li>$j &gt; j_1 + j_2$</li>
+<li>$j &lt; |j_1 - j_2|$</li>
+</ul>
+<h3>2. Reality</h3>
+<p>All Clebsch-Gordan coefficients are real numbers when using the standard Condon-Shortley phase convention.</p>
+<h3>3. Bounds</h3>
+<p>The absolute value is always less than or equal to 1:</p>
+<p>$\left|C^{j, m}_{j_1, m_1;j_2, m_2}\right| = \left|\begin{pmatrix} j_1 &amp; j_2 &amp; j \ m_1 &amp; m_2 &amp; m \end{pmatrix}\right| \leq 1$</p>
+<p>This follows from the fact that they are expansion coefficients of normalized states in an orthonormal basis.</p>
+<h3>4. Recursion Relation</h3>
+<p>The recursion relation for Clebsch-Gordan coefficients can be derived from the action of the angular momentum operators:</p>
+<p>$\sqrt{(j \pm m)(j \mp m + 1)} , C^{j,m\mp1}<em>{j_1,m_1;j_2,m_2} = \sqrt{(j_1 \mp m_1)(j_1 \pm m_1 + 1)} , C^{j,m}</em>{j_1,m_1\pm1;j_2,m_2} + \sqrt{(j_2 \mp m_2)(j_2 \pm m_2 + 1)} , C^{j,m}_{j_1,m_1;j_2,m_2\pm1}$</p>
+<p>In bracket notation:</p>
+<p>$ \sqrt{(j \pm m)(j \mp m + 1)} \begin{pmatrix} j_1 &amp; j_2 &amp; j \ m_1 &amp; m_2 &amp; m \mp 1 \end{pmatrix} = 
+\sqrt{(j_1 \mp m_1)(j_1 \pm m_1 + 1)} \begin{pmatrix} j_1 &amp; j_2 &amp; j \ m_1 \pm 1 &amp; m_2 &amp; m \end{pmatrix} + 
+\sqrt{(j_2 \mp m_2)(j_2 \pm m_2 + 1)} \begin{pmatrix} j_1 &amp; j_2 &amp; j \ m_1 &amp; m_2 \pm 1 &amp; m \end{pmatrix} $</p>
+<p>This relation can be derived by applying $J_\pm$ to both sides of the expansion:</p>
+<p>$|(j_1,j_2)j,m\rangle = \sum_{m_1,m_2} C^{j, m}_{j_1, m_1;j_2, m_2} |j_1,m_1\rangle |j_2,m_2\rangle$</p>
+<h3>5. Symmetry Properties</h3>
+<p>Clebsch-Gordan coefficients have several important symmetry properties:</p>
+<p>$C^{j, m}<em>{j_1, m_1;j_2, m_2} = C^{j,-m}</em>{j_1,-m_1;j_2,-m_2}$</p>
+<p>Or in bracket notation:</p>
+<p>$\begin{pmatrix} j_1 &amp; j_2 &amp; j \ m_1 &amp; m_2 &amp; m \end{pmatrix} = (-1)^{j_1+j_2-j}\begin{pmatrix} j_1 &amp; j_2 &amp; j \ -m_1 &amp; -m_2 &amp; -m \end{pmatrix}$</p>
+<p>When exchanging the two angular momenta:</p>
+<p>$C^{j,m}<em>{j_1,m_1;j_2,m_2} = (-1)^{j_1+j_2-j} C^{j,m}</em>{j_2,m_2;j_1,m_1}$</p>
+<p>Or in bracket notation:</p>
+<p>$\begin{pmatrix} j_1 &amp; j_2 &amp; j \ m_1 &amp; m_2 &amp; m \end{pmatrix} = (-1)^{j_1+j_2-j}\begin{pmatrix} j_2 &amp; j_1 &amp; j \ m_2 &amp; m_1 &amp; m \end{pmatrix}$</p>
+<p>Additional symmetry relation:</p>
+<p>$\begin{pmatrix} j_1 &amp; j_2 &amp; j \ m_1 &amp; m_2 &amp; m \end{pmatrix} = \begin{pmatrix} j_2 &amp; j_1 &amp; j \ -m_2 &amp; -m_1 &amp; -m \end{pmatrix}$</p>
+<p>These symmetry properties can be used to reduce the number of coefficients that need to be calculated and to check the correctness of calculations.</p>
+<p>In particular, the symmetry under exchange of angular momenta implies:</p>
+<p>$|(j_1,j_2)j,m\rangle = (-1)^{j_1+j_2-j}|(j_2,j_1)j,m\rangle$</p>
+<h2>Implementation Notes</h2>
+<h3>Numerical Stability</h3>
+<ol>
+<li><p>When implementing the recursive algorithm:</p>
+<ul>
+<li>Use high-precision arithmetic for intermediate calculations</li>
+<li>Maintain error bounds</li>
+<li>Check against symmetry properties for validation</li>
+<li>Consider caching frequently used values</li>
+</ul>
+</li>
+<li><p>Special attention needed for:</p>
+<ul>
+<li>Square root calculations of differences</li>
+<li>Accumulation of errors in recursive steps</li>
+<li>Normalization conditions</li>
+</ul>
+</li>
+</ol>
+<h3>Common Cases</h3>
+<p>Special handling for frequently encountered cases:</p>
+<ol>
+<li><p>Two spin-1/2 particles:</p>
+<ul>
+<li><p>Singlet state ($j=0$):
+$|0,0\rangle = \frac{1}{\sqrt{2}}(|\frac{1}{2},-\frac{1}{2}\rangle|\frac{1}{2},\frac{1}{2}\rangle - |\frac{1}{2},\frac{1}{2}\rangle|\frac{1}{2},-\frac{1}{2}\rangle)$</p>
+</li>
+<li><p>Triplet states ($j=1$):
+$|1,1\rangle = |\frac{1}{2},\frac{1}{2}\rangle|\frac{1}{2},\frac{1}{2}\rangle$
+$|1,0\rangle = \frac{1}{\sqrt{2}}(|\frac{1}{2},-\frac{1}{2}\rangle|\frac{1}{2},\frac{1}{2}\rangle + |\frac{1}{2},\frac{1}{2}\rangle|\frac{1}{2},-\frac{1}{2}\rangle)$
+$|1,-1\rangle = |\frac{1}{2},-\frac{1}{2}\rangle|\frac{1}{2},-\frac{1}{2}\rangle$</p>
+</li>
+</ul>
+</li>
+<li><p>Integer spin combinations:</p>
+<ul>
+<li>Two spin-1 particles</li>
+<li>Spin-1 with spin-1/2</li>
+</ul>
+</li>
+</ol>
+<h3>Validation</h3>
+<p>Test implementation against:</p>
+<ol>
+<li>Known analytical values</li>
+<li>Symmetry properties</li>
+<li>Recursion relations</li>
+<li>Orthogonality conditions</li>
+<li>Special cases (e.g., $j_1=j_2=\frac{1}{2}$)</li>
+</ol>
+<h2>References</h2>
+<ol>
+<li>Condon and Shortley, &quot;The Theory of Atomic Spectra&quot;</li>
+<li>Edmonds, &quot;Angular Momentum in Quantum Mechanics&quot;</li>
+<li>Varshalovich et al., &quot;Quantum Theory of Angular Momentum&quot;</li>
+</ol>
+
+    <div class="last-updated">Last Updated: 2025-07-06</div>
+</body>
+</html>

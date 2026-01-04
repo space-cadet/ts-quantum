@@ -14,6 +14,7 @@ const fs = require('fs');
 const path = require('path');
 
 const WEB_DIR = path.resolve(__dirname);
+const DOCS_DIR = path.resolve(__dirname, '..', 'docs');
 const BUNDLE_PATH = path.join(WEB_DIR, 'bundle.js');
 const PORT = 8080;
 
@@ -55,15 +56,29 @@ async function watchBundle() {
 // Simple HTTP server
 function startServer() {
   const server = http.createServer((req, res) => {
+    // Parse URL to separate path from query parameters
+    const url = new URL(req.url, `http://localhost:${PORT}`);
+    
     // Handle hot reload check endpoint
-    if (req.url === '/__hotreload__') {
+    if (url.pathname === '/__hotreload__') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ time: lastBundleTime }));
       return;
     }
 
-    // Serve files from web directory
-    let filePath = path.join(WEB_DIR, req.url === '/' ? 'showcase.html' : req.url);
+    // Serve files from web or docs directory
+    let filePath;
+    if (url.pathname.startsWith('/docs')) {
+      const docPath = url.pathname.slice(5) || '/';
+      filePath = path.join(DOCS_DIR, docPath === '/' ? 'index.html' : docPath);
+    } else if (url.pathname === '/') {
+      // Redirect root to docs home page
+      res.writeHead(302, { 'Location': '/docs/' });
+      res.end();
+      return;
+    } else {
+      filePath = path.join(WEB_DIR, url.pathname === '/' ? 'showcase.html' : url.pathname);
+    }
     
     if (!fs.existsSync(filePath)) {
       res.writeHead(404);

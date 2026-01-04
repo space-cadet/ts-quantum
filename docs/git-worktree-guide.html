@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git Worktrees: A Practical Guide</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\(', '\)']],
+                displayMath: [['$$', '$$'], ['\[', '\]']]
+            },
+            startup: {
+                ready: () => {
+                    console.log('MathJax is loaded');
+                    MathJax.startup.defaultReady();
+                }
+            }
+        };
+    </script>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #64748b;
+            --background: #ffffff;
+            --surface: #f8fafc;
+            --border: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+        }
+        
+        [data-theme="dark"] {
+            --primary-color: #3b82f6;
+            --secondary-color: #94a3b8;
+            --background: #0f172a;
+            --surface: #1e293b;
+            --border: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .back-link:hover {
+            transform: translateX(-2px);
+        }
+        
+        h1 {
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+        
+        h2 {
+            color: var(--text-primary);
+            margin-top: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.3rem;
+        }
+        
+        h3 {
+            color: var(--text-primary);
+        }
+        
+        code {
+            background: var(--surface);
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.875rem;
+        }
+        
+        pre {
+            background: var(--surface);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+        }
+        
+        blockquote {
+            border-left: 4px solid var(--primary-color);
+            padding-left: 1rem;
+            margin: 1rem 0;
+            color: var(--text-secondary);
+        }
+        
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1rem 0;
+        }
+        
+        th, td {
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            text-align: left;
+        }
+        
+        th {
+            background: var(--surface);
+            font-weight: 600;
+        }
+        
+        .last-updated {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: 3rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">&larr; Back to Documentation</a>
+    <h1>Git Worktrees: A Practical Guide</h1>
+<p><strong>Created</strong>: 2025-07-07 17:19:52 IST<br><strong>Last Updated</strong>: 2025-07-07 17:22:26 IST</p>
+<h2>Table of Contents</h2>
+<ol>
+<li><a href="#what-are-worktrees">What Are Worktrees?</a></li>
+<li><a href="#key-benefits">Key Benefits</a></li>
+<li><a href="#basic-commands">Basic Commands</a></li>
+<li><a href="#node-modules-handling">Node Modules Handling</a></li>
+<li><a href="#important-behaviors">Important Behaviors</a></li>
+<li><a href="#advanced-behaviors">Advanced Behaviors</a></li>
+<li><a href="#practical-example">Practical Example</a></li>
+<li><a href="#best-practices">Best Practices</a></li>
+<li><a href="#example-worktree-structure">Example Worktree Structure</a></li>
+<li><a href="#transferring-changes-between-worktrees">Transferring Changes Between Worktrees</a></li>
+<li><a href="#faq">FAQ</a></li>
+</ol>
+<h2>What Are Worktrees?</h2>
+<p>Git worktrees allow multiple working directories to share the same repository. Each worktree:</p>
+<ul>
+<li>Exists in its own folder (typically one level above main project)</li>
+<li>Can have different branches checked out simultaneously </li>
+<li>Shares the same underlying Git objects and history</li>
+</ul>
+<h2>Key Benefits</h2>
+<ol>
+<li><strong>Parallel Development</strong>: Work on multiple branches without switching</li>
+<li><strong>Isolation</strong>: Changes in one worktree don&#39;t affect others until committed</li>
+<li><strong>No Stashing</strong>: Eliminates the need for constant <code>git stash</code> operations</li>
+</ol>
+<h2>Basic Commands</h2>
+<pre><code class="language-bash"># Create new worktree
+git worktree add ../new-feature feature-branch
+
+# List worktrees
+git worktree list
+
+# Remove worktree
+git worktree remove ../new-feature
+</code></pre>
+<h2>Node Modules Handling</h2>
+<p>Options for managing dependencies across worktrees:</p>
+<ol>
+<li><p><strong>Symlink Approach</strong> (recommended):</p>
+<pre><code class="language-bash">ln -s ../main-project/node_modules node_modules
+</code></pre>
+<ul>
+<li>Pros: Single install location</li>
+<li>Cons: Package installations affect all worktrees</li>
+</ul>
+</li>
+<li><p><strong>Separate Installs</strong>:</p>
+<pre><code class="language-bash">npm install
+</code></pre>
+<ul>
+<li>Pros: Complete isolation</li>
+<li>Cons: Duplicate disk usage</li>
+</ul>
+</li>
+</ol>
+<h2>Important Behaviors</h2>
+<ul>
+<li><code>git reset --hard</code> only affects current worktree</li>
+<li>Commits are visible across all worktrees immediately</li>
+<li>Each worktree maintains its own:<ul>
+<li>Working directory state</li>
+<li>Staging area</li>
+<li>HEAD reference</li>
+</ul>
+</li>
+</ul>
+<h2>Advanced Behaviors</h2>
+<h3>How Resets Affect Worktrees</h3>
+<ol>
+<li><p><strong>Local Operations</strong>:</p>
+<ul>
+<li><code>git reset</code> only affects the worktree where executed</li>
+<li>Other worktrees maintain their working directory states</li>
+</ul>
+</li>
+<li><p><strong>Branch Safety</strong>:</p>
+<ul>
+<li>Git prevents resetting branches checked out in other worktrees</li>
+<li>Example warning:<pre><code>warning: not updating ref &#39;refs/heads/feature-branch&#39;:
+         is at 123abcd but expected 456efgh
+</code></pre>
+</li>
+</ul>
+</li>
+<li><p><strong>Shared History</strong>:</p>
+<ul>
+<li>Resets become visible in all worktrees after execution</li>
+<li>But file changes remain isolated until worktrees update</li>
+</ul>
+</li>
+<li><p><strong>Danger Zones</strong>:</p>
+<ul>
+<li>Deleting branches used by other worktrees</li>
+<li>Force-pushing rewritten history</li>
+<li>These require manual cleanup in affected worktrees</li>
+</ul>
+</li>
+</ol>
+<h2>Practical Example</h2>
+<h3>Scenario: Hotfix While Developing</h3>
+<pre><code class="language-bash"># 1. Create main project worktree
+cd ~/code
+git clone git@github.com:user/ts-quantum.git
+
+# 2. Create feature worktree
+git worktree add ../quantum-feature feature/new-gates
+
+# 3. Emergency hotfix (in main worktree)
+cd ~/code/ts-quantum
+git pull origin main
+git checkout -b hotfix/security-patch
+
+# 4. Continue working in feature worktree
+cd ~/code/quantum-feature
+# All files remain unchanged
+
+git status  # Shows feature branch state
+
+# 5. After hotfix completes in main worktree:
+cd ~/code/ts-quantum
+git checkout main
+git merge hotfix/security-patch
+git push
+
+# 6. Update feature worktree (when ready)
+cd ~/code/quantum-feature
+git fetch origin
+git rebase origin/main
+</code></pre>
+<p>Key Observations:</p>
+<ul>
+<li>Hotfix work didn&#39;t disturb feature development</li>
+<li>No stash/checkout dance required</li>
+<li>Both branches could reference the shared node_modules</li>
+</ul>
+<h2>Best Practices</h2>
+<ol>
+<li>Place worktrees in sibling directories of main project</li>
+<li>Use descriptive folder names matching branch names</li>
+<li>Clean up unused worktrees regularly</li>
+<li>For TypeScript/Node projects, consider symlinking node_modules</li>
+</ol>
+<h2>Transferring Changes Between Worktrees</h2>
+<h3>Method 1: Cherry-pick (Recommended)</h3>
+<pre><code class="language-bash"># From target branch worktree
+cd ../quantum-feature
+git cherry-pick &lt;commit-hash&gt;
+</code></pre>
+<h3>Method 2: Patch Transfer</h3>
+<pre><code class="language-bash"># In source worktree
+git diff &gt; changes.patch
+
+# In target worktree
+git apply ../source-worktree/changes.patch
+</code></pre>
+<h3>Handling Merge Conflicts</h3>
+<ol>
+<li><p><strong>During cherry-pick</strong>:</p>
+<pre><code class="language-bash"># Resolve conflicts then:
+git cherry-pick --continue
+# OR abort with:
+git cherry-pick --abort
+</code></pre>
+</li>
+<li><p><strong>During patch apply</strong>:</p>
+<pre><code class="language-bash"># View conflicts:
+git status
+# Edit conflicted files then:
+git add .
+</code></pre>
+</li>
+<li><p><strong>Best Practices</strong>:</p>
+<ul>
+<li>Transfer small, focused changes</li>
+<li>Document transferred commits</li>
+<li>Verify changes in target worktree</li>
+</ul>
+</li>
+</ol>
+<h2>Example Worktree Structure</h2>
+<pre><code>/Users/deepak/code/
+├── ts-quantum/          # Main project
+├── quantum-feature/     # Feature branch worktree
+└── quantum-hotfix/      # Hotfix branch worktree
+</code></pre>
+<h2>FAQ</h2>
+<p><strong>Q:</strong> Can I have multiple worktrees for the same branch?<br><strong>A:</strong> No, each branch can only be checked out in one worktree at a time.</p>
+<p><strong>Q:</strong> Do worktrees appear in <code>git branch</code> output?<br><strong>A:</strong> Yes, but they&#39;re regular branches - the worktree connection is maintained in <code>.git/worktrees/</code></p>
+
+    <div class="last-updated">Last Updated: 2025-07-07</div>
+</body>
+</html>

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Structures for Clebsch-Gordan Coefficients</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\(', '\)']],
+                displayMath: [['$$', '$$'], ['\[', '\]']]
+            },
+            startup: {
+                ready: () => {
+                    console.log('MathJax is loaded');
+                    MathJax.startup.defaultReady();
+                }
+            }
+        };
+    </script>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #64748b;
+            --background: #ffffff;
+            --surface: #f8fafc;
+            --border: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+        }
+        
+        [data-theme="dark"] {
+            --primary-color: #3b82f6;
+            --secondary-color: #94a3b8;
+            --background: #0f172a;
+            --surface: #1e293b;
+            --border: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .back-link:hover {
+            transform: translateX(-2px);
+        }
+        
+        h1 {
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+        
+        h2 {
+            color: var(--text-primary);
+            margin-top: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.3rem;
+        }
+        
+        h3 {
+            color: var(--text-primary);
+        }
+        
+        code {
+            background: var(--surface);
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.875rem;
+        }
+        
+        pre {
+            background: var(--surface);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+        }
+        
+        blockquote {
+            border-left: 4px solid var(--primary-color);
+            padding-left: 1rem;
+            margin: 1rem 0;
+            color: var(--text-secondary);
+        }
+        
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1rem 0;
+        }
+        
+        th, td {
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            text-align: left;
+        }
+        
+        th {
+            background: var(--surface);
+            font-weight: 600;
+        }
+        
+        .last-updated {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: 3rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">&larr; Back to Documentation</a>
+    <h1>Data Structures for Clebsch-Gordan Coefficients</h1>
+<p><em>Last Updated: May 17, 2025</em></p>
+<p>This document explores various data structure options for storing and accessing Clebsch-Gordan coefficients in the context of spin network calculations.</p>
+<h2>Requirements</h2>
+<h3>Quantum Numbers</h3>
+<ul>
+<li>j1, j2: Angular momenta of the two systems being coupled</li>
+<li>m1, m2: Magnetic quantum numbers (-j1 ≤ m1 ≤ j1 and -j2 ≤ m2 ≤ j2)</li>
+<li>j: Total angular momentum (|j1-j2| ≤ j ≤ j1+j2)</li>
+<li>m: Total magnetic quantum number (m = m1 + m2, -j ≤ m ≤ j)</li>
+</ul>
+<h3>Usage Patterns in Spin Networks</h3>
+<ol>
+<li>Fixed j1, j2 values for extended calculations</li>
+<li>Need all m-values for state vector computations</li>
+<li>Frequent access to coefficients for various m-combinations</li>
+<li>Used heavily in intertwiner calculations</li>
+<li>Need fast access for graph state compositions</li>
+</ol>
+<h2>Option 1: Four-Dimensional Array</h2>
+<pre><code class="language-typescript">type CGTable = number[][][][];  // [j1_idx][j2_idx][j_idx][m_idx]
+
+// Index mapping
+function getIndices(j1: number, m1: number, j2: number, m2: number, j: number): [number, number, number, number] {
+    return [
+        Math.round(m1 + j1),    // j1_idx
+        Math.round(m2 + j2),    // j2_idx
+        Math.round(j - Math.abs(j1-j2)), // j_idx
+        Math.round(m1 + m2 + j)  // m_idx
+    ];
+}
+</code></pre>
+<h3>Pros</h3>
+<ul>
+<li>Direct array indexing is fast</li>
+<li>Natural for generating complete coefficient sets</li>
+<li>Good cache locality for sequential access</li>
+<li>Simple to implement</li>
+</ul>
+<h3>Cons</h3>
+<ul>
+<li>Many empty/unused entries due to selection rules</li>
+<li>Fixed size regardless of actual non-zero coefficients</li>
+<li>Extra dimension for j1,j2 indices usually not needed</li>
+<li>Memory inefficient</li>
+</ul>
+<h3>Usage Example</h3>
+<pre><code class="language-typescript">const table: CGTable = Array(2*j1+1).fill(null)
+    .map(() =&gt; Array(2*j2+1).fill(null)
+        .map(() =&gt; Array(Math.floor(j1+j2)-Math.floor(Math.abs(j1-j2))+1).fill(null)
+            .map(() =&gt; Array(2*Math.floor(j1+j2)+1).fill(0))));
+
+const [j1_idx, j2_idx, j_idx, m_idx] = getIndices(j1, m1, j2, m2, j);
+const coeff = table[j1_idx][j2_idx][j_idx][m_idx];
+</code></pre>
+<h2>Option 2: Sparse Map</h2>
+<pre><code class="language-typescript">type CGSparseTable = Map&lt;string, number&gt;;
+
+// Key format: &quot;j1,m1,j2,m2,j,m&quot;
+function makeKey(j1: number, m1: number, j2: number, m2: number, j: number, m: number): string {
+    return `${j1},${m1},${j2},${m2},${j},${m}`;
+}
+</code></pre>
+<h3>Pros</h3>
+<ul>
+<li>Only stores non-zero coefficients</li>
+<li>Flexible for any combination of quantum numbers</li>
+<li>Memory efficient</li>
+<li>Easy to add new coefficients</li>
+</ul>
+<h3>Cons</h3>
+<ul>
+<li>String key comparisons are slower than array indexing</li>
+<li>Need to parse strings for lookup</li>
+<li>Not cache-friendly</li>
+<li>Overhead for Map data structure</li>
+</ul>
+<h3>Usage Example</h3>
+<pre><code class="language-typescript">const table = new Map&lt;string, number&gt;();
+table.set(makeKey(0.5, 0.5, 0.5, -0.5, 0, 0), 1/Math.sqrt(2));
+const coeff = table.get(makeKey(j1, m1, j2, m2, j, m)) ?? 0;
+</code></pre>
+<h2>Option 3: Three-Dimensional Array</h2>
+<pre><code class="language-typescript">type CGArray = number[][][];  // [m1_idx][m2_idx][j_idx]
+
+interface CGDimensions {
+    j1: number;
+    j2: number;
+    dims: {
+        m1_size: number;    // 2*j1 + 1
+        m2_size: number;    // 2*j2 + 1
+        j_size: number;     // j1 + j2 - |j1-j2| + 1
+    }
+}
+</code></pre>
+<h3>Pros</h3>
+<ul>
+<li>Direct indexing for m1, m2</li>
+<li>Compact for fixed j1, j2</li>
+<li>Good cache locality</li>
+<li>Simpler than 4D array</li>
+</ul>
+<h3>Cons</h3>
+<ul>
+<li>Still has unused entries due to selection rules</li>
+<li>Less intuitive mapping from quantum numbers</li>
+<li>Fixed size regardless of sparsity</li>
+<li>Less flexible for varying j1, j2</li>
+</ul>
+<h3>Usage Example</h3>
+<pre><code class="language-typescript">const dims: CGDimensions = {
+    j1: 0.5,
+    j2: 0.5,
+    dims: {
+        m1_size: 2,
+        m2_size: 2,
+        j_size: 2
+    }
+};
+
+const table: CGArray = Array(dims.dims.m1_size)
+    .fill(null)
+    .map(() =&gt; Array(dims.dims.m2_size)
+        .fill(null)
+        .map(() =&gt; Array(dims.dims.j_size)
+            .fill(0)));
+
+const [m1_idx, m2_idx, j_idx] = getIndices(j1, m1, j2, m2, j);
+const coeff = table[m1_idx][m2_idx][j_idx];
+</code></pre>
+<h2>Option 4: Structured Object</h2>
+<pre><code class="language-typescript">interface CGTablePair {
+    j1: number;
+    j2: number;
+    coeffs: {
+        [j: number]: {            // total angular momentum
+            [m: number]: {        // total m
+                [m1: number]: number;  // coefficient for given m1
+            }
+        }
+    }
+}
+</code></pre>
+<h3>Pros</h3>
+<ul>
+<li>Direct mapping to quantum numbers</li>
+<li>Natural for fixed j1, j2</li>
+<li>Only stores needed coefficients</li>
+<li>Clear structure matching physical meaning</li>
+<li>Easy to understand and maintain</li>
+</ul>
+<h3>Cons</h3>
+<ul>
+<li>Object property lookup vs array indexing</li>
+<li>More complex to initialize</li>
+<li>Nested object access can be slower</li>
+<li>Floating point keys can be problematic</li>
+</ul>
+<h3>Usage Example</h3>
+<pre><code class="language-typescript">const table: CGTablePair = {
+    j1: 0.5,
+    j2: 0.5,
+    coeffs: {
+        0: {  // singlet
+            0: {  // m = 0
+                0.5: 1/Math.sqrt(2),   // m1 = 1/2
+                -0.5: -1/Math.sqrt(2)  // m1 = -1/2
+            }
+        },
+        1: {  // triplet
+            1: { 0.5: 1 },
+            0: { 
+                0.5: 1/Math.sqrt(2),
+                -0.5: 1/Math.sqrt(2)
+            },
+            -1: { -0.5: 1 }
+        }
+    }
+};
+
+// Access with helper function
+function getCG(table: CGTablePair, j: number, m: number, m1: number): number {
+    return table.coeffs[j]?.[m]?.[m1] ?? 0;
+}
+</code></pre>
+<h2>Option 5: Flat Array with Index Calculation</h2>
+<pre><code class="language-typescript">interface CGFlatTable {
+    j1: number;
+    j2: number;
+    data: Float64Array;
+    dims: {
+        m1_size: number;
+        m2_size: number;
+        j_size: number;
+    }
+}
+
+function getIndex(dims: CGFlatTable[&#39;dims&#39;], j: number, m: number, m1: number): number {
+    const m1_idx = Math.round(m1 + dims.m1_size/2);
+    const m2_idx = Math.round((m - m1) + dims.m2_size/2);
+    const j_idx = Math.round(j - Math.abs(j1-j2));
+    return m1_idx + dims.m1_size * (m2_idx + dims.m2_size * j_idx);
+}
+</code></pre>
+<h3>Pros</h3>
+<ul>
+<li>Best performance for array access</li>
+<li>Cache-friendly memory layout</li>
+<li>No nested objects or complex data structures</li>
+<li>Efficient memory usage</li>
+<li>Good for vectorized operations</li>
+</ul>
+<h3>Cons</h3>
+<ul>
+<li>Complex index calculations</li>
+<li>Less intuitive structure</li>
+<li>Fixed size allocation</li>
+<li>Harder to inspect/debug</li>
+</ul>
+<h3>Usage Example</h3>
+<pre><code class="language-typescript">const table: CGFlatTable = {
+    j1: 0.5,
+    j2: 0.5,
+    dims: {
+        m1_size: 2,
+        m2_size: 2,
+        j_size: 2
+    },
+    data: new Float64Array(8)  // 2 * 2 * 2
+};
+
+const idx = getIndex(table.dims, j, m, m1);
+const coeff = table.data[idx];
+</code></pre>
+<h2>Option 6: Tuple Array</h2>
+<pre><code class="language-typescript">type CGTuple = [j: number, m: number, m1: number, coeff: number];
+interface CGTupleTable {
+    j1: number;
+    j2: number;
+    coeffs: CGTuple[];
+}
+</code></pre>
+<h3>Pros</h3>
+<ul>
+<li>Simple structure</li>
+<li>Easy to iterate</li>
+<li>Only stores non-zero coefficients</li>
+<li>Good for serialization</li>
+<li>Easy to extend with additional data</li>
+</ul>
+<h3>Cons</h3>
+<ul>
+<li>Linear search for lookups</li>
+<li>No direct indexing</li>
+<li>Redundant storage of quantum numbers</li>
+<li>Less efficient for large tables</li>
+</ul>
+<h3>Usage Example</h3>
+<pre><code class="language-typescript">const table: CGTupleTable = {
+    j1: 0.5,
+    j2: 0.5,
+    coeffs: [
+        [0, 0, 0.5, 1/Math.sqrt(2)],
+        [0, 0, -0.5, -1/Math.sqrt(2)],
+        [1, 1, 0.5, 1],
+        [1, 0, 0.5, 1/Math.sqrt(2)],
+        [1, 0, -0.5, 1/Math.sqrt(2)],
+        [1, -1, -0.5, 1]
+    ]
+};
+
+function getCG(table: CGTupleTable, j: number, m: number, m1: number): number {
+    return table.coeffs.find(([j_, m_, m1_]) =&gt; 
+        j_ === j &amp;&amp; m_ === m &amp;&amp; m1_ === m1
+    )?.[3] ?? 0;
+}
+</code></pre>
+<h2>Recommendations</h2>
+<h3>For Spin Network Calculations</h3>
+<p>Option 4 (Structured Object) or Option 5 (Flat Array) are recommended:</p>
+<ol>
+<li><p><strong>Option 4</strong> when:</p>
+<ul>
+<li>Clarity and maintainability are priorities</li>
+<li>Working with variable j1, j2 combinations</li>
+<li>Need easy inspection of coefficients</li>
+<li>Memory efficiency is less critical</li>
+</ul>
+</li>
+<li><p><strong>Option 5</strong> when:</p>
+<ul>
+<li>Performance is critical</li>
+<li>Working with fixed j1, j2 for many calculations</li>
+<li>Memory layout optimization is important</li>
+<li>Implementing vectorized operations</li>
+</ul>
+</li>
+</ol>
+<h3>Implementation Strategy</h3>
+<p>Recommend implementing both:</p>
+<ol>
+<li><code>CGTablePair</code> for coefficient generation and storage</li>
+<li><code>CGFlatTable</code> for performance-critical calculations</li>
+</ol>
+<pre><code class="language-typescript">// Generation and storage
+const storedTable: CGTablePair = generateCGTable(j1, j2);
+
+// Convert to flat array for calculations
+const flatTable: CGFlatTable = convertToFlat(storedTable);
+</code></pre>
+<p>This gives us the best of both worlds: clear structure for generation and maintenance, with optimized performance for calculations.</p>
+<h2>References</h2>
+<ol>
+<li>Butler, P.H., Point Group Symmetry Applications, Methods and Tables (1981)</li>
+<li>Varshalovich, D.A., et al., Quantum Theory of Angular Momentum (1988)</li>
+</ol>
+
+    <div class="last-updated">Last Updated: 2025-07-06</div>
+</body>
+</html>

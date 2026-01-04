@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intertwiner Module Design Document</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\(', '\)']],
+                displayMath: [['$$', '$$'], ['\[', '\]']]
+            },
+            startup: {
+                ready: () => {
+                    console.log('MathJax is loaded');
+                    MathJax.startup.defaultReady();
+                }
+            }
+        };
+    </script>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #64748b;
+            --background: #ffffff;
+            --surface: #f8fafc;
+            --border: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+        }
+        
+        [data-theme="dark"] {
+            --primary-color: #3b82f6;
+            --secondary-color: #94a3b8;
+            --background: #0f172a;
+            --surface: #1e293b;
+            --border: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .back-link:hover {
+            transform: translateX(-2px);
+        }
+        
+        h1 {
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+        
+        h2 {
+            color: var(--text-primary);
+            margin-top: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.3rem;
+        }
+        
+        h3 {
+            color: var(--text-primary);
+        }
+        
+        code {
+            background: var(--surface);
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.875rem;
+        }
+        
+        pre {
+            background: var(--surface);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+        }
+        
+        blockquote {
+            border-left: 4px solid var(--primary-color);
+            padding-left: 1rem;
+            margin: 1rem 0;
+            color: var(--text-secondary);
+        }
+        
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1rem 0;
+        }
+        
+        th, td {
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            text-align: left;
+        }
+        
+        th {
+            background: var(--surface);
+            font-weight: 600;
+        }
+        
+        .last-updated {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: 3rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">&larr; Back to Documentation</a>
+    <h1>Intertwiner Module Design Document</h1>
+<p><em>Version 1.0 - Created: May 28, 2025</em></p>
+<h2>Overview</h2>
+<p>This document outlines the theoretical foundation and implementation design for the intertwiner module within the <code>packages/quantum</code> library. The module ports existing intertwiner functionality from <code>src/</code> and <code>lib/</code> directories into the unified quantum framework.</p>
+<h2>Theoretical Foundation</h2>
+<h3>1. Intertwiner Definition</h3>
+<p>In Loop Quantum Gravity and spin network theory, an <strong>intertwiner</strong> is an SU(2)-invariant tensor that ensures gauge invariance at network nodes. For a node with edges labeled by spins $j_1, j_2, \ldots, j_n$, an intertwiner maps:</p>
+<p>$\mathcal{I}: \mathcal{H}<em>{j_1} \otimes \mathcal{H}</em>{j_2} \otimes \cdots \otimes \mathcal{H}_{j_n} \rightarrow \mathbb{C}$</p>
+<p>where each $\mathcal{H}_{j_i}$ is a $(2j_i + 1)$-dimensional irreducible representation of SU(2).</p>
+<h3>2. Intertwiner Space</h3>
+<p>The space of all intertwiners at a node is called the <strong>intertwiner space</strong>:</p>
+<p>$\text{Inv}(j_1, j_2, \ldots, j_n) = \text{Hom}<em>{\text{SU}(2)}(\mathcal{H}</em>{j_1} \otimes \mathcal{H}<em>{j_2} \otimes \cdots \otimes \mathcal{H}</em>{j_n}, \mathbb{C})$</p>
+<p>This space has finite dimension, which determines the number of independent quantum states at the node.</p>
+<h3>3. Mathematical Construction</h3>
+<h4>3.1 Four-Valent Nodes</h4>
+<p>For a 4-valent node with edge spins $(j_1, j_2, j_3, j_4)$, the intertwiner space dimension is calculated using the recoupling scheme:</p>
+<p>$(j_1 \otimes j_2) \otimes (j_3 \otimes j_4) \rightarrow j = 0$</p>
+<p>The dimension equals the number of ways to achieve this coupling:</p>
+<p>$\dim(\text{Inv}(j_1, j_2, j_3, j_4)) = \sum_{j_{12}} \delta_{j_{12}, j_{34}}$</p>
+<p>where:</p>
+<ul>
+<li>$j_{12} \in {|j_1 - j_2|, |j_1 - j_2| + 1, \ldots, j_1 + j_2}$</li>
+<li>$j_{34} \in {|j_3 - j_4|, |j_3 - j_4| + 1, \ldots, j_3 + j_4}$</li>
+</ul>
+<h4>3.2 Three-Valent Nodes</h4>
+<p>For 3-valent nodes with spins $(j_1, j_2, j_3)$, the intertwiner space is 1-dimensional if the triangle inequality is satisfied:</p>
+<p>$|j_1 - j_2| \leq j_3 \leq j_1 + j_2$
+$|j_2 - j_3| \leq j_1 \leq j_2 + j_3$
+$|j_3 - j_1| \leq j_2 \leq j_3 + j_1$</p>
+<h4>3.3 Basis State Construction</h4>
+<p>Basis states are constructed using Clebsch-Gordan coefficients:</p>
+<p>$|\text{intertwiner}\rangle = \sum_{m_1,m_2,m_3,m_4} \sum_{j_{12}, m_{12}} C_{j_1,m_1;j_2,m_2}^{j_{12},m_{12}} ; C_{j_3,m_3;j_4,m_4}^{j_{12},-m_{12}} ; |j_1,m_1\rangle \otimes |j_2,m_2\rangle \otimes |j_3,m_3\rangle \otimes |j_4,m_4\rangle$</p>
+<h3>4. Special Cases</h3>
+<h4>4.1 Four Spin-1/2 Edges</h4>
+<p>The most common case has 2-dimensional intertwiner space with basis:</p>
+<p><strong>Singlet-Singlet Coupling:</strong>
+$|\psi_1\rangle = \frac{1}{2}(|\uparrow\downarrow\uparrow\downarrow\rangle - |\uparrow\downarrow\downarrow\uparrow\rangle - |\downarrow\uparrow\uparrow\downarrow\rangle + |\downarrow\uparrow\downarrow\uparrow\rangle)$</p>
+<p><strong>Triplet-Triplet Coupling:</strong>
+$|\psi_2\rangle = \frac{1}{\sqrt{3}}|\uparrow\uparrow\downarrow\downarrow\rangle + \frac{1}{\sqrt{3}}|\downarrow\downarrow\uparrow\uparrow\rangle - \frac{1}{2\sqrt{3}}(\text{mixed terms})$</p>
+<h2>Implementation Design</h2>
+<h3>1. Module Structure</h3>
+<pre><code>packages/quantum/src/intertwiner/
+├── index.ts              # Public API exports
+├── types.ts              # TypeScript interfaces
+├── core.ts               # Core dimension calculations
+├── basis.ts              # Basis state construction
+└── tensor.ts             # Tensor representation
+
+packages/quantum/__tests__/intertwiner/
+├── core.test.ts          # Core function tests
+├── basis.test.ts         # Basis construction tests
+└── tensor.test.ts        # Tensor representation tests
+</code></pre>
+<h3>2. Key Interfaces</h3>
+<h4>2.1 IntertwinerBasisState</h4>
+<pre><code class="language-typescript">export interface IntertwinerBasisState {
+  intermediateJ: number;           // Intermediate angular momentum
+  stateVector: StateVector;        // State in tensor product space
+  recouplingScheme: string;        // e.g., &quot;(j1,j2)(j3,j4)&quot;
+  normalization: number;           // Normalization factor
+}
+</code></pre>
+<h4>2.2 IntertwinerSpace</h4>
+<pre><code class="language-typescript">export interface IntertwinerSpace {
+  dimension: number;               // Space dimension
+  basisStates: IntertwinerBasisState[];  // Orthonormal basis
+  edgeSpins: number[];            // Input edge spins
+  totalJ: number;                 // Total angular momentum (0)
+}
+</code></pre>
+<h4>2.3 IntertwinerTensor</h4>
+<pre><code class="language-typescript">export interface IntertwinerTensor {
+  dimensions: number[];           // Edge dimensions (2j+1)
+  stateVector: StateVector;       // Sparse tensor as state vector
+  basisState: IntertwinerBasisState;  // Associated basis information
+}
+</code></pre>
+<h3>3. Core Functions</h3>
+<h4>3.1 Dimension Calculation</h4>
+<pre><code class="language-typescript">/**
+ * Calculate intertwiner space dimension
+ */
+export function calculateDimension(edgeSpins: number[]): number;
+
+/**
+ * Check triangle inequality for three spins
+ */
+export function triangleInequality(j1: number, j2: number, j3: number): boolean;
+
+/**
+ * Get allowed intermediate spins when coupling j1 and j2
+ */
+export function allowedIntermediateSpins(j1: number, j2: number): number[];
+</code></pre>
+<h4>3.2 Basis Construction</h4>
+<pre><code class="language-typescript">/**
+ * Construct complete orthonormal basis for intertwiner space
+ */
+export function constructBasis(edgeSpins: number[]): IntertwinerSpace;
+
+/**
+ * Construct single basis vector for given intermediate coupling
+ */
+export function constructBasisVector(
+  j1: number, j2: number, j3: number, j4: number, 
+  intermediateJ: number
+): IntertwinerBasisState;
+
+/**
+ * Optimized basis for four spin-1/2 edges
+ */
+export function getFourSpinHalfBasis(): IntertwinerSpace;
+</code></pre>
+<h4>3.3 Tensor Representation</h4>
+<pre><code class="language-typescript">/**
+ * Convert basis state to sparse tensor representation
+ */
+export function basisToTensor(basis: IntertwinerBasisState): IntertwinerTensor;
+
+/**
+ * Create intertwiner tensor from edge spins and intermediate J
+ */
+export function createIntertwinerTensor(
+  edgeSpins: number[], 
+  intermediateJ: number
+): IntertwinerTensor;
+</code></pre>
+<h3>4. Integration with Existing Framework</h3>
+<h4>4.1 Use Existing Components</h4>
+<ul>
+<li><strong>StateVector</strong>: Primary data structure for representing intertwiner states</li>
+<li><strong>Clebsch-Gordan coefficients</strong>: From <code>angularMomentum/composition.ts</code></li>
+<li><strong>Angular momentum validation</strong>: From <code>angularMomentum/core.ts</code></li>
+<li><strong>Complex number handling</strong>: From <code>core/types.ts</code></li>
+</ul>
+<h4>4.2 Example Usage</h4>
+<pre><code class="language-typescript">import { calculateDimension, constructBasis } from &#39;@quantum/intertwiner&#39;;
+
+// Calculate dimension for 4-valent node with spin-1/2 edges
+const dimension = calculateDimension([0.5, 0.5, 0.5, 0.5]);
+console.log(dimension); // Output: 2
+
+// Construct complete basis
+const space = constructBasis([0.5, 0.5, 0.5, 0.5]);
+console.log(space.basisStates.length); // Output: 2
+</code></pre>
+<h3>5. Port Strategy from Existing Code</h3>
+<h4>5.1 From <code>lib/core/intertwinerSpace.ts</code></h4>
+<ul>
+<li><strong>Direct port</strong>: <code>triangleInequality</code>, <code>allowedIntermediateSpins</code>, <code>intertwinerDimension</code></li>
+<li><strong>Adapt</strong>: <code>constructBasisVector</code> to use quantum module&#39;s <code>StateVector</code></li>
+<li><strong>Replace</strong>: Custom CG coefficients with quantum module&#39;s <code>clebschGordan</code></li>
+</ul>
+<h4>5.2 From <code>lib/tensor/tensorNode.ts</code></h4>
+<ul>
+<li><strong>Extract</strong>: Sparse tensor element logic</li>
+<li><strong>Adapt</strong>: Convert to <code>StateVector</code> representation</li>
+<li><strong>Simplify</strong>: Remove visualization-specific properties</li>
+</ul>
+<h4>5.3 From <code>src/simulation/</code> files</h4>
+<ul>
+<li><strong>Reference</strong>: Geometric property calculations for validation</li>
+<li><strong>Integrate</strong>: Volume/area calculations with intertwiner tensors</li>
+</ul>
+<h3>6. Testing Strategy</h3>
+<p>Tests will be located in the shared <code>packages/quantum/__tests__/intertwiner/</code> directory to maintain consistency with the existing quantum module testing structure.</p>
+<h4>6.1 Unit Tests (<code>__tests__/intertwiner/core.test.ts</code>)</h4>
+<ul>
+<li><strong>Dimension calculations</strong>: Verify against known results</li>
+<li><strong>Triangle inequality</strong>: Edge cases and validation</li>
+<li><strong>Allowed intermediate spins</strong>: Coupling rule verification</li>
+</ul>
+<h4>6.2 Basis Tests (<code>__tests__/intertwiner/basis.test.ts</code>)</h4>
+<ul>
+<li><strong>Basis orthonormality</strong>: Check inner products</li>
+<li><strong>Special cases</strong>: Four spin-1/2, three-valent nodes</li>
+<li><strong>CG coefficient consistency</strong>: Compare with direct calculations</li>
+</ul>
+<h4>6.3 Tensor Tests (<code>__tests__/intertwiner/tensor.test.ts</code>)</h4>
+<ul>
+<li><strong>StateVector operations</strong>: Tensor products, normalization</li>
+<li><strong>Sparse representation</strong>: Conversion accuracy</li>
+<li><strong>Numerical stability</strong>: Large spin values, edge cases</li>
+</ul>
+<h4>6.4 Regression Tests</h4>
+<ul>
+<li><strong>Port validation</strong>: Compare results with existing <code>lib/</code> implementation</li>
+<li><strong>Performance</strong>: Benchmark against current code</li>
+</ul>
+<h3>7. Implementation Phases</h3>
+<h4>Phase 1: Core Functions</h4>
+<ol>
+<li>Port basic dimension calculations</li>
+<li>Implement triangle inequality checks</li>
+<li>Set up module structure and types</li>
+</ol>
+<h4>Phase 2: Basis Construction</h4>
+<ol>
+<li>Port <code>constructBasisVector</code> using quantum CG coefficients</li>
+<li>Implement orthonormalization using <code>StateVector</code> operations</li>
+<li>Add optimized four spin-1/2 case</li>
+</ol>
+<h4>Phase 3: Tensor Integration</h4>
+<ol>
+<li>Adapt sparse tensor representation to <code>StateVector</code></li>
+<li>Implement conversion utilities</li>
+<li>Add comprehensive tests</li>
+</ol>
+<h4>Phase 4: Documentation and Examples</h4>
+<ol>
+<li>Complete API documentation</li>
+<li>Add usage examples</li>
+<li>Integration guide for existing codebase</li>
+</ol>
+<h2>Migration Benefits</h2>
+<ol>
+<li><strong>Unified Framework</strong>: All quantum calculations in one module</li>
+<li><strong>Better CG Coefficients</strong>: Use validated implementation from quantum module</li>
+<li><strong>Type Safety</strong>: Comprehensive TypeScript interfaces</li>
+<li><strong>Performance</strong>: Optimized StateVector operations</li>
+<li><strong>Maintainability</strong>: Clear separation of concerns</li>
+<li><strong>Testing</strong>: Comprehensive test coverage</li>
+</ol>
+<h2>Compatibility</h2>
+<p>The new module will maintain complete API compatibility with existing intertwiner code while providing enhanced functionality through the quantum framework&#39;s infrastructure.</p>
+
+    <div class="last-updated">Last Updated: 2025-07-06</div>
+</body>
+</html>

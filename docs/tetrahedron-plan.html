@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetrahedron Implementation Plan</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\(', '\)']],
+                displayMath: [['$$', '$$'], ['\[', '\]']]
+            },
+            startup: {
+                ready: () => {
+                    console.log('MathJax is loaded');
+                    MathJax.startup.defaultReady();
+                }
+            }
+        };
+    </script>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #64748b;
+            --background: #ffffff;
+            --surface: #f8fafc;
+            --border: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+        }
+        
+        [data-theme="dark"] {
+            --primary-color: #3b82f6;
+            --secondary-color: #94a3b8;
+            --background: #0f172a;
+            --surface: #1e293b;
+            --border: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .back-link:hover {
+            transform: translateX(-2px);
+        }
+        
+        h1 {
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+        
+        h2 {
+            color: var(--text-primary);
+            margin-top: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.3rem;
+        }
+        
+        h3 {
+            color: var(--text-primary);
+        }
+        
+        code {
+            background: var(--surface);
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.875rem;
+        }
+        
+        pre {
+            background: var(--surface);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+        }
+        
+        blockquote {
+            border-left: 4px solid var(--primary-color);
+            padding-left: 1rem;
+            margin: 1rem 0;
+            color: var(--text-secondary);
+        }
+        
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1rem 0;
+        }
+        
+        th, td {
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            text-align: left;
+        }
+        
+        th {
+            background: var(--surface);
+            font-weight: 600;
+        }
+        
+        .last-updated {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: 3rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">&larr; Back to Documentation</a>
+    <h1>Tetrahedron Implementation Plan</h1>
+<p><em>Created: 2025-05-24</em></p>
+<h2>Two-Phase Approach</h2>
+<h3>Phase 1: Basic Tetrahedron (T67 - Ready Now)</h3>
+<p><strong>What</strong>: Sequential coupling of 4 spins using existing T66 capability
+<strong>Result</strong>: Valid quantum state, but fixed coupling order ((j1⊗j2)⊗j3)⊗j4
+<strong>Limitation</strong>: Cannot transform between coupling schemes</p>
+<pre><code class="language-typescript">interface BasicTetrahedron {
+  edgeSpins: number[];        // [j1, j2, j3, j4] 
+  coupledState: StateVector;  // Final result
+  totalJ: number;             // Effective angular momentum
+}
+</code></pre>
+<h3>Phase 2: Complete Tetrahedron (Requires 6j Symbols)</h3>
+<p><strong>What</strong>: Full intertwiner space with recoupling transformations
+<strong>Result</strong>: All possible tetrahedron states, proper geometric symmetries
+<strong>Requirement</strong>: 6j symbols for transforming between coupling schemes</p>
+<pre><code class="language-typescript">interface CompleteTetrahedron extends BasicTetrahedron {
+  intertwiners: number[];           // All allowed J values
+  basisStates: StateVector[];       // Complete orthogonal basis
+  recouplingTransforms: Matrix[];   // 6j-based transformations
+}
+</code></pre>
+<h2>Why 6j Symbols are Essential</h2>
+<p>Research shows 6j symbols are &quot;the basic building block&quot; for quantum tetrahedra because:</p>
+<ol>
+<li>Handle coupling of 3+ angular momenta with scheme transformations</li>
+<li>Provide unitary transforms between different coupling orders</li>
+<li>Enable proper geometric interpretation of quantum tetrahedra</li>
+</ol>
+<h2>Implementation Timeline</h2>
+<ul>
+<li><strong>Phase 1</strong>: 3-4 days (can start immediately with T66)</li>
+<li><strong>6j Symbols</strong>: 3-4 days (extends T55a Wigner module) </li>
+<li><strong>Phase 2</strong>: 4-5 days (after 6j symbols complete)</li>
+</ul>
+<h2>Bottom Line</h2>
+<p>T67 can start now with basic construction. Complete tetrahedron needs 6j symbols for mathematical rigor and physical accuracy.</p>
+
+    <div class="last-updated">Last Updated: 2025-07-06</div>
+</body>
+</html>

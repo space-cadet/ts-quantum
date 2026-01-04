@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tensor Network Module Implementation Plan</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\(', '\)']],
+                displayMath: [['$$', '$$'], ['\[', '\]']]
+            },
+            startup: {
+                ready: () => {
+                    console.log('MathJax is loaded');
+                    MathJax.startup.defaultReady();
+                }
+            }
+        };
+    </script>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #64748b;
+            --background: #ffffff;
+            --surface: #f8fafc;
+            --border: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+        }
+        
+        [data-theme="dark"] {
+            --primary-color: #3b82f6;
+            --secondary-color: #94a3b8;
+            --background: #0f172a;
+            --surface: #1e293b;
+            --border: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .back-link:hover {
+            transform: translateX(-2px);
+        }
+        
+        h1 {
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+        
+        h2 {
+            color: var(--text-primary);
+            margin-top: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.3rem;
+        }
+        
+        h3 {
+            color: var(--text-primary);
+        }
+        
+        code {
+            background: var(--surface);
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.875rem;
+        }
+        
+        pre {
+            background: var(--surface);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+        }
+        
+        blockquote {
+            border-left: 4px solid var(--primary-color);
+            padding-left: 1rem;
+            margin: 1rem 0;
+            color: var(--text-secondary);
+        }
+        
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1rem 0;
+        }
+        
+        th, td {
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            text-align: left;
+        }
+        
+        th {
+            background: var(--surface);
+            font-weight: 600;
+        }
+        
+        .last-updated {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: 3rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">&larr; Back to Documentation</a>
+    <h1>Tensor Network Module Implementation Plan</h1>
+<p><em>Created: 2025-06-03 | Updated: 2025-06-03</em></p>
+<h2>Overview</h2>
+<p>This document outlines the implementation plan for the tensor network module (T75) within packages/quantum. The module provides memory-efficient representation and computation of quantum states using tensor network algorithms while leveraging all existing quantum and graph-core infrastructure.</p>
+<h2>Architecture - Leveraging Existing Infrastructure</h2>
+<h3>Integration with Existing Modules</h3>
+<p><strong>Quantum Module Dependencies</strong>:</p>
+<ul>
+<li><code>StateVector</code> (IQuantumState interface)</li>
+<li><code>Operator</code> (IOperator interface) </li>
+<li><code>QuantumGraph</code> class</li>
+<li><code>QuantumObject</code> union type</li>
+<li>Matrix operations utilities</li>
+<li>Measurement system</li>
+<li>Gates and quantum channels</li>
+</ul>
+<p><strong>Graph-Core Module Dependencies</strong>:</p>
+<ul>
+<li>Graph builders (<code>lattice2DPeriodic</code>, etc.)</li>
+<li><code>GraphologyAdapter</code></li>
+<li><code>IGraph</code> interfaces</li>
+<li>Graph algorithms and utilities</li>
+</ul>
+<h3>File Structure</h3>
+<pre><code class="language-typescript">packages/quantum/src/tensorNetwork/
+├── core/
+│   ├── tensorIndex.ts        # Index system built on existing graph indices
+│   ├── graphTensor.ts        # Tensor class using IGraph topology
+│   └── contraction.ts        # Uses existing matrix operations utilities
+├── states/
+│   ├── tensorNetworkState.ts # Implements IQuantumState interface
+│   ├── graphStateDecomposer.ts # Converts QuantumGraph → TensorNetwork
+│   └── stateVectorBridge.ts  # Uses existing StateVector conversion
+├── operators/
+│   ├── tensorOperator.ts     # Implements IOperator interface
+│   ├── gateDecomposer.ts     # Converts existing gates to tensor form
+│   └── measurementTensor.ts  # Uses existing measurement system
+├── networks/
+│   ├── latticeNetwork.ts     # Uses graph-core lattice builders
+│   ├── toricCodeNetwork.ts   # Builds on existing toric code example
+│   └── customNetwork.ts      # Uses QuantumGraph as topology
+└── index.ts                  # Exports as QuantumObject variants
+</code></pre>
+<h2>MVP Implementation Plan</h2>
+<h3>Phase 1: Core Tensor Infrastructure</h3>
+<p><strong>Goal</strong>: Basic tensor operations leveraging existing matrix utilities</p>
+<p><strong>Files</strong>: <code>core/graphTensor.ts</code>, <code>core/tensorIndex.ts</code></p>
+<p><strong>Implementation</strong>:</p>
+<pre><code class="language-typescript">class GraphTensor {
+  constructor(
+    private data: Complex[], 
+    private shape: number[], 
+    private topology: IGraph,  // Use existing IGraph interface
+    private indices: string[]
+  ) {}
+  
+  // Leverage existing matrix operations utilities
+  contract(other: GraphTensor): GraphTensor
+  reshape(newIndices: string[]): GraphTensor
+}
+</code></pre>
+<p><strong>Key Integration Points</strong>:</p>
+<ul>
+<li>Use existing <code>Complex</code> type from Math.js integration</li>
+<li>Leverage existing matrix operation utilities</li>
+<li>Build on <code>IGraph</code> interface from graph-core</li>
+<li>Use existing validation utilities</li>
+</ul>
+<p><strong>Estimated effort</strong>: 2-3 days</p>
+<h3>Phase 2: Quantum State Integration</h3>
+<p><strong>Goal</strong>: TensorNetworkState implementing IQuantumState interface</p>
+<p><strong>Files</strong>: <code>states/tensorNetworkState.ts</code>, <code>states/stateVectorBridge.ts</code></p>
+<p><strong>Implementation</strong>:</p>
+<pre><code class="language-typescript">class TensorNetworkState implements IQuantumState {
+  objectType = &#39;tensorNetworkState&#39; as const
+  
+  constructor(private network: TensorNetwork) {}
+  
+  // Implement all IQuantumState methods
+  dimension: number
+  norm(): number
+  normalize(): TensorNetworkState
+  
+  // Bridge to existing StateVector system
+  toStateVector(): StateVector
+  static fromStateVector(state: StateVector): TensorNetworkState
+}
+</code></pre>
+<p><strong>Key Integration Points</strong>:</p>
+<ul>
+<li>Implement <code>IQuantumState</code> interface completely</li>
+<li>Use existing <code>StateVector</code> conversion patterns</li>
+<li>Integrate with <code>QuantumObject</code> union type</li>
+<li>Leverage existing normalization utilities</li>
+</ul>
+<p><strong>Estimated effort</strong>: 3-4 days</p>
+<h3>Phase 3: QuantumGraph Integration</h3>
+<p><strong>Goal</strong>: Convert QuantumGraph to tensor network representation</p>
+<p><strong>Files</strong>: <code>states/graphStateDecomposer.ts</code>, <code>networks/customNetwork.ts</code></p>
+<p><strong>Implementation</strong>:</p>
+<pre><code class="language-typescript">class GraphStateDecomposer {
+  static decompose(qGraph: QuantumGraph): TensorNetworkState {
+    // Extract quantum objects from graph vertices/edges
+    // Build tensor network matching graph topology
+    // Leverage existing QuantumGraph methods
+  }
+}
+
+function createTensorNetwork(graph: IGraph): TensorNetwork {
+  // Use existing graph builders from graph-core
+  // Integrate with existing lattice generators
+}
+</code></pre>
+<p><strong>Key Integration Points</strong>:</p>
+<ul>
+<li>Use existing <code>QuantumGraph</code> class and methods</li>
+<li>Leverage graph-core builders (<code>lattice2DPeriodic</code>, etc.)</li>
+<li>Integrate with existing quantum object storage</li>
+<li>Use existing graph traversal algorithms</li>
+</ul>
+<p><strong>Estimated effort</strong>: 2-3 days</p>
+<h3>Phase 4: Operator Integration</h3>
+<p><strong>Goal</strong>: Tensor network operators implementing IOperator interface</p>
+<p><strong>Files</strong>: <code>operators/tensorOperator.ts</code>, <code>operators/gateDecomposer.ts</code></p>
+<p><strong>Implementation</strong>:</p>
+<pre><code class="language-typescript">class TensorNetworkOperator implements IOperator {
+  objectType = &#39;tensorNetworkOperator&#39; as const
+  
+  // Implement all IOperator methods
+  apply(state: TensorNetworkState): TensorNetworkState
+  tensorProduct(other: IOperator): TensorNetworkOperator
+  
+  // Convert existing gates to tensor form
+  static fromGate(gate: IOperator): TensorNetworkOperator
+}
+</code></pre>
+<p><strong>Key Integration Points</strong>:</p>
+<ul>
+<li>Implement <code>IOperator</code> interface completely</li>
+<li>Use existing gate implementations (Pauli, Hadamard, CNOT)</li>
+<li>Leverage existing operator algebra utilities</li>
+<li>Integrate with existing measurement system</li>
+</ul>
+<p><strong>Estimated effort</strong>: 2-3 days</p>
+<h3>Phase 5: Specialized Networks</h3>
+<p><strong>Goal</strong>: Domain-specific tensor networks using existing infrastructure</p>
+<p><strong>Files</strong>: <code>networks/latticeNetwork.ts</code>, <code>networks/toricCodeNetwork.ts</code></p>
+<p><strong>Implementation</strong>:</p>
+<pre><code class="language-typescript">// Leverage existing toric code example
+function createToricCodeTensorNetwork(width: number, height: number): TensorNetworkState {
+  const lattice = lattice2DPeriodic(width, height)  // Existing builder
+  const qGraph = new QuantumGraph(lattice)          // Existing QuantumGraph
+  return GraphStateDecomposer.decompose(qGraph)     // Convert to tensor network
+}
+
+// Use existing lattice builders
+function createLatticeNetwork(builder: () =&gt; IGraph): TensorNetworkState {
+  // Leverage all existing graph builders
+}
+</code></pre>
+<p><strong>Key Integration Points</strong>:</p>
+<ul>
+<li>Use all existing graph builders from graph-core</li>
+<li>Build on existing toric code implementation</li>
+<li>Leverage existing QuantumGraph initialization patterns</li>
+<li>Integrate with existing stabilizer operator examples</li>
+</ul>
+<p><strong>Estimated effort</strong>: 1-2 days</p>
+<h3>Phase 6: Testing and Integration</h3>
+<p><strong>Goal</strong>: Comprehensive testing using existing test infrastructure</p>
+<p><strong>Files</strong>: Test files in existing <code>__tests__/</code> structure</p>
+<p><strong>Key Integration Points</strong>:</p>
+<ul>
+<li>Use existing test utilities and patterns</li>
+<li>Validate against existing StateVector implementations</li>
+<li>Test conversion between existing formats</li>
+<li>Benchmark against existing toric code examples</li>
+</ul>
+<p><strong>Estimated effort</strong>: 2-3 days</p>
+<h2>Testing Strategy</h2>
+<h3>Unit Tests</h3>
+<ul>
+<li><code>tensor.test.ts</code>: Core tensor operations</li>
+<li><code>contraction.test.ts</code>: Einstein summation correctness</li>
+<li><code>tensorState.test.ts</code>: Quantum state operations</li>
+<li><code>conversion.test.ts</code>: StateVector compatibility</li>
+</ul>
+<h3>Integration Tests</h3>
+<ul>
+<li>Toric code tensor network representation</li>
+<li>Memory usage validation</li>
+<li>Performance benchmarks vs StateVector</li>
+</ul>
+<h3>Test Coverage Goals</h3>
+<ul>
+<li>90%+ line coverage</li>
+<li>All public APIs tested</li>
+<li>Edge cases and error conditions</li>
+</ul>
+<h2>Usage Examples - Leveraging Existing Infrastructure</h2>
+<h3>Example 1: Converting Existing QuantumGraph to Tensor Network</h3>
+<pre><code class="language-typescript">// Use existing graph builder and QuantumGraph
+const lattice = lattice2DPeriodic(3, 3)  // Existing graph-core builder
+const qGraph = new QuantumGraph(lattice)  // Existing QuantumGraph class
+
+// Initialize with existing state creation
+for (const node of qGraph.getNodes()) {
+  const plusState = createBasisState(2, 0).add(createBasisState(2, 1)).normalize()
+  qGraph.setVertexQuantumObject(node.id, plusState)
+}
+
+// Convert to tensor network
+const tensorNetwork = GraphStateDecomposer.decompose(qGraph)
+console.log(&#39;Memory reduction:&#39;, qGraph.memorySize / tensorNetwork.memorySize)
+</code></pre>
+<h3>Example 2: Toric Code with Tensor Networks</h3>
+<pre><code class="language-typescript">// Build on existing toric code example
+const config = { width: 2, height: 2 }
+const qGraph = setupToricCode(config)  // Existing function from T73a
+
+// Convert to tensor network for memory efficiency
+const tensorNetwork = createToricCodeTensorNetwork(config.width, config.height)
+
+// Use existing measurement system
+const result = tensorNetwork.measureSubsystem([&#39;0,0&#39;, &#39;0,1&#39;, &#39;1,0&#39;, &#39;1,1&#39;])
+console.log(&#39;Measurement result:&#39;, result)
+</code></pre>
+<h3>Example 3: Operator Application Using Existing Gates</h3>
+<pre><code class="language-typescript">// Use existing quantum gates
+const cnotGate = CNOT  // Existing gate from quantum module
+const tensorCNOT = TensorNetworkOperator.fromGate(cnotGate)
+
+// Apply to tensor network state
+const initialState = TensorNetworkState.fromStateVector(someBellState)
+const finalState = tensorCNOT.apply(initialState)
+
+// Convert back to StateVector for validation
+const stateVector = finalState.toStateVector()
+</code></pre>
+<h3>Example 4: Integration with Existing Quantum Graph Operations</h3>
+<pre><code class="language-typescript">// Use existing quantum graph operations
+const qGraph = new QuantumGraph(lattice2DPeriodic(2, 2))
+qGraph.applyOperation([&#39;0,0&#39;, &#39;0,1&#39;], PauliX.tensorProduct(PauliX))
+
+// Convert to tensor network for efficient representation
+const tensorNetwork = GraphStateDecomposer.decompose(qGraph)
+
+// Perform tensor network operations
+const contracted = tensorNetwork.contract()  // Get full state vector when needed
+</code></pre>
+<h2>Performance Targets</h2>
+<h3>Memory Efficiency</h3>
+<ul>
+<li><strong>Product states</strong>: 10-100x reduction vs StateVector</li>
+<li><strong>Structured states</strong>: 2-10x reduction vs StateVector</li>
+<li><strong>Entangled states</strong>: Minimal overhead</li>
+</ul>
+<h3>Computational Performance</h3>
+<ul>
+<li>Tensor contractions should be competitive with direct matrix operations</li>
+<li>Conversion overhead should be minimal</li>
+<li>Target: Handle 12+ qubit systems efficiently</li>
+</ul>
+<h2>Integration Points with Existing Infrastructure</h2>
+<h3>Quantum Module Integration</h3>
+<ul>
+<li><strong>IQuantumState</strong>: TensorNetworkState implements full interface</li>
+<li><strong>IOperator</strong>: TensorNetworkOperator implements full interface  </li>
+<li><strong>QuantumObject</strong>: Add tensor network types to union</li>
+<li><strong>StateVector</strong>: Bidirectional conversion support</li>
+<li><strong>Measurement</strong>: Use existing measurement system and utilities</li>
+<li><strong>Gates</strong>: Convert existing gates to tensor network representation</li>
+<li><strong>Matrix Operations</strong>: Leverage existing utilities for contractions</li>
+</ul>
+<h3>Graph-Core Module Integration</h3>
+<ul>
+<li><strong>IGraph</strong>: Use as topology foundation for tensor networks</li>
+<li><strong>Graph Builders</strong>: Leverage all existing builders (lattice2D, random, etc.)</li>
+<li><strong>GraphologyAdapter</strong>: Use existing graph algorithms and traversals</li>
+<li><strong>Graph Utilities</strong>: Use existing path finding and analysis tools</li>
+</ul>
+<h3>QuantumGraph Integration</h3>
+<ul>
+<li><strong>Conversion</strong>: Direct QuantumGraph → TensorNetwork conversion</li>
+<li><strong>Operations</strong>: Use existing applyOperation infrastructure</li>
+<li><strong>Composite States</strong>: Leverage existing composite state management</li>
+<li><strong>Examples</strong>: Build on existing toric code and Bell state examples</li>
+</ul>
+<h2>Implementation Timeline</h2>
+<p><strong>Week 1</strong>: Phase 1 (Core tensor with existing matrix ops) + Phase 2 (IQuantumState integration)
+<strong>Week 2</strong>: Phase 3 (QuantumGraph conversion) + Phase 4 (IOperator integration)<br><strong>Week 3</strong>: Phase 5 (Specialized networks using existing builders) + Phase 6 (Testing with existing infrastructure)
+<strong>Week 4</strong>: Documentation + Performance benchmarks + Integration examples</p>
+<h2>Success Criteria</h2>
+<ol>
+<li><strong>Functional</strong>: All MVP features implemented and tested using existing infrastructure</li>
+<li><strong>Performance</strong>: 5x+ memory reduction for structured states vs existing StateVector</li>
+<li><strong>Integration</strong>: Seamless integration with existing QuantumGraph and graph-core modules</li>
+<li><strong>Compatibility</strong>: Full IQuantumState and IOperator interface compliance</li>
+<li><strong>Quality</strong>: 90%+ test coverage using existing test patterns</li>
+<li><strong>Validation</strong>: Existing toric code example working with tensor networks</li>
+<li><strong>Conversion</strong>: Lossless bidirectional conversion with existing StateVector</li>
+</ol>
+<h2>Future Extensions (Post-MVP)</h2>
+<ul>
+<li>Bond dimension truncation for approximation algorithms</li>
+<li>Matrix Product State (MPS) canonical forms leveraging existing angular momentum</li>
+<li>Advanced contraction order optimization using existing graph algorithms</li>
+<li>Integration with existing Wigner symbol calculations for spin networks</li>
+<li>Quantum circuit tensor network compilation using existing gate infrastructure</li>
+</ul>
+<h2>Risk Mitigation</h2>
+<p><strong>Risk</strong>: Breaking existing interfaces
+<strong>Mitigation</strong>: Implement all existing interfaces exactly, maintain full compatibility</p>
+<p><strong>Risk</strong>: Performance overhead in existing workflows<br><strong>Mitigation</strong>: Make tensor networks optional, maintain existing StateVector performance</p>
+<p><strong>Risk</strong>: Integration complexity with QuantumGraph
+<strong>Mitigation</strong>: Use existing patterns from QuantumGraph implementation</p>
+<p><strong>Risk</strong>: Testing complexity
+<strong>Mitigation</strong>: Build on existing test infrastructure and validation patterns</p>
+<p><strong>Risk</strong>: Memory overhead in conversion
+<strong>Mitigation</strong>: Implement lazy evaluation, leverage existing matrix operation optimizations</p>
+
+    <div class="last-updated">Last Updated: 2025-07-06</div>
+</body>
+</html>

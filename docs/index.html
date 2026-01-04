@@ -4,262 +4,543 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ts-quantum Documentation</title>
-    <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
+    <script type="module">
+        import rehypeStringify from 'https://esm.sh/rehype-stringify@10?bundle';
+        import remarkParse from 'https://esm.sh/remark-parse@11?bundle';
+        import remarkRehype from 'https://esm.sh/remark-rehype@11?bundle';
+        import {unified} from 'https://esm.sh/unified@11?bundle';
+        
+        const processor = unified()
+            .use(remarkParse)
+            .use(remarkRehype)
+            .use(rehypeStringify);
+        
+        // Make renderMarkdown globally available
+        window.renderMarkdown = function(text) {
+            return processor.processSync(text).toString();
+        };
+    </script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            startup: {
+                ready: () => {
+                    console.log('MathJax is loaded');
+                    MathJax.startup.defaultReady();
+                }
+            }
+        };
+    </script>
     <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #64748b;
+            --background: #ffffff;
+            --surface: #f8fafc;
+            --border: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --sidebar-width: 280px;
+        }
+        
+        [data-theme="dark"] {
+            --primary-color: #3b82f6;
+            --secondary-color: #94a3b8;
+            --background: #0f172a;
+            --surface: #1e293b;
+            --border: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
+            margin: 0;
+            padding: 0;
+            background: var(--background);
+            color: var(--text-primary);
             line-height: 1.6;
-            color: #333;
+            overflow-x: hidden;
         }
-        h1 {
-            color: #2c3e50;
-            border-bottom: 3px solid #3498db;
-            padding-bottom: 0.5rem;
+        
+        .container {
+            display: flex;
+            min-height: 100vh;
         }
-        h2 {
-            color: #34495e;
-            margin-top: 2rem;
-            border-bottom: 1px solid #ecf0f1;
-            padding-bottom: 0.3rem;
+        
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 2rem 1rem;
+            overflow-y: auto;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+            transition: transform 0.3s ease;
         }
-        .section {
+        
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+        
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1001;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+        }
+        
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding: 1rem 2rem 2rem 2rem;
+            max-width: none;
+        }
+        
+        .sidebar h1 {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            margin: 0 0 2rem 0;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        .nav-section {
             margin-bottom: 2rem;
         }
+        
+        .nav-section h3 {
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin: 0 0 1rem 0;
+        }
+        
+        .nav-link {
+            display: block;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 0.5rem 0;
+            border-radius: 0.25rem;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+        }
+        
+        .nav-link:hover {
+            color: var(--primary-color);
+            background: var(--background);
+            padding-left: 0.5rem;
+        }
+        
+        .nav-link.active {
+            color: var(--primary-color);
+            background: var(--background);
+            font-weight: 500;
+            padding-left: 0.5rem;
+        }
+        
         .api-link {
             display: inline-block;
-            background: #3498db;
+            background: var(--primary-color);
             color: white;
-            padding: 0.8rem 1.5rem;
+            padding: 0.75rem 1.5rem;
             text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-            margin-bottom: 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            transition: all 0.2s ease;
         }
+        
         .api-link:hover {
-            background: #2980b9;
+            background: #1d4ed8;
+            transform: translateY(-1px);
         }
-        .doc-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-        .doc-card {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 1rem;
-            background: #f9f9f9;
-        }
-        .doc-card h3 {
-            margin-top: 0;
-            color: #2c3e50;
-        }
-        .doc-card a {
-            color: #3498db;
-            text-decoration: none;
-        }
-        .doc-card a:hover {
-            text-decoration: underline;
-        }
-        .description {
-            color: #666;
-            font-size: 0.9rem;
-            margin-top: 0.5rem;
-        }
+        
         .markdown-content {
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 2rem;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: var(--surface);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
         }
+        
         .back-link {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
             margin-bottom: 1rem;
-            color: #3498db;
+            color: var(--primary-color);
             text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
         }
+        
         .back-link:hover {
-            text-decoration: underline;
+            transform: translateX(-2px);
+        }
+        
+        .theme-toggle {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            z-index: 1002;
+            transition: all 0.2s ease;
+        }
+        
+        .theme-toggle:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            
+            #markdown-content {
+                margin-left: 0 !important;
+            }
+            
+            .sidebar-toggle {
+                display: block;
+            }
+        }
+        
+        /* Markdown content styling */
+        .markdown-content h1 {
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+        
+        .markdown-content h2 {
+            color: var(--text-primary);
+            margin-top: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.3rem;
+        }
+        
+        .markdown-content h3 {
+            color: var(--text-primary);
+        }
+        
+        .markdown-content code {
+            background: var(--background);
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.875rem;
+        }
+        
+        .markdown-content pre {
+            background: var(--background);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+        }
+        
+        .markdown-content blockquote {
+            border-left: 4px solid var(--primary-color);
+            padding-left: 1rem;
+            margin: 1rem 0;
+            color: var(--text-secondary);
+        }
+        
+        .markdown-content table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1rem 0;
+        }
+        
+        .markdown-content th,
+        .markdown-content td {
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            text-align: left;
+        }
+        
+        .markdown-content th {
+            background: var(--surface);
+            font-weight: 600;
         }
     </style>
 </head>
 <body>
-    <div id="main-content">
-    <h1>ts-quantum Documentation</h1>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
     
-    <p>A TypeScript library for quantum mechanics calculations and utilities.</p>
-
-    <div class="section">
-        <a href="api/index.html" class="api-link">📚 Full API Documentation</a>
+    <div class="container">
+        <aside class="sidebar" id="sidebar">
+            <h1>ts-quantum</h1>
+            
+            <div class="nav-section">
+                <h3>Getting Started</h3>
+                <a href="/showcase.html" class="nav-link">🎯 Interactive Showcase</a>
+                <a href="api/index.html" class="nav-link">📚 Full API Documentation</a>
+            </div>
+            
+            <div class="nav-section">
+                <h3>Implementation</h3>
+                <a href="angular-momentum-implementation.html" class="nav-link">Angular Momentum</a>
+                <a href="architecture.html" class="nav-link">Architecture</a>
+                <a href="clebsch-gordan-algorithm.html" class="nav-link">Clebsch-Gordan Algorithm</a>
+                <a href="clebsch-gordan-data-structures.html" class="nav-link">CG Data Structures</a>
+                <a href="wigner-6j-theory.html" class="nav-link">Wigner 6j Theory</a>
+                <a href="wigner-implementation.html" class="nav-link">Wigner Implementation</a>
+            </div>
+            
+            <div class="nav-section">
+                <h3>Advanced Plans</h3>
+                <a href="graph-entanglement-plan.html" class="nav-link">Graph Entanglement</a>
+                <a href="intertwiner-module-design.html" class="nav-link">Intertwiner Module</a>
+                <a href="partial-trace_implementation.html" class="nav-link">Partial Trace</a>
+                <a href="sparse-ops-implementation-plan.html" class="nav-link">Sparse Operations</a>
+                <a href="subsystem-extraction-plan.html" class="nav-link">Subsystem Extraction</a>
+                <a href="tensor-network-plan.html" class="nav-link">Tensor Networks</a>
+                <a href="tetrahedron-plan.html" class="nav-link">Tetrahedron Operations</a>
+                <a href="random-walk-plan.html" class="nav-link">Random Walk</a>
+            </div>
+            
+            <div class="nav-section">
+                <h3>Research</h3>
+                <a href="papers/provost-vallee-implementation-plan.md" class="nav-link">Provost-Vallée</a>
+            </div>
+            
+            <div class="nav-section">
+                <h3>References</h3>
+                <a href="Varshalovich.pdf" class="nav-link">Varshalovich Reference</a>
+                <a href="Varshalovich_6j_symbols.pdf" class="nav-link">Varshalovich 6j</a>
+                <a href="cg-sparse-j1-j2-leq-2.json" class="nav-link">CG Sparse Data</a>
+            </div>
+        </aside>
+        
+        <main class="main-content" id="main-content">
+            <div class="markdown-content">
+                <h1>ts-quantum Documentation</h1>
+                <p>A TypeScript library for quantum mechanics calculations and utilities.</p>
+                <p>Navigate through the documentation using the sidebar on the left. Click on any topic to view its content here.</p>
+            </div>
+        </main>
     </div>
 
-    <div class="section">
-        <h2>Implementation Documentation</h2>
-        <div class="doc-grid">
-            <div class="doc-card">
-                <h3><a href="angular-momentum-implementation.md">Angular Momentum Implementation</a></h3>
-                <div class="description">Implementation details for angular momentum operators and algebra</div>
-            </div>
-            
-            <div class="doc-card">
-                <h3><a href="architecture.md">Architecture</a></h3>
-                <div class="description">Overall system architecture and design principles</div>
-            </div>
-            
-            <div class="doc-card">
-                <h3><a href="clebsch-gordan-algorithm.md">Clebsch-Gordan Algorithm</a></h3>
-                <div class="description">Implementation of Clebsch-Gordan coefficient calculations</div>
-            </div>
-            
-            <div class="doc-card">
-                <h3><a href="clebsch-gordan-data-structures.md">Clebsch-Gordan Data Structures</a></h3>
-                <div class="description">Data structures for efficient CG coefficient storage and retrieval</div>
-            </div>
-            
-            <div class="doc-card">
-                <h3><a href="wigner-6j-theory.md">Wigner 6j Theory</a></h3>
-                <div class="description">Theoretical background and implementation of Wigner 6j symbols</div>
-            </div>
-            
-            <div class="doc-card">
-                <h3><a href="wigner-implementation.md">Wigner Implementation</a></h3>
-                <div class="description">Implementation details for Wigner symbols (3j, 6j, 9j)</div>
-            </div>
+    <div id="markdown-content" class="main-content" style="display: none; margin-left: var(--sidebar-width); padding: 0;">
+        <div style="padding: 0.5rem 2rem 0 2rem;">
+            <a href="#" class="back-link" onclick="showMainContent()" style="margin: 0;">&larr; Back to Documentation</a>
         </div>
-    </div>
-
-    <div class="section">
-        <h2>Advanced Implementation Plans</h2>
-        <div class="doc-grid">
-            <div class="doc-card">
-                <h3><a href="graph-entanglement-plan.md">Graph Entanglement Plan</a></h3>
-                <div class="description">Implementation plan for quantum graph entanglement features</div>
-            </div>
-            
-            <div class="doc-card">
-                <h3><a href="intertwiner-module-design.md">Intertwiner Module Design</a></h3>
-                <div class="description">Design for quantum intertwiner operations</div>
-            </div>
-            
-            <div class="doc-card">
-                <h3><a href="partial_trace_implementation.md">Partial Trace Implementation</a></h3>
-                <div class="description">Implementation details for partial trace operations</div>
-            </div>
-            
-            <div class="doc-card">
-                <h3><a href="sparse-ops-implementation-plan.md">Sparse Operations Plan</a></h3>
-                <div class="description">Implementation plan for sparse matrix operations</div>
-            </div>
-            
-            <div class="doc-card">
-                <h3><a href="subsystem-extraction-plan.md">Subsystem Extraction Plan</a></h3>
-                <div class="description">Plan for extracting quantum subsystems</div>
-            </div>
-            
-            <div class="doc-card">
-                <h3><a href="tensor-network-plan.md">Tensor Network Plan</a></h3>
-                <div class="description">Implementation plan for tensor network operations</div>
-            </div>
-            
-            <div class="doc-card">
-                <h3><a href="tetrahedron-plan.md">Tetrahedron Plan</a></h3>
-                <div class="description">Implementation plan for tetrahedron quantum operations</div>
-            </div>
-            
-            <div class="doc-card">
-                <h3><a href="random-walk-plan.md">Random Walk Plan</a></h3>
-                <div class="description">Implementation plan for quantum random walk algorithms</div>
-            </div>
+        <div class="markdown-content" style="padding: 1rem; margin: 0 2rem 2rem 2rem;">
+            <div id="rendered-markdown"></div>
         </div>
-    </div>
-
-    <div class="section">
-        <h2>Research Papers</h2>
-        <div class="doc-grid">
-            <div class="doc-card">
-                <h3><a href="papers/provost-vallee-implementation-plan.md">Provost-Vallée Implementation</a></h3>
-                <div class="description">Implementation plan based on Provost-Vallée research</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="section">
-        <h2>Reference Materials</h2>
-        <div class="doc-grid">
-            <div class="doc-card">
-                <h3><a href="Varshalovich.pdf">Varshalovich Reference (PDF)</a></h3>
-                <div class="description">Mathematical reference for angular momentum theory</div>
-            </div>
-            
-            <div class="doc-card">
-                <h3><a href="Varshalovich_6j_symbols.pdf">Varshalovich 6j Symbols (PDF)</a></h3>
-                <div class="description">Specific reference for 6j symbol calculations</div>
-            </div>
-            
-            <div class="doc-card">
-                <h3><a href="cg-sparse-j1-j2-leq-2.json">CG Sparse Data</a></h3>
-                <div class="description">Precomputed Clebsch-Gordan coefficient data</div>
-            </div>
-        </div>
-    </div>
-
-    <footer style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid #ecf0f1; text-align: center; color: #666;">
-        <p>ts-quantum - TypeScript Quantum Mechanics Library</p>
-        <p><a href="https://github.com/space-cadet/ts-quantum" style="color: #3498db;">GitHub Repository</a></p>
-    </footer>
-    </div>
-
-    <div id="markdown-content" class="markdown-content" style="display: none;">
-        <a href="#" class="back-link" onclick="showMainContent()">&larr; Back to Documentation</a>
-        <div id="rendered-markdown"></div>
     </div>
 
     <script>
-        const md = markdownit();
+        // renderMarkdown function is defined above in the module script
+        
+        // Theme management
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeToggle(savedTheme);
+        }
+        
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeToggle(newTheme);
+        }
+        
+        function updateThemeToggle(theme) {
+            const toggle = document.querySelector('.theme-toggle');
+            toggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+        
+        // Sidebar management
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+        }
+        
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.remove('open');
+        }
         
         function showMainContent() {
             document.getElementById('main-content').style.display = 'block';
             document.getElementById('markdown-content').style.display = 'none';
-            window.history.pushState({}, '', window.location.pathname);
+            window.history.replaceState({ view: 'main' }, '', window.location.pathname);
+            
+            // Remove active class from all nav links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
         }
         
         function showMarkdown(file) {
+            console.log('Attempting to load:', file); // Debug
             fetch(file)
                 .then(response => {
+                    console.log('Fetch response:', response.status, response.ok); // Debug
                     if (!response.ok) throw new Error('File not found');
                     return response.text();
                 })
                 .then(text => {
-                    document.getElementById('rendered-markdown').innerHTML = md.render(text);
+                    console.log('File loaded successfully'); // Debug
+                    document.getElementById('rendered-markdown').innerHTML = renderMarkdown(text);
                     document.getElementById('main-content').style.display = 'none';
                     document.getElementById('markdown-content').style.display = 'block';
-                    window.history.pushState({}, '', `?file=${file}`);
+                    window.history.pushState({ view: 'markdown', file: file }, '', `?file=${file}`);
+                    
+                    // Trigger MathJax to render math expressions
+                    if (window.MathJax) {
+                        MathJax.typesetPromise().catch(err => console.log('MathJax error:', err));
+                    }
+                    
+                    // Highlight active nav link
+                    document.querySelectorAll('.nav-link').forEach(link => {
+                        link.classList.remove('active');
+                        if (link.getAttribute('href') === file) {
+                            link.classList.add('active');
+                        }
+                    });
+                    
+                    // Close sidebar on mobile
+                    if (window.innerWidth <= 768) {
+                        closeSidebar();
+                    }
                 })
                 .catch(error => {
                     alert('Could not load markdown file: ' + file);
                 });
         }
         
-        // Handle .md links
+        function showHtmlPage(page) {
+            fetch(page)
+                .then(response => {
+                    if (!response.ok) throw new Error('Page not found');
+                    return response.text();
+                })
+                .then(html => {
+                    // Extract the body content from the HTML page
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const bodyContent = doc.body.innerHTML;
+                    
+                    document.getElementById('rendered-markdown').innerHTML = bodyContent;
+                    document.getElementById('main-content').style.display = 'none';
+                    document.getElementById('markdown-content').style.display = 'block';
+                    window.history.pushState({ view: 'html', page: page }, '', `?page=${page}`);
+                    
+                    // Trigger MathJax to render math expressions
+                    if (window.MathJax) {
+                        MathJax.typesetPromise().catch(err => console.log('MathJax error:', err));
+                    }
+                    
+                    // Highlight active nav link
+                    document.querySelectorAll('.nav-link').forEach(link => {
+                        link.classList.remove('active');
+                        if (link.getAttribute('href') === page) {
+                            link.classList.add('active');
+                        }
+                    });
+                    
+                    // Close sidebar on mobile
+                    if (window.innerWidth <= 768) {
+                        closeSidebar();
+                    }
+                })
+                .catch(error => {
+                    alert('Could not load HTML page: ' + page);
+                });
+        }
+        
+        // Handle .md and .html links
         document.addEventListener('click', function(e) {
-            if (e.target.tagName === 'A' && e.target.href.endsWith('.md')) {
-                e.preventDefault();
-                const file = e.target.getAttribute('href');
-                showMarkdown(file);
+            if (e.target.classList.contains('nav-link')) {
+                const href = e.target.getAttribute('href');
+                if (href.endsWith('.md')) {
+                    e.preventDefault();
+                    showMarkdown(href);
+                } else if (href.endsWith('.html') && !href.includes('api/') && href !== '/showcase.html') {
+                    e.preventDefault();
+                    showHtmlPage(href);
+                }
+                // Let /showcase.html and api/ links open normally
             }
         });
         
-        // Handle direct .md file URLs
+        // Handle back button
+        window.addEventListener('popstate', function(e) {
+            if (e.state && e.state.view === 'markdown' && e.state.file) {
+                showMarkdown(e.state.file);
+            } else if (e.state && e.state.view === 'html' && e.state.page) {
+                showHtmlPage(e.state.page);
+            } else {
+                showMainContent();
+            }
+        });
+        
+        // Handle direct URLs on page load
         const urlParams = new URLSearchParams(window.location.search);
         const file = urlParams.get('file');
+        const page = urlParams.get('page');
+        console.log('URL parameters - file:', file, 'page:', page); // Debug
+        
         if (file && file.endsWith('.md')) {
             showMarkdown(file);
+        } else if (page && page.endsWith('.html')) {
+            showHtmlPage(page);
+        } else {
+            showMainContent();
         }
+        
+        // Initialize theme on load
+        initTheme();
+        
+        // Handle window resize for mobile sidebar
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                closeSidebar();
+            }
+        });
     </script>
 </body>
 </html>

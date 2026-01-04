@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Partial Trace Implementation Guide</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\(', '\)']],
+                displayMath: [['$$', '$$'], ['\[', '\]']]
+            },
+            startup: {
+                ready: () => {
+                    console.log('MathJax is loaded');
+                    MathJax.startup.defaultReady();
+                }
+            }
+        };
+    </script>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #64748b;
+            --background: #ffffff;
+            --surface: #f8fafc;
+            --border: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+        }
+        
+        [data-theme="dark"] {
+            --primary-color: #3b82f6;
+            --secondary-color: #94a3b8;
+            --background: #0f172a;
+            --surface: #1e293b;
+            --border: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .back-link:hover {
+            transform: translateX(-2px);
+        }
+        
+        h1 {
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+        
+        h2 {
+            color: var(--text-primary);
+            margin-top: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.3rem;
+        }
+        
+        h3 {
+            color: var(--text-primary);
+        }
+        
+        code {
+            background: var(--surface);
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.875rem;
+        }
+        
+        pre {
+            background: var(--surface);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+        }
+        
+        blockquote {
+            border-left: 4px solid var(--primary-color);
+            padding-left: 1rem;
+            margin: 1rem 0;
+            color: var(--text-secondary);
+        }
+        
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1rem 0;
+        }
+        
+        th, td {
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            text-align: left;
+        }
+        
+        th {
+            background: var(--surface);
+            font-weight: 600;
+        }
+        
+        .last-updated {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: 3rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">&larr; Back to Documentation</a>
+    <h1>Partial Trace Implementation Guide</h1>
+<h2>Overview</h2>
+<p>The partial trace operation is a fundamental operation in quantum mechanics that allows us to obtain the reduced density matrix of a subsystem by &quot;tracing out&quot; other subsystems. This document outlines the consolidated implementation approach for the quantum package.</p>
+<h2>Implementation Location</h2>
+<p>The partial trace implementation should be consolidated in a single location:</p>
+<pre><code class="language-typescript">// Primary implementation: packages/quantum/src/operators/operator.ts
+// In MatrixOperator class
+</code></pre>
+<p>All other implementations should be removed or refactored to use this primary implementation.</p>
+<h2>Mathematical Background</h2>
+<p>The partial trace operation $\text{Tr}<em>B(\rho</em>{AB})$ for a composite system $\rho_{AB}$ is defined as:</p>
+<p>$\text{Tr}<em>B(\rho</em>{AB}) = \sum_i (I_A \otimes \langle i_B|)\rho_{AB}(I_A \otimes |i_B\rangle)$</p>
+<p>where:</p>
+<ul>
+<li>$\rho_{AB}$ is the density operator of the composite system</li>
+<li>$I_A$ is the identity operator on subsystem A</li>
+<li>$|i_B\rangle$ are basis states of subsystem B</li>
+</ul>
+<h2>Implementation Details</h2>
+<h3>1. Core Implementation</h3>
+<pre><code class="language-typescript">partialTrace(dims: number[], traceOutIndices: number[]): IOperator {
+    // Validate dimensions
+    const totalDim = dims.reduce((a, b) =&gt; a * b, 1);
+    if (totalDim !== this.dimension) {
+        throw new Error(&#39;Product of subsystem dimensions must equal total dimension&#39;);
+    }
+
+    // Validate trace indices
+    if (!traceOutIndices.every(i =&gt; i &gt;= 0 &amp;&amp; i &lt; dims.length)) {
+        throw new Error(&#39;Invalid trace out indices&#39;);
+    }
+
+    // Calculate remaining dimension
+    const remainingDim = dims
+        .filter((_, i) =&gt; !traceOutIndices.includes(i))
+        .reduce((a, b) =&gt; a * b, 1);
+
+    // Initialize result matrix
+    const resultMatrix = Array(remainingDim).fill(null)
+        .map(() =&gt; Array(remainingDim).fill(null)
+            .map(() =&gt; math.complex(0, 0)));
+
+    // Perform partial trace using coordinate mapping
+    const traceRange = Array(this.dimension).fill(0).map((_, i) =&gt; i);
+
+    for (let i = 0; i &lt; remainingDim; i++) {
+        for (let j = 0; j &lt; remainingDim; j++) {
+            for (const k of traceRange) {
+                // Map indices to multi-dimensional coordinates
+                const iCoords = indexToCoords(i, dims.filter((_, idx) =&gt; 
+                    !traceOutIndices.includes(idx)));
+                const jCoords = indexToCoords(j, dims.filter((_, idx) =&gt; 
+                    !traceOutIndices.includes(idx)));
+                const kCoords = indexToCoords(k, dims.filter((_, idx) =&gt; 
+                    traceOutIndices.includes(idx)));
+                
+                // Combine coordinates
+                const fullICoords = combineCoords(iCoords, kCoords, traceOutIndices);
+                const fullJCoords = combineCoords(jCoords, kCoords, traceOutIndices);
+                
+                // Map back to flat indices
+                const fullI = coordsToIndex(fullICoords, dims);
+                const fullJ = coordsToIndex(fullJCoords, dims);
+                
+                // Add to result
+                resultMatrix[i][j] = math.add(
+                    resultMatrix[i][j],
+                    this.matrix[fullI][fullJ]
+                ) as Complex;
+            }
+        }
+    }
+
+    return new MatrixOperator(resultMatrix);
+}
+</code></pre>
+<h3>2. Helper Functions</h3>
+<pre><code class="language-typescript">function indexToCoords(index: number, dims: number[]): number[] {
+    const coords: number[] = [];
+    let remainder = index;
+    for (let i = dims.length - 1; i &gt;= 0; i--) {
+        coords.unshift(remainder % dims[i]);
+        remainder = Math.floor(remainder / dims[i]);
+    }
+    return coords;
+}
+
+function coordsToIndex(coords: number[], dims: number[]): number {
+    let index = 0;
+    let factor = 1;
+    for (let i = coords.length - 1; i &gt;= 0; i--) {
+        index += coords[i] * factor;
+        factor *= dims[i];
+    }
+    return index;
+}
+
+function combineCoords(coords1: number[], coords2: number[], 
+    traceIndices: number[]): number[] {
+    const result: number[] = [];
+    let i1 = 0;
+    let i2 = 0;
+    for (let i = 0; i &lt; coords1.length + coords2.length; i++) {
+        if (traceIndices.includes(i)) {
+            result.push(coords2[i2++]);
+        } else {
+            result.push(coords1[i1++]);
+        }
+    }
+    return result;
+}
+</code></pre>
+<h3>3. Standardized Validation</h3>
+<p>All validation should be consolidated into the <code>validatePartialTrace</code> function in <code>utils/validation.ts</code>:</p>
+<pre><code class="language-typescript">export function validatePartialTrace(
+    dims: number[],
+    totalDim: number,
+    traceOutIndices: number[]
+): void {
+    // Validate total dimension
+    const dimProduct = dims.reduce((a, b) =&gt; a * b, 1);
+    if (dimProduct !== totalDim) {
+        throw new Error(
+            &#39;Product of subsystem dimensions must equal total dimension&#39;
+        );
+    }
+
+    // Validate trace indices
+    if (!traceOutIndices.every(i =&gt; i &gt;= 0 &amp;&amp; i &lt; dims.length)) {
+        throw new Error(&#39;Invalid trace out indices&#39;);
+    }
+
+    // Validate remaining dimension is non-zero
+    const remainingDim = dims
+        .filter((_, i) =&gt; !traceOutIndices.includes(i))
+        .reduce((a, b) =&gt; a * b, 1);
+    if (remainingDim === 0) {
+        throw new Error(&#39;Cannot trace out all subsystems&#39;);
+    }
+}
+</code></pre>
+<h2>Usage Examples</h2>
+<h3>1. Basic Usage</h3>
+<pre><code class="language-typescript">// Create a 4x4 density matrix (2-qubit system)
+const matrix = new MatrixOperator(/* ... */);
+
+// Trace out second qubit
+const reducedDensity = matrix.partialTrace([2, 2], [1]);
+</code></pre>
+<h3>2. Multi-qubit System</h3>
+<pre><code class="language-typescript">// Create an 8x8 density matrix (3-qubit system)
+const matrix = new MatrixOperator(/* ... */);
+
+// Trace out first and third qubits
+const reducedDensity = matrix.partialTrace([2, 2, 2], [0, 2]);
+</code></pre>
+<h2>Common Pitfalls</h2>
+<ol>
+<li><strong>Dimension Mismatch</strong>: Ensure the product of subsystem dimensions equals the total dimension</li>
+<li><strong>Invalid Trace Indices</strong>: Trace indices must be valid for the given system</li>
+<li><strong>Complete Trace</strong>: Cannot trace out all subsystems</li>
+<li><strong>Order Matters</strong>: The order of subsystem dimensions must match the physical system</li>
+</ol>
+<h2>Performance Considerations</h2>
+<ol>
+<li>Pre-compute coordinate mappings for repeated operations</li>
+<li>Use optimized matrix operations for large systems</li>
+<li>Consider sparse matrix representations for high-dimensional systems</li>
+</ol>
+<h2>Testing Strategy</h2>
+<ol>
+<li><p><strong>Unit Tests</strong>:</p>
+<ul>
+<li>Test basic qubit systems</li>
+<li>Test higher-dimensional systems</li>
+<li>Test edge cases</li>
+<li>Test error conditions</li>
+</ul>
+</li>
+<li><p><strong>Integration Tests</strong>:</p>
+<ul>
+<li>Test with quantum circuits</li>
+<li>Test with quantum channels</li>
+<li>Test with measurement operations</li>
+</ul>
+</li>
+</ol>
+<h2>Future Improvements</h2>
+<ol>
+<li>Implement sparse matrix support for large systems</li>
+<li>Add optimization for common cases (single qubit trace, etc.)</li>
+<li>Add support for symbolic computation</li>
+<li>Consider adding parallel processing for large systems</li>
+</ol>
+<h2>References</h2>
+<ol>
+<li>Nielsen &amp; Chuang, &quot;Quantum Computation and Quantum Information&quot;</li>
+<li>Preskill, J. &quot;Lecture Notes for Physics 229: Quantum Information and Computation&quot;</li>
+</ol>
+
+    <div class="last-updated">Last Updated: 2025-07-06</div>
+</body>
+</html>

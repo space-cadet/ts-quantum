@@ -1,12 +1,10 @@
 # Task Registry
-*Last Updated: 2026-01-04 11:11:11 IST*
+*Last Updated: 2026-01-04 16:10:28 IST*
 
 ## Active Tasks
 | ID | Title | Status | Priority | Started | Dependencies | Details |
 |----|-------|--------|----------|---------|--------------|---------|
-| T5 | Generate Interactive Webpages | ✅ | MEDIUM | 2025-07-07 | T4 | [Details](tasks/T5.md) |
-| T6 | Native Sparse Operator Support | ✅ | HIGH | 2026-01-01 | - | [Details](tasks/T6.md) |
-| T7 | Web Showcase and Deployment | ✅ | HIGH | 2026-01-04 | T6 | [Details](tasks/T7.md) |
+| T8 | Documentation System Redesign | ✅ | HIGH | 2026-01-04 | T7 | [Details](tasks/T8.md) |
 
 ## Completed Tasks (Phase 1 & 2)
 | ID | Title | Completed | Phase |
@@ -19,3 +17,4 @@
 | T5 | Generate Interactive Webpages | 2025-07-07 | Enhanced |
 | T6 | Native Sparse Operator Support | 2026-01-01 | Enhanced |
 | T7 | Web Showcase and Deployment | 2026-01-04 | Web |
+| T8 | Documentation System Redesign | 2026-01-04 | Web |

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subsystem Extraction Implementation Plan</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\(', '\)']],
+                displayMath: [['$$', '$$'], ['\[', '\]']]
+            },
+            startup: {
+                ready: () => {
+                    console.log('MathJax is loaded');
+                    MathJax.startup.defaultReady();
+                }
+            }
+        };
+    </script>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #64748b;
+            --background: #ffffff;
+            --surface: #f8fafc;
+            --border: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+        }
+        
+        [data-theme="dark"] {
+            --primary-color: #3b82f6;
+            --secondary-color: #94a3b8;
+            --background: #0f172a;
+            --surface: #1e293b;
+            --border: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .back-link:hover {
+            transform: translateX(-2px);
+        }
+        
+        h1 {
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+        
+        h2 {
+            color: var(--text-primary);
+            margin-top: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.3rem;
+        }
+        
+        h3 {
+            color: var(--text-primary);
+        }
+        
+        code {
+            background: var(--surface);
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.875rem;
+        }
+        
+        pre {
+            background: var(--surface);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+        }
+        
+        blockquote {
+            border-left: 4px solid var(--primary-color);
+            padding-left: 1rem;
+            margin: 1rem 0;
+            color: var(--text-secondary);
+        }
+        
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1rem 0;
+        }
+        
+        th, td {
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            text-align: left;
+        }
+        
+        th {
+            background: var(--surface);
+            font-weight: 600;
+        }
+        
+        .last-updated {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: 3rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">&larr; Back to Documentation</a>
+    <h1>Subsystem Extraction Implementation Plan</h1>
+<p><em>Created: 2025-06-03</em></p>
+<h2>Problem</h2>
+<p>Quantum graph operations fail when applying operators to overlapping qubit sets due to dimension mismatch:</p>
+<pre><code class="language-typescript">// Apply XXXX to [A,B,C,D] - SUCCESS (16-dim composite)
+// Apply XXXX to [B,C,D,E] - FAILURE (dimension mismatch 128 !== 16)
+</code></pre>
+<p><strong>Root Cause</strong>: <code>extractSubsystemState</code> returns full composite states instead of proper subsystems via partial trace.</p>
+<h2>Solution</h2>
+<p>Use partial trace to extract correct subsystem states from overlapping composites:</p>
+<pre><code class="language-typescript">// Instead of: getVertexQuantumObject(B) → full 16-dim composite ABCD
+// Use: partialTrace(composite_ABCD, [2,2,2,2], [0]) → 2-dim state for B
+</code></pre>
+<h2>Implementation (70 lines total)</h2>
+<h3>1. Track Composite Elements (20 lines)</h3>
+<p><strong>File</strong>: <code>CompositeQuantumManager.ts</code></p>
+<p>Add element tracking to existing class:</p>
+<pre><code class="language-typescript">private compositeElements: Map&lt;string, string[]&gt; = new Map();
+
+setComposite(elementIds: string[], obj: QuantumObject): void {
+  // existing code...
+  this.compositeElements.set(compositeId, [...elementIds]);
+}
+
+getCompositeElements(compositeId: string): string[] {
+  return this.compositeElements.get(compositeId) || [];
+}
+</code></pre>
+<h3>2. Fix extractSubsystemState (40 lines)</h3>
+<p><strong>File</strong>: <code>operations/general.ts</code></p>
+<p>Replace current implementation:</p>
+<pre><code class="language-typescript">export function extractSubsystemState(graph: QuantumGraph, elementIds: string[]): QuantumObject[] {
+  const states: QuantumObject[] = [];
+  
+  for (const id of elementIds) {
+    const compositeId = graph.getCompositeManager().getCompositeIdForElement(id);
+    
+    if (compositeId) {
+      // Use partial trace for composite elements
+      const composite = graph.getCompositeQuantumObject([id]);
+      const allElements = graph.getCompositeManager().getCompositeElements(compositeId);
+      const traceOutIndices = allElements.map((_, i) =&gt; i).filter(i =&gt; allElements[i] !== id);
+      
+      const dims = allElements.map(() =&gt; 2); // assume qubits
+      const reducedState = composite.partialTrace(dims, traceOutIndices);
+      states.push(reducedState);
+    } else {
+      // Individual element unchanged
+      const state = graph.hasNode(id) ? graph.getVertexQuantumObject(id) : graph.getEdgeQuantumObject(id);
+      if (state) states.push(state);
+    }
+  }
+  
+  return states;
+}
+</code></pre>
+<h3>3. Handle Mixed Types (10 lines)</h3>
+<p><strong>File</strong>: <code>operations/general.ts</code></p>
+<p>Update <code>tensorProductStates</code> to handle StateVector/Operator mixing from partial trace results.</p>
+<h2>Expected Result</h2>
+<p><strong>Before</strong>: Dimension mismatch errors in toric code
+<strong>After</strong>: All stabilizer operations succeed</p>
+<pre><code>3x3 toric code: 9/9 X-stabilizers + 9/9 Z-stabilizers ✅
+4x4 toric code: 16/16 X-stabilizers + 16/16 Z-stabilizers ✅
+</code></pre>
+<h2>Timeline</h2>
+<ul>
+<li><strong>Total Time</strong>: 3 hours</li>
+<li><strong>Risk</strong>: Low (uses existing partial trace infrastructure)</li>
+<li><strong>Complexity</strong>: Simple (just extract correct subsystem states)</li>
+</ul>
+
+    <div class="last-updated">Last Updated: 2025-07-06</div>
+</body>
+</html>

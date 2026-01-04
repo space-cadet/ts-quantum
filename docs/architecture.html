@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Package Architecture</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\(', '\)']],
+                displayMath: [['$$', '$$'], ['\[', '\]']]
+            },
+            startup: {
+                ready: () => {
+                    console.log('MathJax is loaded');
+                    MathJax.startup.defaultReady();
+                }
+            }
+        };
+    </script>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #64748b;
+            --background: #ffffff;
+            --surface: #f8fafc;
+            --border: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+        }
+        
+        [data-theme="dark"] {
+            --primary-color: #3b82f6;
+            --secondary-color: #94a3b8;
+            --background: #0f172a;
+            --surface: #1e293b;
+            --border: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .back-link:hover {
+            transform: translateX(-2px);
+        }
+        
+        h1 {
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+        
+        h2 {
+            color: var(--text-primary);
+            margin-top: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.3rem;
+        }
+        
+        h3 {
+            color: var(--text-primary);
+        }
+        
+        code {
+            background: var(--surface);
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.875rem;
+        }
+        
+        pre {
+            background: var(--surface);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+        }
+        
+        blockquote {
+            border-left: 4px solid var(--primary-color);
+            padding-left: 1rem;
+            margin: 1rem 0;
+            color: var(--text-secondary);
+        }
+        
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1rem 0;
+        }
+        
+        th, td {
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            text-align: left;
+        }
+        
+        th {
+            background: var(--surface);
+            font-weight: 600;
+        }
+        
+        .last-updated {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: 3rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">&larr; Back to Documentation</a>
+    <h1>Quantum Package Architecture</h1>
+<p><em>Last Updated: May 24, 2025</em></p>
+<h2>Table of Contents</h2>
+<ol>
+<li><a href="#status-legend">Status Legend</a></li>
+<li><a href="#1-overview-and-purpose">Overview and Purpose</a></li>
+<li><a href="#2-system-architecture">System Architecture</a><ul>
+<li>3.1 <a href="#21-package-structure">Package Structure</a></li>
+<li>3.2 <a href="#22-dependency-flow">Dependency Flow</a></li>
+<li>3.3 <a href="#23-design-principles">Design Principles</a></li>
+</ul>
+</li>
+<li><a href="#3-module-dependency-map">Module Dependency Map</a><ul>
+<li>4.1 <a href="#31-hierarchical-organization">Hierarchical Organization</a></li>
+</ul>
+</li>
+<li><a href="#4-core-components">Core Components</a><ul>
+<li>5.1 <a href="#41-level-0-core-types-and-interfaces">Level 0: Core Types and Interfaces</a></li>
+<li>5.2 <a href="#42-level-1-utilities-and-basic-operations">Level 1: Utilities and Basic Operations</a></li>
+<li>5.3 <a href="#43-level-2-quantum-states">Level 2: Quantum States</a></li>
+<li>5.4 <a href="#44-level-3-quantum-operators">Level 3: Quantum Operators</a></li>
+<li>5.5 <a href="#45-level-4-angular-momentum">Level 4: Angular Momentum</a></li>
+</ul>
+</li>
+<li><a href="#5-mathematical-foundation">Mathematical Foundation</a><ul>
+<li>6.1 <a href="#51-complex-number-operations">Complex Number Operations</a></li>
+<li>6.2 <a href="#52-matrix-operations">Matrix Operations</a></li>
+<li>6.3 <a href="#53-quantum-state-mathematics">Quantum State Mathematics</a></li>
+<li>6.4 <a href="#54-operator-theory">Operator Theory</a></li>
+</ul>
+</li>
+<li><a href="#6-integration-patterns">Integration Patterns</a><ul>
+<li>7.1 <a href="#61-graph-quantum-integration">Graph-Quantum Integration</a></li>
+<li>7.2 <a href="#62-tensor-network-compatibility">Tensor Network Compatibility</a></li>
+<li>7.3 <a href="#63-api-design-patterns">API Design Patterns</a></li>
+<li>7.4 <a href="#64-extension-integration">Extension Integration</a></li>
+</ul>
+</li>
+<li><a href="#7-performance-and-design-considerations">Performance and Design Considerations</a><ul>
+<li>8.1 <a href="#71-computational-performance">Computational Performance</a></li>
+<li>8.2 <a href="#72-numerical-stability">Numerical Stability</a></li>
+<li>8.3 <a href="#73-design-patterns">Design Patterns</a></li>
+<li>8.4 <a href="#74-scalability-considerations">Scalability Considerations</a></li>
+</ul>
+</li>
+<li><a href="#8-extension-points">Extension Points</a><ul>
+<li>9.1 <a href="#81-quantum-circuit-integration">Quantum Circuit Integration</a></li>
+<li>9.2 <a href="#82-algorithm-support-infrastructure">Algorithm Support Infrastructure</a></li>
+<li>9.3 <a href="#83-custom-operator-implementation">Custom Operator Implementation</a></li>
+<li>9.4 <a href="#84-testing-and-validation-framework">Testing and Validation Framework</a></li>
+</ul>
+</li>
+<li><a href="#9-migration-and-compatibility">Migration and Compatibility</a><ul>
+<li>10.1 <a href="#91-package-migration-strategy">Package Migration Strategy</a></li>
+<li>10.2 <a href="#92-build-and-configuration">Build and Configuration</a></li>
+<li>10.3 <a href="#93-version-management">Version Management</a></li>
+</ul>
+</li>
+<li><a href="#10-implementation-roadmap">Implementation Roadmap</a><ul>
+<li>11.1 <a href="#101-migration-phase-from-libquantum">Migration Phase (From lib/quantum)</a></li>
+<li>11.2 <a href="#102-enhancement-phase-new-features">Enhancement Phase (New Features)</a></li>
+<li>11.3 <a href="#103-integration-phase-graph-and-tensor-networks">Integration Phase (Graph and Tensor Networks)</a></li>
+<li>11.4 <a href="#104-implementation-timeline">Implementation Timeline</a></li>
+<li>11.5 <a href="#105-success-criteria">Success Criteria</a></li>
+</ul>
+</li>
+</ol>
+<h2>Status Legend</h2>
+<ul>
+<li>✅ <strong>Implemented</strong> - Currently available in packages/quantum</li>
+<li>🔄 <strong>Migrating</strong> - Exists in lib/quantum, needs migration to packages/quantum  </li>
+<li>📋 <strong>Planned</strong> - Documented concept, not yet implemented</li>
+</ul>
+<h2>1. Overview and Purpose</h2>
+<p>The quantum package provides a comprehensive quantum mechanics library implemented in TypeScript, designed specifically for integration with spin network applications and quantum geometric computations. The package serves as the foundational mathematical layer for quantum state manipulation, operator algebra, and quantum information processing.</p>
+<p><strong>Key Objectives:</strong></p>
+<ul>
+<li>Provide robust quantum state vector operations with arbitrary dimensional support</li>
+<li>Implement comprehensive operator algebra including measurements, time evolution, and angular momentum</li>
+<li>Support advanced quantum information concepts including mixed states and quantum channels</li>
+<li>Enable integration with graph-based quantum systems and tensor networks</li>
+<li>Maintain numerical stability and performance for large-scale quantum computations</li>
+</ul>
+<p><strong>Scope:</strong>
+The package focuses on core quantum mechanics primitives while providing extension points for specialized applications such as quantum circuits, spin networks, and quantum algorithms. It serves as a dependency for higher-level packages including graph-core and spin-network modules.</p>
+<h2>2. System Architecture</h2>
+<p>The quantum package follows a hierarchical architecture with clear dependency layers and separation of concerns. The design emphasizes both functional purity for mathematical operations and stateful patterns where caching and performance optimization are critical.</p>
+<h3>2.1 Package Structure</h3>
+<pre><code>packages/quantum/
+├── src/
+│   ├── core/           # Core types and interfaces (Level 0)
+│   ├── utils/          # Mathematical utilities (Level 1)
+│   ├── states/         # Quantum state implementations (Level 2)
+│   ├── operators/      # Quantum operators (Level 3)
+│   ├── angularMomentum/ # Angular momentum specialization (Level 4)
+│   └── index.ts        # Public API exports
+├── docs/               # Documentation and implementation guides
+├── __tests__/          # Comprehensive test suite
+└── examples/           # Usage examples and tutorials
+</code></pre>
+<h3>2.2 Dependency Flow</h3>
+<p>The architecture enforces a strict one-way dependency flow:</p>
+<p><strong>Level 0</strong> (Core) → <strong>Level 1</strong> (Utils) → <strong>Level 2</strong> (States) → <strong>Level 3</strong> (Operators) → <strong>Level 4</strong> (Angular Momentum)</p>
+<p>This ensures:</p>
+<ul>
+<li>Clear separation of mathematical primitives from higher-level abstractions</li>
+<li>Testable components with minimal dependencies</li>
+<li>Extensible design for future quantum computing features</li>
+<li>Integration compatibility with external packages</li>
+</ul>
+<h3>2.3 Design Principles</h3>
+<ol>
+<li><strong>Mathematical Rigor</strong>: All operations preserve quantum mechanical properties (unitarity, normalization, etc.)</li>
+<li><strong>Performance</strong>: Critical paths use optimized math.js operations with caching where appropriate</li>
+<li><strong>Type Safety</strong>: Comprehensive TypeScript interfaces ensure compile-time validation</li>
+<li><strong>Extensibility</strong>: Clean interfaces allow for custom operators and quantum algorithms</li>
+<li><strong>Integration</strong>: Designed for seamless integration with graph and tensor network packages</li>
+</ol>
+<h2>3. Module Dependency Map</h2>
+<p>The following diagram illustrates the complete dependency structure within the quantum package:</p>
+<pre><code class="language-mermaid">graph TD
+    types[types.ts] --&gt; complex[complex.ts]
+    complex --&gt; matrixOperations[matrixOperations.ts]
+    matrixOperations --&gt; matrixFunctions[matrixFunctions.ts]
+    types --&gt; stateVector[stateVector.ts]
+    complex --&gt; stateVector
+    types --&gt; operator[operator.ts]
+    matrixOperations --&gt; operator
+    stateVector --&gt; operator
+    operator --&gt; gates[gates.ts]
+    operator --&gt; composition[composition.ts]
+    stateVector --&gt; composition
+    types --&gt; densityMatrix[densityMatrix.ts]
+    operator --&gt; densityMatrix
+    complex --&gt; densityMatrix
+    matrixOperations --&gt; densityMatrix
+    densityMatrix --&gt; information[information.ts]
+    operator --&gt; hamiltonian[hamiltonian.ts]
+    gates --&gt; hamiltonian
+    composition --&gt; hamiltonian
+    matrixOperations --&gt; hamiltonian
+    complex --&gt; hamiltonian
+    types --&gt; hilbertSpace[hilbertSpace.ts]
+    complex --&gt; hilbertSpace
+    stateVector --&gt; hilbertSpace
+    operator --&gt; measurement[measurement.ts]
+    complex --&gt; measurement
+    operator --&gt; operatorAlgebra[operatorAlgebra.ts]
+    complex --&gt; operatorAlgebra
+    matrixOperations --&gt; operatorAlgebra
+    operator --&gt; oscillator[oscillator.ts]
+    complex --&gt; oscillator
+    complex --&gt; states[states.ts]
+    stateVector --&gt; states
+
+    %% Styling
+    classDef core fill:#f9f,stroke:#333,stroke-width:2px;
+    classDef dependent fill:#bbf,stroke:#333,stroke-width:1px;
+    class types,complex,matrixOperations core;
+    class stateVector,operator dependent;
+</code></pre>
+<h3>3.1 Hierarchical Organization</h3>
+<p>Components are organized into five dependency levels:</p>
+<ul>
+<li><strong>Level 0</strong>: Core types and mathematical interfaces</li>
+<li><strong>Level 1</strong>: Mathematical utilities and basic operations  </li>
+<li><strong>Level 2</strong>: Quantum state representations and manipulations</li>
+<li><strong>Level 3</strong>: Quantum operators and measurements</li>
+<li><strong>Level 4</strong>: Specialized systems (angular momentum, quantum circuits)</li>
+</ul>
+<p>This hierarchy ensures that lower levels never depend on higher levels, maintaining clean separation and testability.</p>
+<h2>4. Core Components</h2>
+<h3>4.1 Level 0: Core Types and Interfaces</h3>
+<p><strong>Location</strong>: <code>src/core/</code></p>
+<p>The foundation layer provides essential type definitions and mathematical interfaces used throughout the package.</p>
+<p><strong>Key Components:</strong> ✅ <strong>Implemented</strong>  </p>
+<ul>
+<li><strong>types.ts</strong>: Core quantum interfaces (<code>IStateVector</code>, <code>IOperator</code>, <code>IMeasurementOutcome</code>, <code>IDensityMatrix</code>)</li>
+<li><strong>hilbertSpace.ts</strong>: Hilbert space abstraction for quantum state spaces</li>
+</ul>
+<p><strong>Core Interfaces:</strong></p>
+<pre><code class="language-typescript">interface IStateVector {
+  dimension: number;
+  amplitudes: Complex[];
+  norm(): number;
+  normalize(): IStateVector;
+  innerProduct(other: IStateVector): Complex;
+}
+
+interface IOperator {
+  dimension: number;
+  type: OperatorType;
+  apply(state: IStateVector): IStateVector;
+  compose(other: IOperator): IOperator;
+  adjoint(): IOperator;
+}
+</code></pre>
+<p>These interfaces establish the mathematical contracts that all higher-level components must satisfy.</p>
+<h3>4.2 Level 1: Utilities and Basic Operations</h3>
+<p><strong>Location</strong>: <code>src/utils/</code></p>
+<p>This layer provides mathematical utilities and basic operations that support all quantum computations.</p>
+<p><strong>Key Modules:</strong> ✅ <strong>Implemented</strong></p>
+<ul>
+<li><p><strong>validation.ts</strong>: Input validation for quantum operations</p>
+<ul>
+<li>Dimension validation, amplitude normalization checks</li>
+<li>Matrix compatibility verification</li>
+</ul>
+</li>
+<li><p><strong>matrixOperations.ts</strong>: Core matrix algebra</p>
+<ul>
+<li>Matrix multiplication, adjoint, tensor products</li>
+<li>Eigendecomposition using math.js integration</li>
+<li>Numerical stability handling</li>
+</ul>
+</li>
+<li><p><strong>matrixFunctions.ts</strong>: Advanced matrix functions</p>
+<ul>
+<li>Matrix exponential: $e^{iHt}$ for time evolution</li>
+<li>Matrix logarithm, square root, and power operations</li>
+<li>Trigonometric matrix functions</li>
+</ul>
+</li>
+<li><p><strong>information.ts</strong>: Quantum information measures</p>
+<ul>
+<li>Schmidt decomposition for entanglement analysis</li>
+<li>Entropy calculations: von Neumann, linear, relative entropy</li>
+<li>Fidelity measures and trace distance</li>
+</ul>
+</li>
+<li><p><strong>oscillator.ts</strong>: Harmonic oscillator utilities</p>
+<ul>
+<li>Creation/annihilation operators: $\hat{a}^\dagger$, $\hat{a}$</li>
+<li>Position and momentum operators</li>
+<li>Number operator eigenstates</li>
+</ul>
+</li>
+</ul>
+<p><strong>Mathematical Foundation:</strong>
+The utilities layer implements numerically stable algorithms for quantum-specific matrix operations, with particular attention to maintaining unitarity and hermiticity where required.</p>
+<h3>4.3 Level 2: Quantum States</h3>
+<p><strong>Location</strong>: <code>src/states/</code></p>
+<p>This layer implements quantum state representations and their manipulations.</p>
+<p><strong>Key Components:</strong> ✅ <strong>Implemented</strong></p>
+<ul>
+<li><p><strong>stateVector.ts</strong>: Pure quantum state implementation</p>
+<pre><code class="language-typescript">class StateVector implements IStateVector {
+  // Core state vector with complex amplitudes
+  // Maintains normalization invariants
+  // Supports arbitrary dimensional quantum systems
+}
+</code></pre>
+</li>
+<li><p><strong>states.ts</strong>: Common quantum state preparation</p>
+<ul>
+<li>Computational basis states: $|0\rangle$, $|1\rangle$, $|00\rangle$, etc.</li>
+<li>Bell states: $|\Phi^+\rangle = \frac{1}{\sqrt{2}}(|00\rangle + |11\rangle)$</li>
+<li>GHZ states: $|GHZ_n\rangle = \frac{1}{\sqrt{2}}(|0...0\rangle + |1...1\rangle)$</li>
+<li>W states: $|W_n\rangle = \frac{1}{\sqrt{n}}(|10...0\rangle + |01...0\rangle + ... + |00...1\rangle)$</li>
+</ul>
+</li>
+<li><p><strong>densityMatrix.ts</strong>: Mixed quantum state support</p>
+<ul>
+<li>Density matrix representation for statistical mixtures</li>
+<li>Partial trace operations for subsystem analysis</li>
+<li>Quantum channel implementations (depolarizing, amplitude damping)</li>
+</ul>
+</li>
+<li><p><strong>composite.ts</strong>: Multi-particle system operations</p>
+<ul>
+<li>Hilbert space tensor products: $\mathcal{H}_A \otimes \mathcal{H}_B$</li>
+<li>State composition and decomposition</li>
+<li>Bipartite system analysis</li>
+</ul>
+</li>
+</ul>
+<p><strong>State Space Mathematics:</strong>
+States live in complex Hilbert spaces $\mathcal{H}$ with inner product $\langle\psi|\phi\rangle$. The implementation maintains the normalization condition $\langle\psi|\psi\rangle = 1$ and supports both pure states $|\psi\rangle$ and mixed states $\rho = \sum_i p_i |\psi_i\rangle\langle\psi_i|$.</p>
+<h3>4.4 Level 3: Quantum Operators</h3>
+<p><strong>Location</strong>: <code>src/operators/</code></p>
+<p>This layer implements quantum operators that act on quantum states, including measurements, gates, and time evolution.</p>
+<p><strong>Key Components:</strong> ✅ <strong>Implemented</strong></p>
+<ul>
+<li><p><strong>operator.ts</strong>: Base operator implementation</p>
+<pre><code class="language-typescript">class MatrixOperator implements IOperator {
+  // Matrix representation of quantum operators
+  // Supports composition, adjoint, tensor products
+  // Validates unitarity and hermiticity properties
+}
+</code></pre>
+</li>
+<li><p><strong>gates.ts</strong>: Fundamental quantum gates</p>
+<ul>
+<li>Pauli operators: $\sigma_x$, $\sigma_y$, $\sigma_z$</li>
+<li>Hadamard gate: $H = \frac{1}{\sqrt{2}}\begin{pmatrix}1 &amp; 1\1 &amp; -1\end{pmatrix}$</li>
+<li>CNOT gate for two-qubit entangling operations</li>
+</ul>
+</li>
+<li><p><strong>measurement.ts</strong>: Quantum measurement framework</p>
+<ul>
+<li>Projective measurements with state collapse</li>
+<li>Expectation value calculations: $\langle\psi|\hat{A}|\psi\rangle$</li>
+<li>General measurement operators via eigendecomposition</li>
+</ul>
+</li>
+<li><p><strong>hamiltonian.ts</strong>: Time evolution and dynamics</p>
+<ul>
+<li>Hamiltonian operator implementation</li>
+<li>Time evolution: $|\psi(t)\rangle = e^{-i\hat{H}t/\hbar}|\psi(0)\rangle$</li>
+<li>Built-in Hamiltonians: spin systems, harmonic oscillators</li>
+</ul>
+</li>
+<li><p><strong>algebra.ts</strong>: Advanced operator algebra</p>
+<ul>
+<li>Commutator relations: $[\hat{A}, \hat{B}] = \hat{A}\hat{B} - \hat{B}\hat{A}$</li>
+<li>Baker-Campbell-Hausdorff formula components</li>
+<li>Uncertainty relation calculations</li>
+</ul>
+</li>
+</ul>
+<p><strong>Operator Mathematics:</strong>
+Operators are linear maps $\hat{A}: \mathcal{H} \rightarrow \mathcal{H}$ with matrix representations. Physical operators are Hermitian ($\hat{A}^\dagger = \hat{A}$) for real eigenvalues, while time evolution operators are unitary ($\hat{U}^\dagger\hat{U} = \mathbb{I}$) for probability conservation.</p>
+<h3>4.5 Level 4: Angular Momentum</h3>
+<p><strong>Location</strong>: <code>src/angularMomentum/</code></p>
+<p>This specialized layer implements angular momentum algebra, crucial for spin network applications and quantum mechanical systems with rotational symmetry.</p>
+<p><strong>Key Components:</strong> ✅ <strong>Implemented</strong></p>
+<ul>
+<li><strong>core.ts</strong>: Angular momentum operators and states<ul>
+<li>Ladder operators: $\hat{J}_\pm = \hat{J}_x \pm i\hat{J}_y$</li>
+<li>Angular momentum states: $|j,m\rangle$ with eigenvalues</li>
+<li>Rotation operators: $\hat{R}(\theta) = e^{-i\hat{J}_z\theta/\hbar}$</li>
+</ul>
+</li>
+</ul>
+<p><strong>Mathematical Framework:</strong></p>
+<p>Angular momentum operators satisfy the fundamental commutation relations:
+$[\hat{J}_i, \hat{J}<em>j] = i\hbar\epsilon</em>{ijk}\hat{J}_k$</p>
+<p><strong>Clebsch-Gordan Coefficients:</strong>
+For coupling two angular momenta $j_1$ and $j_2$:
+$|j_1, j_2; j, m\rangle = \sum_{m_1,m_2} \langle j_1, m_1; j_2, m_2 | j, m \rangle |j_1, m_1\rangle |j_2, m_2\rangle$</p>
+<p><strong>Implementation Features:</strong></p>
+<ul>
+<li>Recursive algorithm for Clebsch-Gordan coefficient calculation</li>
+<li>Wigner 3j, 6j, and 9j symbols for complex coupling schemes</li>
+<li>Angular momentum composition for multi-particle systems</li>
+<li>Spherical harmonics and rotation group representations</li>
+</ul>
+<p><strong>Applications:</strong>
+Essential for spin network calculations where edges carry SU(2) representations (spins) and vertices represent intertwiner spaces that couple multiple angular momenta according to quantum mechanical selection rules.</p>
+<h2>5. Mathematical Foundation</h2>
+<p>The quantum package is built on rigorous mathematical foundations that ensure numerical stability and quantum mechanical consistency.</p>
+<h3>5.1 Complex Number Operations</h3>
+<p><strong>Integration with math.js:</strong>
+The package migrated from custom complex number operations to math.js for improved numerical stability and performance. Key operations include:</p>
+<pre><code class="language-typescript">// Complex number creation and manipulation
+const z = math.complex({re: a, im: b});
+const result = math.add(z1, z2);
+const conjugate = math.conj(z);
+const magnitude = math.abs(z);
+</code></pre>
+<p><strong>Benefits:</strong></p>
+<ul>
+<li>Enhanced numerical precision in quantum calculations</li>
+<li>Robust handling of edge cases and numerical overflow</li>
+<li>Access to advanced mathematical functions</li>
+<li>Reduced maintenance burden</li>
+</ul>
+<h3>5.2 Matrix Operations</h3>
+<p><strong>Core Matrix Algebra:</strong>
+All quantum operations are implemented using numerically stable matrix algorithms:</p>
+<ul>
+<li><strong>Eigendecomposition</strong>: $A = VDV^\dagger$ for Hermitian operators  </li>
+<li><strong>Matrix Exponential</strong>: $e^A = \sum_{n=0}^{\infty} \frac{A^n}{n!}$ using Padé approximation</li>
+<li><strong>Tensor Products</strong>: $(A \otimes B)<em>{ij,kl} = A</em>{ik}B_{jl}$ for composite systems</li>
+</ul>
+<p><strong>Numerical Considerations:</strong></p>
+<ul>
+<li>Maintains unitarity within machine precision</li>
+<li>Handles near-singular matrices gracefully  </li>
+<li>Preserves hermiticity in quantum operations</li>
+<li>Optimized for sparse matrix representations where applicable</li>
+</ul>
+<h3>5.3 Quantum State Mathematics</h3>
+<p><strong>Hilbert Space Structure:</strong>
+Quantum states live in complex Hilbert spaces with inner product:
+$\langle\psi|\phi\rangle = \sum_i \psi_i^* \phi_i$</p>
+<p><strong>Normalization Invariants:</strong>
+All state operations preserve the normalization condition:
+$\langle\psi|\psi\rangle = \sum_i |\psi_i|^2 = 1$</p>
+<p><strong>Composite Systems:</strong>
+Multi-particle states use tensor product spaces:
+$\mathcal{H}_{total} = \mathcal{H}_1 \otimes \mathcal{H}_2 \otimes \cdots \otimes \mathcal{H}_n$</p>
+<h3>5.4 Operator Theory</h3>
+<p><strong>Linear Operators:</strong>
+Quantum operators are represented as matrices acting on state vectors:
+$\hat{A}|\psi\rangle = \sum_{ij} A_{ij}|i\rangle\langle j|\psi\rangle$</p>
+<p><strong>Special Operator Classes:</strong></p>
+<ul>
+<li><strong>Hermitian</strong>: $\hat{A}^\dagger = \hat{A}$ (observables)</li>
+<li><strong>Unitary</strong>: $\hat{U}^\dagger\hat{U} = \mathbb{I}$ (time evolution)</li>
+<li><strong>Projection</strong>: $\hat{P}^2 = \hat{P}$ (measurements)</li>
+</ul>
+<p><strong>Spectral Decomposition:</strong>
+Hermitian operators decompose as:
+$\hat{A} = \sum_i \lambda_i |a_i\rangle\langle a_i|$
+where $\lambda_i$ are real eigenvalues and $|a_i\rangle$ are orthonormal eigenvectors.</p>
+<h2>6. Integration Patterns</h2>
+<p>The quantum package is designed for seamless integration with graph-based quantum systems and tensor networks.</p>
+<h3>6.1 Graph-Quantum Integration</h3>
+<p><strong>Spin Network Architecture:</strong> 📋 <strong>Planned</strong>
+The package will support spin networks where:</p>
+<ul>
+<li><strong>Edges</strong> carry quantum states (SU(2) representations)</li>
+<li><strong>Nodes</strong> represent intertwiner spaces coupling multiple angular momenta</li>
+<li><strong>Graph structure</strong> defines the topology of quantum geometry</li>
+</ul>
+<p><strong>Mathematical Integration:</strong> 📋 <strong>Planned</strong></p>
+<pre><code class="language-typescript">// Edge states with quantum numbers - NOT YET IMPLEMENTED
+class EdgeState {
+  spin: number;           // j quantum number
+  state: StateVector;     // quantum state |j,m⟩
+}
+
+// Node intertwiners - NOT YET IMPLEMENTED
+class NodeIntertwiner {
+  inputSpins: number[];   // incident edge spins
+  intertwinerIndex: number; // coupling scheme index
+  tensor: ComplexMatrix;  // intertwiner tensor
+}
+</code></pre>
+<p><strong>Diffusion on Quantum Networks:</strong> 📋 <strong>Planned</strong>
+For diffusion processes on spin networks, operators must account for both graph connectivity and quantum properties:</p>
+<p>$\hat{\mathcal{L}}|\Gamma, {j_e}, {i_v}\rangle = \sum_{\text{edges}} f(j_e) \hat{\Delta}<em>e + \sum</em>{\text{vertices}} g(i_v) \hat{\Delta}_v$</p>
+<p>where $f(j_e)$ and $g(i_v)$ are functions of edge spins and vertex intertwiners.</p>
+<h3>6.2 Tensor Network Compatibility</h3>
+<p><strong>Tensor Structure:</strong>
+Quantum states can be represented as tensor networks:</p>
+<ul>
+<li>Each tensor index corresponds to a quantum degree of freedom</li>
+<li>Tensor contractions represent quantum operations</li>
+<li>Network topology encodes entanglement structure</li>
+</ul>
+<p><strong>Integration Points:</strong></p>
+<ul>
+<li>State vectors map to tensor network nodes</li>
+<li>Operators become tensor network edges</li>
+<li>Measurements collapse tensor dimensions</li>
+</ul>
+<h3>6.3 API Design Patterns</h3>
+<p><strong>Functional Core with Stateful Shell:</strong> ✅ <strong>Implemented</strong></p>
+<ul>
+<li>Pure functional operations for mathematical correctness</li>
+<li>Stateful wrappers for performance optimization and caching</li>
+<li>Immutable data structures for quantum states</li>
+</ul>
+<p><strong>Composition Patterns:</strong> 📋 <strong>Planned</strong></p>
+<pre><code class="language-typescript">// Operator composition - PLANNED FLUENT API
+const evolved = timeEvolution(hamiltonian, time)
+  .compose(measurement(observable))
+  .apply(initialState);
+
+// State preparation pipeline - PLANNED FLUENT API
+const entangledState = bellState()
+  .tensorProduct(groundState())
+  .normalize();
+</code></pre>
+<h3>6.4 Extension Integration</h3>
+<p><strong>Custom Operator Support:</strong> 📋 <strong>Planned</strong></p>
+<pre><code class="language-typescript">// NOT YET IMPLEMENTED
+interface CustomOperator extends IOperator {
+  // Implementation-specific properties
+  quantumProperty: QuantumNumber;
+  
+  // Required methods
+  apply(state: IStateVector): IStateVector;
+  compose(other: IOperator): IOperator;
+}
+</code></pre>
+<p><strong>Algorithm Integration:</strong> 📋 <strong>Planned</strong>
+The package will provide foundation classes for quantum algorithms:</p>
+<ul>
+<li>Circuit-based quantum computation</li>
+<li>Adiabatic quantum optimization  </li>
+<li>Quantum walk algorithms</li>
+<li>Variational quantum algorithms</li>
+</ul>
+<h2>7. Performance and Design Considerations</h2>
+<h3>7.1 Computational Performance</h3>
+<p><strong>Math.js Integration:</strong></p>
+<ul>
+<li>Leverages optimized numerical routines for complex arithmetic</li>
+<li>Efficient matrix operations using established algorithms</li>
+<li>Reduced computational overhead through native implementations</li>
+</ul>
+<p><strong>Caching Strategies:</strong> 📋 <strong>Planned</strong></p>
+<pre><code class="language-typescript">// NOT YET IMPLEMENTED
+class CachedOperator implements IOperator {
+  private cachedMatrix: ComplexMatrix | null = null;
+  private cachedEigendecomposition: EigenResult | null = null;
+  
+  // Lazy evaluation for expensive operations
+  getMatrix(): ComplexMatrix {
+    if (!this.cachedMatrix) {
+      this.cachedMatrix = this.computeMatrix();
+    }
+    return this.cachedMatrix;
+  }
+}
+</code></pre>
+<p><strong>Memory Management:</strong></p>
+<ul>
+<li>Sparse matrix representations for large-dimensional systems</li>
+<li>Efficient tensor product algorithms that avoid full expansion</li>
+<li>Garbage collection optimization for large quantum state vectors</li>
+</ul>
+<h3>7.2 Numerical Stability</h3>
+<p><strong>Precision Considerations:</strong></p>
+<ul>
+<li>Maintains quantum mechanical constraints (unitarity, normalization)</li>
+<li>Handles near-degenerate eigenvalues in measurements</li>
+<li>Numerical tolerance management for equality comparisons</li>
+</ul>
+<p><strong>Error Propagation:</strong></p>
+<ul>
+<li>Monitors numerical precision throughout quantum operations</li>
+<li>Validates quantum mechanical properties at key checkpoints</li>
+<li>Provides diagnostic tools for numerical accuracy assessment</li>
+</ul>
+<h3>7.3 Design Patterns</h3>
+<p><strong>Immutable State Management:</strong></p>
+<pre><code class="language-typescript">// States are immutable - operations return new states
+const evolvedState = operator.apply(initialState); // Creates new state
+const originalState = initialState; // Unchanged
+</code></pre>
+<p><strong>Type Safety:</strong></p>
+<ul>
+<li>Comprehensive TypeScript interfaces prevent runtime errors</li>
+<li>Dimension compatibility checking at compile time</li>
+<li>Generic types for parameterized quantum systems</li>
+</ul>
+<p><strong>Functional Programming:</strong></p>
+<ul>
+<li>Pure functions for mathematical operations ensure reproducibility</li>
+<li>Composition-friendly interfaces support complex quantum algorithms</li>
+<li>Side-effect isolation for debugging and testing</li>
+</ul>
+<h3>7.4 Scalability Considerations</h3>
+<p><strong>Large Quantum Systems:</strong></p>
+<ul>
+<li>Efficient algorithms for high-dimensional Hilbert spaces</li>
+<li>Sparse matrix support for systems with natural sparsity</li>
+<li>Distributed computation hooks for future parallel processing</li>
+</ul>
+<p><strong>Memory Footprint:</strong></p>
+<ul>
+<li>Lazy evaluation for expensive quantum operations</li>
+<li>Reference sharing for common quantum states</li>
+<li>Automatic cleanup of intermediate computational results</li>
+</ul>
+<h2>8. Extension Points</h2>
+<p>The quantum package provides multiple extension points for specialized quantum applications and algorithms.</p>
+<h3>8.1 Quantum Circuit Integration</h3>
+<p><strong>Circuit Framework:</strong> 📋 <strong>Planned</strong></p>
+<pre><code class="language-typescript">// NOT YET IMPLEMENTED
+interface IQuantumCircuit {
+  readonly numQubits: number;
+  readonly depth: number;
+  
+  addGate(gate: IOperator, targets: number[]): this;
+  addMeasurement(qubit: number): this;
+  execute(initialState?: IStateVector): CircuitResult;
+}
+</code></pre>
+<p><strong>Gate Extensions:</strong> 📋 <strong>Planned</strong></p>
+<ul>
+<li>Custom gate implementations through IOperator interface</li>
+<li>Parameterized gates for variational algorithms</li>
+<li>Composite gate definitions for common patterns</li>
+</ul>
+<h3>8.2 Algorithm Support Infrastructure</h3>
+<p><strong>Quantum Walk Framework:</strong> 📋 <strong>Planned</strong></p>
+<pre><code class="language-typescript">// NOT YET IMPLEMENTED
+interface IQuantumWalk {
+  graph: IGraph;
+  coinOperator: IOperator;
+  step(): IStateVector;
+  evolve(steps: number): IStateVector;
+}
+</code></pre>
+<p><strong>Optimization Algorithms:</strong> 📋 <strong>Planned</strong></p>
+<ul>
+<li>Variational Quantum Eigensolver (VQE) support</li>
+<li>Quantum Approximate Optimization Algorithm (QAOA) foundation</li>
+<li>Adiabatic quantum computing primitives</li>
+</ul>
+<h3>8.3 Custom Operator Implementation</h3>
+<p><strong>Operator Extension Pattern:</strong> 📋 <strong>Planned</strong></p>
+<pre><code class="language-typescript">// NOT YET IMPLEMENTED
+class CustomQuantumOperator extends MatrixOperator {
+  constructor(
+    private parameters: QuantumParameters,
+    dimension: number
+  ) {
+    super(dimension, OperatorType.CUSTOM);
+  }
+  
+  protected computeMatrix(): ComplexMatrix {
+    // Custom implementation using quantum parameters
+    return this.buildCustomMatrix();
+  }
+}
+</code></pre>
+<h3>8.4 Testing and Validation Framework</h3>
+<p><strong>Test Infrastructure:</strong> 📋 <strong>Planned</strong></p>
+<ul>
+<li>Quantum property validation (unitarity, hermiticity)</li>
+<li>Numerical accuracy assessment tools</li>
+<li>Performance benchmarking utilities</li>
+<li>Integration test patterns for complex quantum systems</li>
+</ul>
+<p><strong>Validation Utilities:</strong> 📋 <strong>Planned</strong></p>
+<pre><code class="language-typescript">// NOT YET IMPLEMENTED
+interface QuantumValidator {
+  validateUnitarity(operator: IOperator, tolerance?: number): boolean;
+  validateNormalization(state: IStateVector, tolerance?: number): boolean;
+  validateHermiticity(operator: IOperator, tolerance?: number): boolean;
+}
+</code></pre>
+<p><strong>Custom Test Patterns:</strong> 📋 <strong>Planned</strong></p>
+<ul>
+<li>Property-based testing for quantum mechanical laws</li>
+<li>Randomized testing with quantum state generators</li>
+<li>Regression testing for numerical stability</li>
+</ul>
+<h2>9. Migration and Compatibility</h2>
+<h3>9.1 Package Migration Strategy</h3>
+<p><strong>From lib/quantum to packages/quantum:</strong>
+The quantum package represents a migration from the original <code>lib/quantum</code> structure to a proper monorepo package architecture.</p>
+<p><strong>Migration Benefits:</strong></p>
+<ul>
+<li>Improved dependency management through workspace configuration</li>
+<li>Better separation of concerns between quantum, graph, and tensor operations</li>
+<li>Enhanced testing and build isolation</li>
+<li>Simplified import paths and API surface</li>
+</ul>
+<p><strong>Backward Compatibility:</strong></p>
+<ul>
+<li>Maintained API surface compatibility where possible</li>
+<li>Provided migration guides for breaking changes</li>
+<li>Compatibility layers for critical existing integrations</li>
+</ul>
+<h3>9.2 Build and Configuration</h3>
+<p><strong>Package Configuration:</strong></p>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;@spin-network/quantum&quot;,
+  &quot;version&quot;: &quot;0.1.0&quot;,
+  &quot;main&quot;: &quot;dist/index.js&quot;,
+  &quot;module&quot;: &quot;dist/index.mjs&quot;, 
+  &quot;types&quot;: &quot;dist/index.d.ts&quot;,
+  &quot;dependencies&quot;: {
+    &quot;mathjs&quot;: &quot;^12.4.3&quot;
+  }
+}
+</code></pre>
+<p><strong>Build System:</strong></p>
+<ul>
+<li>TypeScript compilation with strict type checking</li>
+<li>Vite-based build for both CommonJS and ESM outputs</li>
+<li>Comprehensive test suite integration</li>
+<li>Documentation generation pipeline</li>
+</ul>
+<p><strong>Integration Points:</strong></p>
+<ul>
+<li>Clean integration with graph-core package through defined interfaces</li>
+<li>Tensor-core package compatibility for advanced mathematical operations</li>
+<li>Spin-network package as primary consumer of quantum functionality</li>
+</ul>
+<h3>9.3 Version Management</h3>
+<p><strong>API Stability:</strong></p>
+<ul>
+<li>Semantic versioning for public API changes</li>
+<li>Deprecation warnings for API changes</li>
+<li>Migration guides for major version updates</li>
+</ul>
+<p><strong>Dependency Management:</strong></p>
+<ul>
+<li>Minimal external dependencies (primarily math.js)</li>
+<li>Locked dependency versions for numerical stability</li>
+<li>Regular dependency updates with compatibility testing</li>
+</ul>
+<p>This architecture provides a solid foundation for quantum mechanical computations while maintaining flexibility for specialized applications in spin networks and quantum geometry.</p>
+<h2>10. Implementation Roadmap</h2>
+<h3>10.1 Migration Phase (From lib/quantum)</h3>
+<p><strong>Priority: HIGH</strong> 🔄</p>
+<p>The following components exist in <code>lib/quantum</code> and need migration to <code>packages/quantum</code>:</p>
+<ul>
+<li><p><input disabled="" type="checkbox"> <strong>circuit.ts</strong> - Currently empty file, needs complete implementation</p>
+<ul>
+<li><input disabled="" type="checkbox"> <code>IQuantumCircuit</code> interface</li>
+<li><input disabled="" type="checkbox"> <code>QuantumCircuit</code> class with gate composition</li>
+<li><input disabled="" type="checkbox"> <code>CircuitResult</code> and measurement distribution handling</li>
+<li><input disabled="" type="checkbox"> Circuit execution and simulation methods</li>
+</ul>
+</li>
+<li><p><input disabled="" type="checkbox"> <strong>Enhanced Testing Framework</strong> - Basic tests exist but need expansion</p>
+<ul>
+<li><input disabled="" type="checkbox"> Comprehensive unit tests for all modules</li>
+<li><input disabled="" type="checkbox"> Integration tests for quantum operations</li>
+<li><input disabled="" type="checkbox"> Performance benchmarks</li>
+<li><input disabled="" type="checkbox"> Numerical stability validation</li>
+</ul>
+</li>
+<li><p><input disabled="" type="checkbox"> <strong>Example Documentation</strong> - Examples exist in lib/quantum/examples</p>
+<ul>
+<li><input disabled="" type="checkbox"> Migrate existing examples to packages/quantum/examples</li>
+<li><input disabled="" type="checkbox"> Update import paths and API calls</li>
+<li><input disabled="" type="checkbox"> Create tutorial-style documentation</li>
+<li><input disabled="" type="checkbox"> Add circuit-based examples</li>
+</ul>
+</li>
+</ul>
+<h3>10.2 Enhancement Phase (New Features)</h3>
+<p><strong>Priority: MEDIUM</strong> 📋</p>
+<h4>Phase 2A: Performance and Caching</h4>
+<ul>
+<li><p><input disabled="" type="checkbox"> <strong>CachedOperator Implementation</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> Lazy evaluation for matrix operations</li>
+<li><input disabled="" type="checkbox"> Eigendecomposition caching</li>
+<li><input disabled="" type="checkbox"> Memory management for large quantum systems</li>
+<li><input disabled="" type="checkbox"> Cache invalidation strategies</li>
+</ul>
+</li>
+<li><p><input disabled="" type="checkbox"> <strong>Advanced Numerical Stability</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> Enhanced precision handling for quantum operations</li>
+<li><input disabled="" type="checkbox"> Error bounds monitoring</li>
+<li><input disabled="" type="checkbox"> Numerical diagnostic tools</li>
+</ul>
+</li>
+</ul>
+<h4>Phase 2B: API Enhancements</h4>
+<ul>
+<li><p><input disabled="" type="checkbox"> <strong>Fluent API Design</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> Chainable operator composition methods</li>
+<li><input disabled="" type="checkbox"> Pipeline-style state preparation</li>
+<li><input disabled="" type="checkbox"> Method chaining for quantum algorithms</li>
+</ul>
+</li>
+<li><p><input disabled="" type="checkbox"> <strong>Custom Operator Framework</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> <code>CustomOperator</code> interface implementation</li>
+<li><input disabled="" type="checkbox"> Extension patterns for specialized operators</li>
+<li><input disabled="" type="checkbox"> Plugin architecture for quantum algorithms</li>
+</ul>
+</li>
+</ul>
+<h4>Phase 2C: Validation Framework</h4>
+<ul>
+<li><input disabled="" type="checkbox"> <strong>QuantumValidator Implementation</strong><ul>
+<li><input disabled="" type="checkbox"> Unitarity validation methods</li>
+<li><input disabled="" type="checkbox"> Hermiticity checking utilities</li>
+<li><input disabled="" type="checkbox"> Normalization verification</li>
+<li><input disabled="" type="checkbox"> Property-based testing utilities</li>
+</ul>
+</li>
+</ul>
+<h3>10.3 Integration Phase (Graph and Tensor Networks)</h3>
+<p><strong>Priority: LOW</strong> 📋</p>
+<h4>Phase 3A: Graph-Quantum Integration</h4>
+<ul>
+<li><p><input disabled="" type="checkbox"> <strong>EdgeState Class</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> SU(2) representation handling</li>
+<li><input disabled="" type="checkbox"> Quantum state attachment to graph edges</li>
+<li><input disabled="" type="checkbox"> Spin quantum number management</li>
+</ul>
+</li>
+<li><p><input disabled="" type="checkbox"> <strong>NodeIntertwiner Class</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> Intertwiner tensor representations</li>
+<li><input disabled="" type="checkbox"> Angular momentum coupling at vertices</li>
+<li><input disabled="" type="checkbox"> Graph topology quantum state mapping</li>
+</ul>
+</li>
+<li><p><input disabled="" type="checkbox"> <strong>Diffusion Operators</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> Quantum network Laplacian implementation</li>
+<li><input disabled="" type="checkbox"> Spin-dependent diffusion coefficients</li>
+<li><input disabled="" type="checkbox"> Vertex intertwiner diffusion effects</li>
+</ul>
+</li>
+</ul>
+<h4>Phase 3B: Algorithm Support Infrastructure</h4>
+<ul>
+<li><p><input disabled="" type="checkbox"> <strong>Quantum Walk Framework</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> <code>IQuantumWalk</code> interface</li>
+<li><input disabled="" type="checkbox"> Discrete and continuous quantum walks</li>
+<li><input disabled="" type="checkbox"> Graph-based quantum walk algorithms</li>
+</ul>
+</li>
+<li><p><input disabled="" type="checkbox"> <strong>Optimization Algorithm Support</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> VQE (Variational Quantum Eigensolver) foundation</li>
+<li><input disabled="" type="checkbox"> QAOA (Quantum Approximate Optimization Algorithm) support</li>
+<li><input disabled="" type="checkbox"> Adiabatic quantum computing primitives</li>
+</ul>
+</li>
+</ul>
+<h3>10.4 Implementation Timeline</h3>
+<h4>Sprint 1 (Weeks 1-2): Core Migration</h4>
+<ul>
+<li><input disabled="" type="checkbox"> Complete circuit.ts implementation</li>
+<li><input disabled="" type="checkbox"> Migrate and enhance test suite</li>
+<li><input disabled="" type="checkbox"> Update documentation and examples</li>
+</ul>
+<h4>Sprint 2 (Weeks 3-4): Performance Enhancement</h4>
+<ul>
+<li><input disabled="" type="checkbox"> Implement caching framework</li>
+<li><input disabled="" type="checkbox"> Add validation utilities</li>
+<li><input disabled="" type="checkbox"> Enhance numerical stability</li>
+</ul>
+<h4>Sprint 3 (Weeks 5-6): API Enhancement</h4>
+<ul>
+<li><input disabled="" type="checkbox"> Implement fluent API patterns</li>
+<li><input disabled="" type="checkbox"> Add custom operator framework</li>
+<li><input disabled="" type="checkbox"> Complete testing framework</li>
+</ul>
+<h4>Sprint 4 (Weeks 7-8): Integration Preparation</h4>
+<ul>
+<li><input disabled="" type="checkbox"> Design graph-quantum integration interfaces</li>
+<li><input disabled="" type="checkbox"> Plan tensor network compatibility</li>
+<li><input disabled="" type="checkbox"> Prepare algorithm support infrastructure</li>
+</ul>
+<h3>10.5 Success Criteria</h3>
+<h4>Functional Requirements</h4>
+<ul>
+<li><input disabled="" type="checkbox"> All lib/quantum functionality migrated and working</li>
+<li><input disabled="" type="checkbox"> Comprehensive test coverage (&gt;90%)</li>
+<li><input disabled="" type="checkbox"> Performance benchmarks meet or exceed lib/quantum</li>
+<li><input disabled="" type="checkbox"> Documentation complete with examples</li>
+</ul>
+<h4>Quality Requirements</h4>
+<ul>
+<li><input disabled="" type="checkbox"> No regression in quantum operation accuracy</li>
+<li><input disabled="" type="checkbox"> Memory usage optimized for large quantum systems</li>
+<li><input disabled="" type="checkbox"> API is intuitive and well-documented</li>
+<li><input disabled="" type="checkbox"> Integration tests pass with graph-core package</li>
+</ul>
+<h4>Integration Requirements</h4>
+<ul>
+<li><input disabled="" type="checkbox"> Clean integration with packages/graph-core</li>
+<li><input disabled="" type="checkbox"> Tensor network compatibility established</li>
+<li><input disabled="" type="checkbox"> Extension points documented and tested</li>
+<li><input disabled="" type="checkbox"> Migration path from lib/quantum clearly defined</li>
+</ul>
+<p>This roadmap provides a structured approach to completing the quantum package implementation while maintaining backwards compatibility and preparing for future enhancements.</p>
+
+    <div class="last-updated">Last Updated: 2025-07-06</div>
+</body>
+</html>
