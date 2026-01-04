@@ -902,7 +902,7 @@
                         </div>
                         <div class="control-group">
                             <label>Evolution Steps:</label>
-                            <input type="number" id="qw1dSteps" value="10" min="1" max="20">
+                            <input type="number" id="qw1dSteps" value="10" min="1" max="100">
                         </div>
                     </div>
 
@@ -1308,8 +1308,8 @@
                 if (latticeSize < 5 || latticeSize > 31) {
                     throw new Error('Lattice size must be between 5 and 31');
                 }
-                if (numSteps < 1 || numSteps > 20) {
-                    throw new Error('Steps must be between 1 and 20');
+                if (numSteps < 1 || numSteps > 100) {
+                    throw new Error('Steps must be between 1 and 100');
                 }
 
                 if (qw1dAnimationRunning) {

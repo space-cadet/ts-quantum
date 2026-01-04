@@ -18,3 +18,4 @@
 | T6 | Native Sparse Operator Support | 2026-01-01 | Enhanced |
 | T7 | Web Showcase and Deployment | 2026-01-04 | Web |
 | T8 | Documentation System Redesign | 2026-01-04 | Web |
+| T9 | 1D Quantum Random Walk Implementation | 2026-01-04 | Web |
