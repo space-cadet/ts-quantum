@@ -4,6 +4,10 @@ node_modules/
 # Build output
 dist/
 
+# Generated web bundles
+web/bundle.js
+web/bundle.js.map
+
 # Environment variables
 .env
 .env.local
