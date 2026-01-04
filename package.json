@@ -47,6 +47,7 @@
     "prepublishOnly": "npm run build",
     "web:build": "pnpm build && node web/build-bundle.js",
     "web:serve": "pnpm web:build && cd web && npx http-server -p 8080",
+    "web:dev": "pnpm build && node web/dev-server.js",
     "deploy:vercel": "vercel"
   },
   "dependencies": {

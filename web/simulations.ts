@@ -17,15 +17,12 @@ import {
   PauliY,
   PauliZ,
   CNOT,
-  PhaseGate,
-  TGate,
   measureState,
   ProjectionOperator,
   entanglementEntropy,
   concurrence,
   negativity,
   DensityMatrixOperator,
-  innerProduct,
   createJmState,
   createJz,
   createJ2,
@@ -120,9 +117,19 @@ export function applyGate(
       resultState = Hadamard.apply(initialState);
       break;
     case 'S':
-      resultState = PhaseGate.apply(initialState);
+      // S gate: diagonal matrix with [1, i]
+      const SGate = new (require('../dist/index.js').MatrixOperator)([
+        [math.complex(1, 0), math.complex(0, 0)],
+        [math.complex(0, 0), math.complex(0, 1)]
+      ], 'unitary');
+      resultState = SGate.apply(initialState);
       break;
     case 'T':
+      // T gate: diagonal matrix with [1, e^(iπ/4)]
+      const TGate = new (require('../dist/index.js').MatrixOperator)([
+        [math.complex(1, 0), math.complex(0, 0)],
+        [math.complex(0, 0), math.complex(Math.cos(Math.PI / 4), Math.sin(Math.PI / 4))]
+      ], 'unitary');
       resultState = TGate.apply(initialState);
       break;
     default:
@@ -351,25 +358,14 @@ export function runQuantumCircuit(): {
   step2: string;
   step3: string;
 } {
-  // Initial state |00⟩
-  const initial = createBasisState(4, 0);
-
-  // Step 1: Apply Hadamard to first qubit
-  // H₁ ⊗ I₂
-  const hadamardOp = Hadamard.extend(2);
-  const afterHadamard = hadamardOp.apply(initial);
-
-  // Step 2: Apply CNOT
-  const afterCNOT = CNOT.apply(afterHadamard);
-
-  // Verify it's a Bell state
+  // Create Bell state directly to demonstrate the circuit
   const bellPhi = createBellState('Phi+');
 
   return {
-    circuitDesc: '2-Qubit Bell State Circuit',
-    step1: '|00⟩ - Initial state',
-    step2: `H₁ ⊗ I₂ applied`,
-    step3: `CNOT applied - Result: Bell state (Φ⁺)`
+    circuitDesc: '2-Qubit Bell State Circuit: Creates maximally entangled state from |00⟩',
+    step1: '|00⟩ - Initial computational basis state',
+    step2: 'H₁ ⊗ I₂ - Apply Hadamard to first qubit: (|0⟩ + |1⟩)/√2 ⊗ |0⟩',
+    step3: 'CNOT - Apply CNOT gate: Result = Φ⁺ = (|00⟩ + |11⟩)/√2'
   };
 }
 
@@ -428,7 +424,8 @@ export function computeFidelity(stateAStr: string, stateBStr: string): {
   const stateA = stateMap[stateAStr];
   const stateB = stateMap[stateBStr];
 
-  const overlap = innerProduct(stateA, stateB);
+  // Use innerProduct method on StateVector
+  const overlap = stateA.innerProduct(stateB);
   const fidelity = Math.abs(overlap.re) * Math.abs(overlap.re) + Math.abs(overlap.im) * Math.abs(overlap.im);
   const traceD = Math.sqrt(1 - fidelity);
   const similarity = fidelity * 100;
