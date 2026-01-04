@@ -1,0 +1,10 @@
+{
+  "buildCommand": "pnpm build && node web/build-bundle.js",
+  "outputDirectory": "web",
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/showcase.html"
+    }
+  ]
+}
