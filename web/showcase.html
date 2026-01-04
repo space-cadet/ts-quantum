@@ -910,6 +910,7 @@
                         <button onclick="runQuantumWalk1D()">Run Simulation</button>
                         <button onclick="stepQuantumWalk1D()">Step (single)</button>
                         <button onclick="resetQuantumWalk1D()">Reset</button>
+                        <button id="qw1dCancelBtn" onclick="cancelQuantumWalk1DAnimation()" style="display: none; background-color: #e74c3c;">Cancel Animation</button>
                     </div>
 
                     <div class="results" id="qw1dResults">
@@ -1294,7 +1295,10 @@
             }
         }
 
-        // 1D Quantum Random Walk
+        // Animation control for quantum walk
+        let qw1dAnimationRunning = false;
+        let qw1dAnimationCancelled = false;
+
         async function runQuantumWalk1D() {
             try {
                 if (!ensureSimulationsReady()) throw new Error('Simulations not ready');
@@ -1308,13 +1312,70 @@
                     throw new Error('Steps must be between 1 and 20');
                 }
 
-                const result = window.simulations.runQuantumWalk1D(latticeSize, numSteps);
-                updateQuantumWalk1DDisplay(result.final);
-                MathJax.typesetPromise().catch(e => console.log(e));
+                if (qw1dAnimationRunning) {
+                    alert('Animation already running. Click Cancel to stop.');
+                    return;
+                }
+
+                qw1dAnimationRunning = true;
+                qw1dAnimationCancelled = false;
+
+                // Disable controls during animation
+                document.getElementById('qw1dLatticeSize').disabled = true;
+                document.getElementById('qw1dSteps').disabled = true;
+                document.querySelector('[onclick="runQuantumWalk1D()"]').disabled = true;
+                document.querySelector('[onclick="stepQuantumWalk1D()"]').disabled = true;
+
+                // Show cancel button
+                const cancelBtn = document.getElementById('qw1dCancelBtn');
+                if (cancelBtn) cancelBtn.style.display = 'inline-block';
+
+                // Initialize walk
+                window.simulations.initializeQuantumWalk1D(latticeSize);
+                updateQuantumWalk1DDisplay(window.simulations.getQuantumWalk1DState());
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                // Animate each step
+                for (let step = 0; step < numSteps; step++) {
+                    if (qw1dAnimationCancelled) break;
+
+                    const data = window.simulations.stepQuantumWalk1D();
+                    updateQuantumWalk1DDisplay(data);
+                    MathJax.typesetPromise().catch(e => console.log(e));
+
+                    // Delay between steps (500ms = comfortable viewing speed)
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+
+                // Re-enable controls
+                qw1dAnimationRunning = false;
+                document.getElementById('qw1dLatticeSize').disabled = false;
+                document.getElementById('qw1dSteps').disabled = false;
+                document.querySelector('[onclick="runQuantumWalk1D()"]').disabled = false;
+                document.querySelector('[onclick="stepQuantumWalk1D()"]').disabled = false;
+                if (cancelBtn) cancelBtn.style.display = 'none';
+
             } catch (e) {
                 console.error('Error:', e);
                 alert('Error: ' + e.message);
+                qw1dAnimationRunning = false;
+                const cancelBtn = document.getElementById('qw1dCancelBtn');
+                if (cancelBtn) cancelBtn.style.display = 'none';
             }
+        }
+
+        function cancelQuantumWalk1DAnimation() {
+            qw1dAnimationCancelled = true;
+            qw1dAnimationRunning = false;
+
+            // Re-enable controls
+            document.getElementById('qw1dLatticeSize').disabled = false;
+            document.getElementById('qw1dSteps').disabled = false;
+            document.querySelector('[onclick="runQuantumWalk1D()"]').disabled = false;
+            document.querySelector('[onclick="stepQuantumWalk1D()"]').disabled = false;
+
+            const cancelBtn = document.getElementById('qw1dCancelBtn');
+            if (cancelBtn) cancelBtn.style.display = 'none';
         }
 
         async function stepQuantumWalk1D() {
