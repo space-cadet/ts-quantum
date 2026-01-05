@@ -672,6 +672,430 @@ function extractQuantumWalk1DData(state: StateVector, latticeSize: number, step:
 }
 
 // ============================================================================
+// 1D QUANTUM RANDOM WALK - GROVER COIN VARIANT
+// ============================================================================
+
+interface QuantumWalk1DGroverState {
+  state: StateVector;
+  coinOp: MatrixOperator;
+  shiftOp: SparseOperator;
+  latticeSize: number;
+  currentStep: number;
+  history: Array<{ step: number; data: QuantumWalk1DData }>;
+}
+
+let qw1dGroverStateBuffer: QuantumWalk1DGroverState | null = null;
+
+/**
+ * Initialize 1D quantum walk with Grover coin
+ * Grover coin provides enhanced spreading compared to Hadamard
+ */
+export function initializeQuantumWalk1DGrover(latticeSize: number): QuantumWalk1DData {
+  const dimension = 2 * latticeSize;
+
+  // Create Grover coin operator (2×2)
+  // Grover: G = 2|ψ⟩⟨ψ| - I where |ψ⟩ = (|0⟩ + |1⟩)/√2
+  // G = [[0, 1], [1, 0]] (phase-shifted version for quantum walks)
+  const groverMatrix: any[][] = [
+    [math.complex(0, 0), math.complex(1, 0)],
+    [math.complex(1, 0), math.complex(0, 0)]
+  ];
+  const coinOp = new MatrixOperator(groverMatrix, 'unitary');
+
+  // Same shift operator as Hadamard variant (boundary reflecting)
+  const shiftMatrix = createSparseMatrix(dimension, dimension);
+  for (let pos = 0; pos < latticeSize; pos++) {
+    const leftIndex = pos;
+    if (pos > 0) {
+      const rightIndexPrev = latticeSize + (pos - 1);
+      setSparseEntry(shiftMatrix, rightIndexPrev, leftIndex, math.complex(1, 0));
+    } else {
+      const rightIndex = latticeSize + 0;
+      setSparseEntry(shiftMatrix, rightIndex, leftIndex, math.complex(1, 0));
+    }
+    const rightIndex = latticeSize + pos;
+    if (pos < latticeSize - 1) {
+      const leftIndexNext = pos + 1;
+      setSparseEntry(shiftMatrix, leftIndexNext, rightIndex, math.complex(1, 0));
+    } else {
+      const leftIndexBound = pos;
+      setSparseEntry(shiftMatrix, leftIndexBound, rightIndex, math.complex(1, 0));
+    }
+  }
+  const shiftOp = new SparseOperator(shiftMatrix, 'unitary');
+
+  // Initial state
+  const center = Math.floor(latticeSize / 2);
+  const initialAmplitudes: any[] = new Array(dimension).fill(null).map(() => math.complex(0, 0));
+  const invSqrt2 = 1 / Math.sqrt(2);
+  initialAmplitudes[center] = math.complex(invSqrt2, 0);
+  initialAmplitudes[latticeSize + center] = math.complex(invSqrt2, 0);
+
+  const initialState = new StateVector(dimension, initialAmplitudes);
+
+  qw1dGroverStateBuffer = {
+    state: initialState,
+    coinOp,
+    shiftOp,
+    latticeSize,
+    currentStep: 0,
+    history: []
+  };
+
+  const initialData = extractQuantumWalk1DData(initialState, latticeSize, 0);
+  qw1dGroverStateBuffer.history.push({ step: 0, data: initialData });
+
+  return initialData;
+}
+
+export function stepQuantumWalk1DGrover(): QuantumWalk1DData {
+  if (!qw1dGroverStateBuffer) {
+    throw new Error('Grover quantum walk not initialized');
+  }
+
+  const { state, coinOp, shiftOp, latticeSize } = qw1dGroverStateBuffer;
+
+  const identityMatrix: any[][] = [];
+  for (let i = 0; i < latticeSize; i++) {
+    const row: any[] = [];
+    for (let j = 0; j < latticeSize; j++) {
+      row.push(i === j ? math.complex(1, 0) : math.complex(0, 0));
+    }
+    identityMatrix.push(row);
+  }
+  const identityOp = new MatrixOperator(identityMatrix, 'unitary');
+
+  const coinFullOp = coinOp.tensorProduct(identityOp);
+  let nextState = coinFullOp.apply(state);
+  nextState = shiftOp.apply(nextState);
+  nextState = nextState.normalize();
+
+  qw1dGroverStateBuffer.state = nextState;
+  qw1dGroverStateBuffer.currentStep++;
+
+  const data = extractQuantumWalk1DData(nextState, latticeSize, qw1dGroverStateBuffer.currentStep);
+  qw1dGroverStateBuffer.history.push({ step: qw1dGroverStateBuffer.currentStep, data });
+
+  return data;
+}
+
+export function resetQuantumWalk1DGrover(): void {
+  qw1dGroverStateBuffer = null;
+}
+
+export function getQuantumWalk1DGroverState(): QuantumWalk1DData {
+  if (!qw1dGroverStateBuffer || qw1dGroverStateBuffer.history.length === 0) {
+    throw new Error('Grover quantum walk not initialized');
+  }
+  return qw1dGroverStateBuffer.history[qw1dGroverStateBuffer.history.length - 1].data;
+}
+
+// ============================================================================
+// 1D QUANTUM RANDOM WALK - PERIODIC BOUNDARY CONDITIONS
+// ============================================================================
+
+interface QuantumWalk1DPeriodicState {
+  state: StateVector;
+  coinOp: MatrixOperator;
+  shiftOp: SparseOperator;
+  latticeSize: number;
+  currentStep: number;
+  history: Array<{ step: number; data: QuantumWalk1DData }>;
+}
+
+let qw1dPeriodicStateBuffer: QuantumWalk1DPeriodicState | null = null;
+
+/**
+ * Initialize 1D quantum walk with periodic boundary conditions (torus)
+ */
+export function initializeQuantumWalk1DPeriodic(latticeSize: number): QuantumWalk1DData {
+  const dimension = 2 * latticeSize;
+
+  // Hadamard coin
+  const hadamardMatrix: any[][] = [
+    [math.complex(1 / Math.sqrt(2), 0), math.complex(1 / Math.sqrt(2), 0)],
+    [math.complex(1 / Math.sqrt(2), 0), math.complex(-1 / Math.sqrt(2), 0)]
+  ];
+  const coinOp = new MatrixOperator(hadamardMatrix, 'unitary');
+
+  // Shift operator with periodic boundaries (wrap-around)
+  const shiftMatrix = createSparseMatrix(dimension, dimension);
+  for (let pos = 0; pos < latticeSize; pos++) {
+    const leftIndex = pos;
+    const prevPos = (pos - 1 + latticeSize) % latticeSize; // wrap-around
+    const rightIndexPrev = latticeSize + prevPos;
+    setSparseEntry(shiftMatrix, rightIndexPrev, leftIndex, math.complex(1, 0));
+
+    const rightIndex = latticeSize + pos;
+    const nextPos = (pos + 1) % latticeSize; // wrap-around
+    const leftIndexNext = nextPos;
+    setSparseEntry(shiftMatrix, leftIndexNext, rightIndex, math.complex(1, 0));
+  }
+  const shiftOp = new SparseOperator(shiftMatrix, 'unitary');
+
+  // Initial state
+  const center = Math.floor(latticeSize / 2);
+  const initialAmplitudes: any[] = new Array(dimension).fill(null).map(() => math.complex(0, 0));
+  const invSqrt2 = 1 / Math.sqrt(2);
+  initialAmplitudes[center] = math.complex(invSqrt2, 0);
+  initialAmplitudes[latticeSize + center] = math.complex(invSqrt2, 0);
+
+  const initialState = new StateVector(dimension, initialAmplitudes);
+
+  qw1dPeriodicStateBuffer = {
+    state: initialState,
+    coinOp,
+    shiftOp,
+    latticeSize,
+    currentStep: 0,
+    history: []
+  };
+
+  const initialData = extractQuantumWalk1DData(initialState, latticeSize, 0);
+  qw1dPeriodicStateBuffer.history.push({ step: 0, data: initialData });
+
+  return initialData;
+}
+
+export function stepQuantumWalk1DPeriodic(): QuantumWalk1DData {
+  if (!qw1dPeriodicStateBuffer) {
+    throw new Error('Periodic quantum walk not initialized');
+  }
+
+  const { state, coinOp, shiftOp, latticeSize } = qw1dPeriodicStateBuffer;
+
+  const identityMatrix: any[][] = [];
+  for (let i = 0; i < latticeSize; i++) {
+    const row: any[] = [];
+    for (let j = 0; j < latticeSize; j++) {
+      row.push(i === j ? math.complex(1, 0) : math.complex(0, 0));
+    }
+    identityMatrix.push(row);
+  }
+  const identityOp = new MatrixOperator(identityMatrix, 'unitary');
+
+  const coinFullOp = coinOp.tensorProduct(identityOp);
+  let nextState = coinFullOp.apply(state);
+  nextState = shiftOp.apply(nextState);
+  nextState = nextState.normalize();
+
+  qw1dPeriodicStateBuffer.state = nextState;
+  qw1dPeriodicStateBuffer.currentStep++;
+
+  const data = extractQuantumWalk1DData(nextState, latticeSize, qw1dPeriodicStateBuffer.currentStep);
+  qw1dPeriodicStateBuffer.history.push({ step: qw1dPeriodicStateBuffer.currentStep, data });
+
+  return data;
+}
+
+export function resetQuantumWalk1DPeriodic(): void {
+  qw1dPeriodicStateBuffer = null;
+}
+
+export function getQuantumWalk1DPeriodicState(): QuantumWalk1DData {
+  if (!qw1dPeriodicStateBuffer || qw1dPeriodicStateBuffer.history.length === 0) {
+    throw new Error('Periodic quantum walk not initialized');
+  }
+  return qw1dPeriodicStateBuffer.history[qw1dPeriodicStateBuffer.history.length - 1].data;
+}
+
+// ============================================================================
+// CLASSICAL RANDOM WALK REFERENCE
+// ============================================================================
+
+interface ClassicalWalk1DState {
+  probabilities: number[];
+  latticeSize: number;
+  currentStep: number;
+  history: Array<{ step: number; data: QuantumWalk1DData }>;
+}
+
+let classicalWalk1DBuffer: ClassicalWalk1DState | null = null;
+
+/**
+ * Initialize classical 1D random walk for comparison with quantum
+ */
+export function initializeClassicalWalk1D(latticeSize: number): QuantumWalk1DData {
+  const probs = new Array(latticeSize).fill(0);
+  const center = Math.floor(latticeSize / 2);
+  probs[center] = 1.0; // Start at center with certainty
+
+  classicalWalk1DBuffer = {
+    probabilities: probs,
+    latticeSize,
+    currentStep: 0,
+    history: []
+  };
+
+  const initialData = extractClassicalWalkData(probs, latticeSize, 0);
+  classicalWalk1DBuffer.history.push({ step: 0, data: initialData });
+
+  return initialData;
+}
+
+/**
+ * Classical random walk step: move left/right with equal probability
+ */
+export function stepClassicalWalk1D(): QuantumWalk1DData {
+  if (!classicalWalk1DBuffer) {
+    throw new Error('Classical walk not initialized');
+  }
+
+  const { probabilities, latticeSize } = classicalWalk1DBuffer;
+  const newProbs = new Array(latticeSize).fill(0);
+
+  // From each position, move left or right with 50% probability
+  for (let pos = 0; pos < latticeSize; pos++) {
+    if (probabilities[pos] > 0) {
+      // Move left
+      const prevPos = pos > 0 ? pos - 1 : 0; // Reflect at boundary
+      newProbs[prevPos] += probabilities[pos] * 0.5;
+
+      // Move right
+      const nextPos = pos < latticeSize - 1 ? pos + 1 : latticeSize - 1; // Reflect at boundary
+      newProbs[nextPos] += probabilities[pos] * 0.5;
+    }
+  }
+
+  classicalWalk1DBuffer.probabilities = newProbs;
+  classicalWalk1DBuffer.currentStep++;
+
+  const data = extractClassicalWalkData(newProbs, latticeSize, classicalWalk1DBuffer.currentStep);
+  classicalWalk1DBuffer.history.push({ step: classicalWalk1DBuffer.currentStep, data });
+
+  return data;
+}
+
+export function resetClassicalWalk1D(): void {
+  classicalWalk1DBuffer = null;
+}
+
+export function getClassicalWalk1DState(): QuantumWalk1DData {
+  if (!classicalWalk1DBuffer || classicalWalk1DBuffer.history.length === 0) {
+    throw new Error('Classical walk not initialized');
+  }
+  return classicalWalk1DBuffer.history[classicalWalk1DBuffer.history.length - 1].data;
+}
+
+/**
+ * Extract probability data from classical walk
+ */
+function extractClassicalWalkData(probs: number[], latticeSize: number, step: number): QuantumWalk1DData {
+  const probabilities: { position: number; probability: number }[] = [];
+  let totalProb = 0;
+  let centerOfMass = 0;
+  let maxProb = 0;
+
+  for (let pos = 0; pos < latticeSize; pos++) {
+    const posProb = probs[pos];
+    probabilities.push({ position: pos, probability: posProb });
+    totalProb += posProb;
+    centerOfMass += pos * posProb;
+    maxProb = Math.max(maxProb, posProb);
+  }
+
+  centerOfMass = totalProb > 0 ? centerOfMass / totalProb : latticeSize / 2;
+
+  let variance = 0;
+  for (let pos = 0; pos < latticeSize; pos++) {
+    variance += (pos - centerOfMass) ** 2 * probs[pos];
+  }
+
+  return {
+    step,
+    probabilities,
+    centerOfMass,
+    variance,
+    totalProbability: totalProb,
+    maxProbability: maxProb
+  };
+}
+
+// ============================================================================
+// ANALYSIS FUNCTIONS - CLASSICAL LIMIT AND COMPARISON
+// ============================================================================
+
+interface VarianceGrowth {
+  step: number;
+  quantumVariance: number;
+  classicalVariance: number;
+  advantage: number;
+}
+
+/**
+ * Analyze variance growth comparing quantum vs classical walks
+ */
+export function analyzeVarianceGrowth(
+  quantumHistory: Array<{ step: number; data: QuantumWalk1DData }>,
+  classicalHistory: Array<{ step: number; data: QuantumWalk1DData }>
+): VarianceGrowth[] {
+  const maxSteps = Math.min(quantumHistory.length, classicalHistory.length);
+  const result: VarianceGrowth[] = [];
+
+  for (let i = 0; i < maxSteps; i++) {
+    const qVar = quantumHistory[i].data.variance;
+    const cVar = classicalHistory[i].data.variance;
+    const advantage = qVar > 0 ? cVar / qVar : 0;
+
+    result.push({
+      step: i,
+      quantumVariance: qVar,
+      classicalVariance: cVar,
+      advantage
+    });
+  }
+
+  return result;
+}
+
+/**
+ * Get probability distribution snapshot at a specific step
+ */
+export function getDistributionSnapshot(
+  history: Array<{ step: number; data: QuantumWalk1DData }>,
+  stepIndex: number
+): { position: number; probability: number }[] {
+  if (stepIndex >= 0 && stepIndex < history.length) {
+    return history[stepIndex].data.probabilities;
+  }
+  return [];
+}
+
+/**
+ * Compare spreading rates between quantum and classical walks
+ */
+export function compareSpreadingRates(
+  quantumHistory: Array<{ step: number; data: QuantumWalk1DData }>,
+  classicalHistory: Array<{ step: number; data: QuantumWalk1DData }>
+): {
+  quantumRate: number;
+  classicalRate: number;
+  advantage: number;
+} {
+  if (quantumHistory.length < 2 || classicalHistory.length < 2) {
+    return { quantumRate: 0, classicalRate: 0, advantage: 0 };
+  }
+
+  const qVar0 = quantumHistory[0].data.variance;
+  const qVarFinal = quantumHistory[quantumHistory.length - 1].data.variance;
+  const qSteps = quantumHistory.length - 1;
+
+  const cVar0 = classicalHistory[0].data.variance;
+  const cVarFinal = classicalHistory[classicalHistory.length - 1].data.variance;
+  const cSteps = classicalHistory.length - 1;
+
+  const quantumRate = qSteps > 0 ? (qVarFinal - qVar0) / qSteps : 0;
+  const classicalRate = cSteps > 0 ? (cVarFinal - cVar0) / cSteps : 0;
+  const advantage = classicalRate > 0 ? quantumRate / classicalRate : 0;
+
+  return {
+    quantumRate,
+    classicalRate,
+    advantage
+  };
+}
+
+// ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
 
@@ -740,7 +1164,22 @@ const simulationFunctions = {
   stepQuantumWalk1D,
   runQuantumWalk1D,
   resetQuantumWalk1D,
-  getQuantumWalk1DState
+  getQuantumWalk1DState,
+  initializeQuantumWalk1DGrover,
+  stepQuantumWalk1DGrover,
+  resetQuantumWalk1DGrover,
+  getQuantumWalk1DGroverState,
+  initializeQuantumWalk1DPeriodic,
+  stepQuantumWalk1DPeriodic,
+  resetQuantumWalk1DPeriodic,
+  getQuantumWalk1DPeriodicState,
+  initializeClassicalWalk1D,
+  stepClassicalWalk1D,
+  resetClassicalWalk1D,
+  getClassicalWalk1DState,
+  analyzeVarianceGrowth,
+  getDistributionSnapshot,
+  compareSpreadingRates
 };
 
 // Make functions available to HTML
