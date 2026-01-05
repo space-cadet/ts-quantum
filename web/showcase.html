@@ -629,7 +629,19 @@
                 </div>
                 <div class="category-items">
                     <a class="demo-link" data-demo="angular-momentum">Angular Momentum</a>
-                    <a class="demo-link" data-demo="quantum-walk-1d">1D Quantum Walk</a>
+                </div>
+            </div>
+
+            <div class="category-group">
+                <div class="category-header" data-category="quantum-walks">
+                    <span>Quantum Walks</span>
+                    <span class="category-toggle">▼</span>
+                </div>
+                <div class="category-items">
+                    <a class="demo-link" data-demo="qrw-1d-variants">1D Walk Variants</a>
+                    <a class="demo-link" data-demo="qrw-comparison">Quantum vs Classical</a>
+                    <a class="demo-link" data-demo="qrw-analysis">Analysis Tools</a>
+                    <a class="demo-link" data-demo="quantum-walk-1d">Classic 1D (Original)</a>
                 </div>
             </div>
 
@@ -953,6 +965,203 @@
 
                     <div class="equation">
                         $$|\psi(t+1)\rangle = S(C \otimes I)|\psi(t)\rangle$$
+                    </div>
+                </div>
+
+                <!-- QRW 1D Variants -->
+                <div class="simulation-card full-width" id="qrw-1d-variants" data-demo="qrw-1d-variants">
+                    <h2>1D Quantum Random Walk - All Variants</h2>
+                    <p class="description">Explore different coin operators and boundary conditions for 1D quantum walks. Compare Hadamard vs Grover coins and reflecting vs periodic boundaries.</p>
+
+                    <div class="info-box">
+                        Coin operators determine the spreading behavior. Hadamard provides standard spreading (∝ t²), while Grover offers enhanced spreading. Boundary conditions affect edge behavior: reflecting boundaries flip the coin at edges, periodic boundaries wrap around like a torus.
+                    </div>
+
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Coin Type:</label>
+                            <select id="qrw1dCoinType">
+                                <option value="hadamard">Hadamard (standard)</option>
+                                <option value="grover">Grover (enhanced spreading)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>Boundary Conditions:</label>
+                            <select id="qrw1dBoundaryType">
+                                <option value="reflecting">Reflecting (coin flip at edges)</option>
+                                <option value="periodic">Periodic/Toroidal (wrap-around)</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>Lattice Size:</label>
+                            <input type="number" id="qrw1dVarLatticeSize" value="11" min="5" max="31" step="2">
+                            <span class="control-hint">(5-31, odd numbers work best)</span>
+                        </div>
+                        <div class="control-group">
+                            <label>Evolution Steps:</label>
+                            <input type="number" id="qrw1dVarSteps" value="10" min="1" max="100">
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button onclick="runQRW1DVariant()">Run Simulation</button>
+                        <button onclick="stepQRW1DVariant()">Step (single)</button>
+                        <button onclick="resetQRW1DVariant()">Reset</button>
+                        <button id="qrw1dVarCancelBtn" onclick="cancelQRW1DVariantAnimation()" style="display: none; background-color: #e74c3c;">Cancel Animation</button>
+                    </div>
+
+                    <div class="results" id="qrw1dVarResults">
+                        <div id="qrw1dVarVisualization" style="margin: 20px 0; text-align: center;">
+                            <!-- Bar chart will be inserted here -->
+                        </div>
+
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-label">Current Step:</div>
+                                <div class="stat-value" id="qrw1dVarCurrentStep">0</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Total Probability:</div>
+                                <div class="stat-value" id="qrw1dVarTotalProb">1.0000</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Center of Mass:</div>
+                                <div class="stat-value" id="qrw1dVarCOM">—</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Variance:</div>
+                                <div class="stat-value" id="qrw1dVarVariance">0.0000</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Coin Type:</div>
+                                <div class="stat-value" id="qrw1dVarCoinDisplay">Hadamard</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Boundaries:</div>
+                                <div class="stat-value" id="qrw1dVarBoundaryDisplay">Reflecting</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 15px; font-size: 0.9em; color: var(--text-secondary);">
+                            <strong>Position Distribution:</strong>
+                            <div id="qrw1dVarDistribution" style="font-family: monospace; margin-top: 8px; font-size: 0.85em;"></div>
+                        </div>
+                    </div>
+
+                    <div class="equation">
+                        $$C \in \{\text{Hadamard}, \text{Grover}\}, \quad |\psi(t+1)\rangle = S(C \otimes I)|\psi(t)\rangle$$
+                    </div>
+                </div>
+
+                <!-- QRW Comparison (Quantum vs Classical) -->
+                <div class="simulation-card full-width" id="qrw-comparison" data-demo="qrw-comparison">
+                    <h2>Quantum vs Classical Random Walk Comparison</h2>
+                    <p class="description">Run quantum and classical walks side-by-side to observe the spreading advantage. Quantum walks spread quadratically (∝ t²) while classical walks spread linearly (∝ t).</p>
+
+                    <div class="info-box">
+                        The quantum advantage in spreading is a fundamental difference between quantum and classical dynamics. This quadratic speedup is key to quantum algorithm performance and is essential for understanding classical limit behavior as you vary parameters.
+                    </div>
+
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Lattice Size:</label>
+                            <input type="number" id="qrwCompLatticeSize" value="11" min="5" max="31" step="2">
+                            <span class="control-hint">(5-31)</span>
+                        </div>
+                        <div class="control-group">
+                            <label>Evolution Steps:</label>
+                            <input type="number" id="qrwCompSteps" value="15" min="1" max="100">
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button onclick="runQRWComparison()">Run Both Walks</button>
+                        <button onclick="resetQRWComparison()">Reset</button>
+                    </div>
+
+                    <div class="results" id="qrwCompResults">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0;">
+                            <div style="border: 1px solid var(--border-color); padding: 15px; border-radius: 5px;">
+                                <h3 style="margin-top: 0; color: #2196f3;">Quantum Walk</h3>
+                                <div id="qrwCompQuantumViz" style="text-align: center; margin: 15px 0;"></div>
+                                <div style="font-size: 0.9em;">
+                                    <div>Variance: <strong id="qrwCompQuantumVar">0.0000</strong></div>
+                                    <div>COM: <strong id="qrwCompQuantumCOM">—</strong></div>
+                                </div>
+                            </div>
+
+                            <div style="border: 1px solid var(--border-color); padding: 15px; border-radius: 5px;">
+                                <h3 style="margin-top: 0; color: #f44336;">Classical Walk</h3>
+                                <div id="qrwCompClassicalViz" style="text-align: center; margin: 15px 0;"></div>
+                                <div style="font-size: 0.9em;">
+                                    <div>Variance: <strong id="qrwCompClassicalVar">0.0000</strong></div>
+                                    <div>COM: <strong id="qrwCompClassicalCOM">—</strong></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="background: var(--bg-secondary); padding: 15px; border-radius: 5px; margin-top: 15px;">
+                            <strong>Spreading Analysis:</strong>
+                            <div id="qrwCompAnalysis" style="margin-top: 10px; font-size: 0.9em;">
+                                <div>Quantum Spreading Rate: <strong id="qrwCompQuantumRate">—</strong> (variance/step)</div>
+                                <div>Classical Spreading Rate: <strong id="qrwCompClassicalRate">—</strong> (variance/step)</div>
+                                <div style="margin-top: 10px; color: var(--text-secondary);">Quantum Advantage: <strong id="qrwCompAdvantage" style="color: #4caf50;">—</strong>x faster</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="equation">
+                        $$\sigma^2_{\text{quantum}}(t) \propto t^2 \quad \text{vs} \quad \sigma^2_{\text{classical}}(t) \propto t$$
+                    </div>
+                </div>
+
+                <!-- QRW Analysis Tools -->
+                <div class="simulation-card full-width" id="qrw-analysis" data-demo="qrw-analysis">
+                    <h2>Quantum Walk Analysis Tools</h2>
+                    <p class="description">Analyze variance growth curves, probability distributions, and classical limit behavior. Extract insights about diffusion and telegraph equations.</p>
+
+                    <div class="info-box">
+                        These tools help understand how quantum walks approach classical limits through variance analysis and distribution evolution. Useful for investigating diffusion equation emergence and parameter-dependent classical limit behavior.
+                    </div>
+
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Analysis Type:</label>
+                            <select id="qrwAnalysisType">
+                                <option value="variance-growth">Variance Growth (Quantum vs Classical)</option>
+                                <option value="distribution-snapshot">Distribution Snapshots</option>
+                                <option value="classical-limit">Classical Limit Behavior</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>Lattice Size:</label>
+                            <input type="number" id="qrwAnalysisLatticeSize" value="11" min="5" max="31" step="2">
+                        </div>
+                        <div class="control-group">
+                            <label>Max Steps:</label>
+                            <input type="number" id="qrwAnalysisSteps" value="20" min="5" max="100">
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button onclick="runQRWAnalysis()">Generate Analysis</button>
+                    </div>
+
+                    <div class="results" id="qrwAnalysisResults">
+                        <div id="qrwAnalysisChart" style="margin: 20px 0; text-align: center;">
+                            <!-- Analysis visualization will be inserted here -->
+                        </div>
+
+                        <div style="background: var(--bg-secondary); padding: 15px; border-radius: 5px; margin-top: 15px;">
+                            <strong>Analysis Results:</strong>
+                            <div id="qrwAnalysisSummary" style="margin-top: 10px; font-size: 0.9em; font-family: monospace;">
+                                <!-- Analysis summary will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="equation">
+                        $$\text{Classical Limit: } P(x,t) \propto e^{-x^2/(4Dt)} \quad \text{(diffusion equation)}$$
                     </div>
                 </div>
 
@@ -1513,6 +1722,442 @@
             }
 
             container.innerHTML = html;
+        }
+
+        // ============================================================================
+        // QRW 1D VARIANTS HANDLERS
+        // ============================================================================
+
+        let qrw1dVarAnimationRunning = false;
+        let qrw1dVarAnimationCancelled = false;
+
+        async function runQRW1DVariant() {
+            try {
+                if (!ensureSimulationsReady()) throw new Error('Simulations not ready');
+                const coinType = document.getElementById('qrw1dCoinType').value;
+                const boundaryType = document.getElementById('qrw1dBoundaryType').value;
+                const latticeSize = parseInt(document.getElementById('qrw1dVarLatticeSize').value);
+                const numSteps = parseInt(document.getElementById('qrw1dVarSteps').value);
+
+                if (latticeSize < 5 || latticeSize > 31) throw new Error('Lattice size must be between 5 and 31');
+                if (numSteps < 1 || numSteps > 100) throw new Error('Steps must be between 1 and 100');
+
+                if (qrw1dVarAnimationRunning) {
+                    alert('Animation already running. Click Cancel to stop.');
+                    return;
+                }
+
+                qrw1dVarAnimationRunning = true;
+                qrw1dVarAnimationCancelled = false;
+
+                // Disable controls
+                document.getElementById('qrw1dCoinType').disabled = true;
+                document.getElementById('qrw1dBoundaryType').disabled = true;
+                document.getElementById('qrw1dVarLatticeSize').disabled = true;
+                document.getElementById('qrw1dVarSteps').disabled = true;
+                const cancelBtn = document.getElementById('qrw1dVarCancelBtn');
+                if (cancelBtn) cancelBtn.style.display = 'inline-block';
+
+                // Select appropriate initialization function
+                let initFunc, stepFunc, getStateFunc, resetFunc;
+                if (coinType === 'grover' && boundaryType === 'reflecting') {
+                    initFunc = window.simulations.initializeQuantumWalk1DGrover;
+                    stepFunc = window.simulations.stepQuantumWalk1DGrover;
+                    getStateFunc = window.simulations.getQuantumWalk1DGroverState;
+                    resetFunc = window.simulations.resetQuantumWalk1DGrover;
+                } else if (coinType === 'hadamard' && boundaryType === 'periodic') {
+                    initFunc = window.simulations.initializeQuantumWalk1DPeriodic;
+                    stepFunc = window.simulations.stepQuantumWalk1DPeriodic;
+                    getStateFunc = window.simulations.getQuantumWalk1DPeriodicState;
+                    resetFunc = window.simulations.resetQuantumWalk1DPeriodic;
+                } else { // Hadamard reflecting (default)
+                    initFunc = window.simulations.initializeQuantumWalk1D;
+                    stepFunc = window.simulations.stepQuantumWalk1D;
+                    getStateFunc = window.simulations.getQuantumWalk1DState;
+                    resetFunc = window.simulations.resetQuantumWalk1D;
+                }
+
+                resetFunc();
+                initFunc(latticeSize);
+                updateQRW1DVariantDisplay(getStateFunc(), coinType, boundaryType);
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                for (let step = 0; step < numSteps; step++) {
+                    if (qrw1dVarAnimationCancelled) break;
+                    const data = stepFunc();
+                    updateQRW1DVariantDisplay(data, coinType, boundaryType);
+                    MathJax.typesetPromise().catch(e => console.log(e));
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+
+                qrw1dVarAnimationRunning = false;
+                document.getElementById('qrw1dCoinType').disabled = false;
+                document.getElementById('qrw1dBoundaryType').disabled = false;
+                document.getElementById('qrw1dVarLatticeSize').disabled = false;
+                document.getElementById('qrw1dVarSteps').disabled = false;
+                if (cancelBtn) cancelBtn.style.display = 'none';
+
+            } catch (e) {
+                console.error('Error:', e);
+                alert('Error: ' + e.message);
+                qrw1dVarAnimationRunning = false;
+                const cancelBtn = document.getElementById('qrw1dVarCancelBtn');
+                if (cancelBtn) cancelBtn.style.display = 'none';
+            }
+        }
+
+        function stepQRW1DVariant() {
+            try {
+                if (!ensureSimulationsReady()) throw new Error('Simulations not ready');
+                const coinType = document.getElementById('qrw1dCoinType').value;
+                const boundaryType = document.getElementById('qrw1dBoundaryType').value;
+
+                let stepFunc, getStateFunc;
+                if (coinType === 'grover' && boundaryType === 'reflecting') {
+                    stepFunc = window.simulations.stepQuantumWalk1DGrover;
+                    getStateFunc = window.simulations.getQuantumWalk1DGroverState;
+                } else if (coinType === 'hadamard' && boundaryType === 'periodic') {
+                    stepFunc = window.simulations.stepQuantumWalk1DPeriodic;
+                    getStateFunc = window.simulations.getQuantumWalk1DPeriodicState;
+                } else {
+                    stepFunc = window.simulations.stepQuantumWalk1D;
+                    getStateFunc = window.simulations.getQuantumWalk1DState;
+                }
+
+                try {
+                    getStateFunc();
+                } catch (e) {
+                    const latticeSize = parseInt(document.getElementById('qrw1dVarLatticeSize').value);
+                    if (coinType === 'grover' && boundaryType === 'reflecting') {
+                        window.simulations.initializeQuantumWalk1DGrover(latticeSize);
+                    } else if (coinType === 'hadamard' && boundaryType === 'periodic') {
+                        window.simulations.initializeQuantumWalk1DPeriodic(latticeSize);
+                    } else {
+                        window.simulations.initializeQuantumWalk1D(latticeSize);
+                    }
+                }
+
+                const data = stepFunc();
+                updateQRW1DVariantDisplay(data, coinType, boundaryType);
+                MathJax.typesetPromise().catch(e => console.log(e));
+            } catch (e) {
+                console.error('Error:', e);
+                alert('Error: ' + e.message);
+            }
+        }
+
+        function cancelQRW1DVariantAnimation() {
+            qrw1dVarAnimationCancelled = true;
+            qrw1dVarAnimationRunning = false;
+            document.getElementById('qrw1dCoinType').disabled = false;
+            document.getElementById('qrw1dBoundaryType').disabled = false;
+            document.getElementById('qrw1dVarLatticeSize').disabled = false;
+            document.getElementById('qrw1dVarSteps').disabled = false;
+            const cancelBtn = document.getElementById('qrw1dVarCancelBtn');
+            if (cancelBtn) cancelBtn.style.display = 'none';
+        }
+
+        function resetQRW1DVariant() {
+            try {
+                if (!ensureSimulationsReady()) throw new Error('Simulations not ready');
+                window.simulations.resetQuantumWalk1D();
+                window.simulations.resetQuantumWalk1DGrover();
+                window.simulations.resetQuantumWalk1DPeriodic();
+                document.getElementById('qrw1dVarVisualization').innerHTML = '';
+                document.getElementById('qrw1dVarCurrentStep').textContent = '0';
+                document.getElementById('qrw1dVarTotalProb').textContent = '1.0000';
+                document.getElementById('qrw1dVarCOM').textContent = '—';
+                document.getElementById('qrw1dVarVariance').textContent = '0.0000';
+                document.getElementById('qrw1dVarDistribution').textContent = '';
+            } catch (e) {
+                console.error('Error:', e);
+                alert('Error: ' + e.message);
+            }
+        }
+
+        function updateQRW1DVariantDisplay(data, coinType, boundaryType) {
+            document.getElementById('qrw1dVarCurrentStep').textContent = data.step;
+            document.getElementById('qrw1dVarTotalProb').textContent = data.totalProbability.toFixed(4);
+            document.getElementById('qrw1dVarCOM').textContent = data.centerOfMass.toFixed(2);
+            document.getElementById('qrw1dVarVariance').textContent = data.variance.toFixed(4);
+            document.getElementById('qrw1dVarCoinDisplay').textContent = coinType === 'grover' ? 'Grover' : 'Hadamard';
+            document.getElementById('qrw1dVarBoundaryDisplay').textContent = boundaryType === 'periodic' ? 'Periodic (toroidal)' : 'Reflecting';
+
+            // SVG visualization
+            const viz = document.getElementById('qrw1dVarVisualization');
+            const width = 600, height = 300, marginX = 40, marginY = 40;
+            const svgWidth = width + 2 * marginX, svgHeight = height + 2 * marginY;
+            const probs = data.probabilities;
+            const maxProb = Math.max(...probs.map(p => p.probability), 0.1);
+            const barWidth = Math.max(1, (width - 20) / probs.length);
+
+            let svg = `<svg width="${svgWidth}" height="${svgHeight}" style="border: 1px solid #ccc; background: white;">`;
+            svg += `<text x="${marginX + width/2}" y="${svgHeight - 5}" text-anchor="middle" font-size="12">Position</text>`;
+            svg += `<text x="15" y="${marginY + height/2}" text-anchor="middle" font-size="12" transform="rotate(-90 15 ${marginY + height/2})">Probability</text>`;
+
+            for (let i = 0; i < probs.length; i++) {
+                const prob = probs[i].probability;
+                const barHeight = (prob / maxProb) * height * 0.9;
+                const x = marginX + (i * barWidth) + 10;
+                const y = marginY + height - barHeight;
+                const color = `hsl(${(prob / maxProb) * 240}, 70%, 50%)`;
+                svg += `<rect x="${x}" y="${y}" width="${barWidth - 2}" height="${barHeight}" fill="${color}" stroke="none"/>`;
+            }
+
+            svg += `<line x1="${marginX}" y1="${marginY + height}" x2="${marginX + width}" y2="${marginY + height}" stroke="black" stroke-width="1"/>`;
+            svg += `<line x1="${marginX}" y1="${marginY}" x2="${marginX}" y2="${marginY + height}" stroke="black" stroke-width="1"/>`;
+            svg += `</svg>`;
+
+            viz.innerHTML = svg;
+
+            // Distribution text
+            const distDiv = document.getElementById('qrw1dVarDistribution');
+            let html = '';
+            for (let i = 0; i < probs.length; i++) {
+                const prob = probs[i].probability;
+                if (prob > 0.01) {
+                    const barLength = Math.round((prob / maxProb) * 30);
+                    const bar = '█'.repeat(barLength);
+                    html += `Position ${i.toString().padStart(2)}: ${bar} ${prob.toFixed(4)}<br>`;
+                }
+            }
+            if (html === '') html = '<span style="opacity: 0.5;">No positions above 1% threshold</span>';
+            distDiv.innerHTML = html;
+        }
+
+        // ============================================================================
+        // QRW COMPARISON HANDLERS
+        // ============================================================================
+
+        async function runQRWComparison() {
+            try {
+                if (!ensureSimulationsReady()) throw new Error('Simulations not ready');
+                const latticeSize = parseInt(document.getElementById('qrwCompLatticeSize').value);
+                const numSteps = parseInt(document.getElementById('qrwCompSteps').value);
+
+                if (latticeSize < 5 || latticeSize > 31) throw new Error('Lattice size must be between 5 and 31');
+                if (numSteps < 1 || numSteps > 100) throw new Error('Steps must be between 1 and 100');
+
+                // Run quantum walk
+                const quantumResult = window.simulations.runQuantumWalk1D(latticeSize, numSteps);
+                const quantumHistory = quantumResult.history;
+
+                // Run classical walk
+                window.simulations.initializeClassicalWalk1D(latticeSize);
+                const classicalHistory = [];
+                classicalHistory.push({ step: 0, data: window.simulations.getClassicalWalk1DState() });
+                for (let i = 0; i < numSteps; i++) {
+                    window.simulations.stepClassicalWalk1D();
+                    classicalHistory.push({ step: i + 1, data: window.simulations.getClassicalWalk1DState() });
+                }
+
+                // Update displays
+                updateQRWComparisonDisplay(quantumHistory, classicalHistory);
+
+                // Calculate and display spreading rates
+                const rates = window.simulations.compareSpreadingRates(quantumHistory, classicalHistory);
+                document.getElementById('qrwCompQuantumRate').textContent = rates.quantumRate.toFixed(4);
+                document.getElementById('qrwCompClassicalRate').textContent = rates.classicalRate.toFixed(4);
+                document.getElementById('qrwCompAdvantage').textContent = rates.advantage > 0 ? rates.advantage.toFixed(2) : '—';
+
+                MathJax.typesetPromise().catch(e => console.log(e));
+            } catch (e) {
+                console.error('Error:', e);
+                alert('Error: ' + e.message);
+            }
+        }
+
+        function resetQRWComparison() {
+            try {
+                if (!ensureSimulationsReady()) throw new Error('Simulations not ready');
+                window.simulations.resetQuantumWalk1D();
+                window.simulations.resetClassicalWalk1D();
+                document.getElementById('qrwCompQuantumViz').innerHTML = '';
+                document.getElementById('qrwCompClassicalViz').innerHTML = '';
+                document.getElementById('qrwCompQuantumVar').textContent = '0.0000';
+                document.getElementById('qrwCompClassicalVar').textContent = '0.0000';
+                document.getElementById('qrwCompQuantumCOM').textContent = '—';
+                document.getElementById('qrwCompClassicalCOM').textContent = '—';
+                document.getElementById('qrwCompQuantumRate').textContent = '—';
+                document.getElementById('qrwCompClassicalRate').textContent = '—';
+                document.getElementById('qrwCompAdvantage').textContent = '—';
+            } catch (e) {
+                console.error('Error:', e);
+                alert('Error: ' + e.message);
+            }
+        }
+
+        function updateQRWComparisonDisplay(quantumHistory, classicalHistory) {
+            const finalQ = quantumHistory[quantumHistory.length - 1].data;
+            const finalC = classicalHistory[classicalHistory.length - 1].data;
+
+            document.getElementById('qrwCompQuantumVar').textContent = finalQ.variance.toFixed(4);
+            document.getElementById('qrwCompClassicalVar').textContent = finalC.variance.toFixed(4);
+            document.getElementById('qrwCompQuantumCOM').textContent = finalQ.centerOfMass.toFixed(2);
+            document.getElementById('qrwCompClassicalCOM').textContent = finalC.centerOfMass.toFixed(2);
+
+            // Create SVG visualizations
+            createComparisonViz(finalQ, 'qrwCompQuantumViz');
+            createComparisonViz(finalC, 'qrwCompClassicalViz');
+        }
+
+        function createComparisonViz(data, elementId) {
+            const viz = document.getElementById(elementId);
+            const width = 300, height = 200, marginX = 20, marginY = 20;
+            const svgWidth = width + 2 * marginX, svgHeight = height + 2 * marginY;
+            const probs = data.probabilities;
+            const maxProb = Math.max(...probs.map(p => p.probability), 0.1);
+            const barWidth = Math.max(1, (width - 10) / probs.length);
+
+            let svg = `<svg width="${svgWidth}" height="${svgHeight}" style="border: 1px solid #ccc; background: white;">`;
+
+            for (let i = 0; i < probs.length; i++) {
+                const prob = probs[i].probability;
+                const barHeight = (prob / maxProb) * height * 0.8;
+                const x = marginX + (i * barWidth) + 5;
+                const y = marginY + height - barHeight;
+                const color = `hsl(${(prob / maxProb) * 240}, 70%, 50%)`;
+                svg += `<rect x="${x}" y="${y}" width="${barWidth - 1}" height="${barHeight}" fill="${color}" stroke="none"/>`;
+            }
+
+            svg += `<line x1="${marginX}" y1="${marginY + height}" x2="${marginX + width}" y2="${marginY + height}" stroke="black" stroke-width="1"/>`;
+            svg += `<line x1="${marginX}" y1="${marginY}" x2="${marginX}" y2="${marginY + height}" stroke="black" stroke-width="1"/>`;
+            svg += `</svg>`;
+
+            viz.innerHTML = svg;
+        }
+
+        // ============================================================================
+        // QRW ANALYSIS HANDLERS
+        // ============================================================================
+
+        async function runQRWAnalysis() {
+            try {
+                if (!ensureSimulationsReady()) throw new Error('Simulations not ready');
+                const analysisType = document.getElementById('qrwAnalysisType').value;
+                const latticeSize = parseInt(document.getElementById('qrwAnalysisLatticeSize').value);
+                const maxSteps = parseInt(document.getElementById('qrwAnalysisSteps').value);
+
+                if (latticeSize < 5 || latticeSize > 31) throw new Error('Lattice size must be between 5 and 31');
+                if (maxSteps < 5 || maxSteps > 100) throw new Error('Steps must be between 5 and 100');
+
+                if (analysisType === 'variance-growth') {
+                    // Run quantum and classical walks
+                    const quantumResult = window.simulations.runQuantumWalk1D(latticeSize, maxSteps);
+                    window.simulations.initializeClassicalWalk1D(latticeSize);
+                    const classicalHistory = [];
+                    classicalHistory.push({ step: 0, data: window.simulations.getClassicalWalk1DState() });
+                    for (let i = 0; i < maxSteps; i++) {
+                        window.simulations.stepClassicalWalk1D();
+                        classicalHistory.push({ step: i + 1, data: window.simulations.getClassicalWalk1DState() });
+                    }
+
+                    // Analyze variance growth
+                    const analysis = window.simulations.analyzeVarianceGrowth(quantumResult.history, classicalHistory);
+                    displayVarianceGrowth(analysis);
+
+                } else if (analysisType === 'distribution-snapshot') {
+                    // Show snapshots at different steps
+                    const quantumResult = window.simulations.runQuantumWalk1D(latticeSize, maxSteps);
+                    const steps = [0, Math.floor(maxSteps / 3), Math.floor(2 * maxSteps / 3), maxSteps];
+                    displayDistributionSnapshots(quantumResult.history, steps);
+
+                } else if (analysisType === 'classical-limit') {
+                    // Analyze how quantum approaches classical
+                    const quantumResult = window.simulations.runQuantumWalk1D(latticeSize, maxSteps);
+                    window.simulations.initializeClassicalWalk1D(latticeSize);
+                    const classicalHistory = [];
+                    classicalHistory.push({ step: 0, data: window.simulations.getClassicalWalk1DState() });
+                    for (let i = 0; i < maxSteps; i++) {
+                        window.simulations.stepClassicalWalk1D();
+                        classicalHistory.push({ step: i + 1, data: window.simulations.getClassicalWalk1DState() });
+                    }
+
+                    displayClassicalLimitAnalysis(quantumResult.history, classicalHistory);
+                }
+
+                MathJax.typesetPromise().catch(e => console.log(e));
+            } catch (e) {
+                console.error('Error:', e);
+                alert('Error: ' + e.message);
+            }
+        }
+
+        function displayVarianceGrowth(analysis) {
+            const chart = document.getElementById('qrwAnalysisChart');
+            const summary = document.getElementById('qrwAnalysisSummary');
+
+            let html = '<strong>Variance Growth Analysis</strong><br>';
+            html += 'Step | Quantum σ² | Classical σ² | Advantage<br>';
+            html += '----+----------+----------+----------<br>';
+
+            for (let i = 0; i < analysis.length; i += Math.ceil(analysis.length / 10)) {
+                const a = analysis[i];
+                html += `${a.step.toString().padStart(3)} | ${a.quantumVariance.toFixed(3).padStart(9)} | ${a.classicalVariance.toFixed(3).padStart(10)} | ${a.advantage.toFixed(2).padStart(9)}x<br>`;
+            }
+
+            summary.innerHTML = html;
+
+            // Show text summary
+            const finalA = analysis[analysis.length - 1];
+            chart.innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <strong>Final Spreading Comparison (Step ${finalA.step})</strong><br><br>
+                    Quantum Variance: <strong>${finalA.quantumVariance.toFixed(4)}</strong> (∝ t²)<br>
+                    Classical Variance: <strong>${finalA.classicalVariance.toFixed(4)}</strong> (∝ t)<br>
+                    Quantum Advantage: <strong>${finalA.advantage.toFixed(2)}x</strong><br><br>
+                    <span style="font-size: 0.9em; color: gray;">Variance ∝ t² (quantum) vs ∝ t (classical)</span>
+                </div>
+            `;
+        }
+
+        function displayDistributionSnapshots(history, steps) {
+            const chart = document.getElementById('qrwAnalysisChart');
+            const summary = document.getElementById('qrwAnalysisSummary');
+
+            let html = '<strong>Distribution Snapshots</strong><br>';
+            for (const step of steps) {
+                if (step < history.length) {
+                    const data = history[step].data;
+                    html += `<br><strong>Step ${step}</strong> (COM: ${data.centerOfMass.toFixed(2)}, σ²: ${data.variance.toFixed(4)})<br>`;
+                    const maxProb = data.maxProbability;
+                    for (let i = 0; i < data.probabilities.length; i++) {
+                        const prob = data.probabilities[i].probability;
+                        if (prob > 0.01) {
+                            const barLen = Math.round((prob / maxProb) * 20);
+                            html += `  Pos ${i}: ${'█'.repeat(barLen)} ${prob.toFixed(3)}<br>`;
+                        }
+                    }
+                }
+            }
+
+            summary.innerHTML = html;
+            chart.innerHTML = '<div style="padding: 20px; text-align: center;">Distribution snapshots shown in results below →</div>';
+        }
+
+        function displayClassicalLimitAnalysis(quantumHistory, classicalHistory) {
+            const chart = document.getElementById('qrwAnalysisChart');
+            const summary = document.getElementById('qrwAnalysisSummary');
+
+            const finalQ = quantumHistory[quantumHistory.length - 1].data;
+            const finalC = classicalHistory[classicalHistory.length - 1].data;
+
+            let html = '<strong>Classical Limit Behavior Analysis</strong><br>';
+            html += `Initial state: Both centered at position ${Math.floor(quantumHistory[0].data.centerOfMass)}<br><br>`;
+            html += `<strong>Quantum Walk (Final State):</strong><br>`;
+            html += `  Center of Mass: ${finalQ.centerOfMass.toFixed(3)}<br>`;
+            html += `  Variance: ${finalQ.variance.toFixed(4)}<br>`;
+            html += `  Spreading behavior: ∝ t² (quantum advantage)<br><br>`;
+            html += `<strong>Classical Walk (Final State):</strong><br>`;
+            html += `  Center of Mass: ${finalC.centerOfMass.toFixed(3)}<br>`;
+            html += `  Variance: ${finalC.variance.toFixed(4)}<br>`;
+            html += `  Spreading behavior: ∝ t (diffusion)<br><br>`;
+            html += `<strong>Classical Limit Regime:</strong><br>`;
+            html += `  Ratio (Quantum/Classical): ${(finalQ.variance / finalC.variance).toFixed(4)}<br>`;
+            html += `  As parameters vary, quantum spreading dominates classical diffusion`;
+
+            summary.innerHTML = html;
+            chart.innerHTML = '<div style="padding: 20px; text-align: center;">Classical limit analysis shows quantum advantage persists</div>';
         }
     </script>
 </body>
