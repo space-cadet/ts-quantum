@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Random Walk Explorer | ts-quantum</title>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2196f3;
+            --primary-dark: #1976d2;
+            --success: #4caf50;
+            --danger: #f44336;
+            --warning: #ff9800;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f5f5f5;
+            --text-primary: #212121;
+            --text-secondary: #757575;
+            --border-color: #e0e0e0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 30px 20px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 8px 16px;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 0.95em;
+            transition: background 0.3s;
+        }
+
+        .back-button:hover {
+            background: var(--primary-dark);
+        }
+
+        .demo-section {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+        }
+
+        .demo-section h2 {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+        }
+
+        .description {
+            font-size: 1.05em;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .info-box {
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--primary);
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .control-group input,
+        .control-group select {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 1em;
+            font-family: inherit;
+        }
+
+        .control-group input:focus,
+        .control-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+        }
+
+        .control-hint {
+            font-size: 0.85em;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            background: var(--primary);
+            color: white;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: var(--primary-dark);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .results {
+            margin-top: 20px;
+        }
+
+        .visualization {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-item {
+            background: var(--bg-secondary);
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 3px solid var(--primary);
+        }
+
+        .stat-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.4em;
+            color: var(--primary);
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+        }
+
+        .distribution {
+            background: var(--bg-secondary);
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .equation {
+            background: var(--bg-secondary);
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .comparison-box {
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 4px;
+        }
+
+        .comparison-box h3 {
+            margin-bottom: 15px;
+        }
+
+        .comparison-box.quantum h3 {
+            color: #2196f3;
+        }
+
+        .comparison-box.classical h3 {
+            color: #f44336;
+        }
+
+        .analysis-display {
+            background: var(--bg-secondary);
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+            margin-top: 40px;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .controls {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="showcase.html" class="back-button">← Back to Showcase</a>
+
+        <header>
+            <h1>Quantum Random Walk Explorer</h1>
+            <p>Investigate quantum spreading behavior across multiple coins and boundary conditions</p>
+        </header>
+
+        <!-- Unified 1D Walk Controls -->
+        <div class="demo-section">
+            <h2>1D Quantum Random Walk</h2>
+            <p class="description">
+                Explore quantum walks with different coin operators and boundary conditions. Observe how coin type and boundaries affect spreading behavior.
+            </p>
+
+            <div class="info-box">
+                <strong>Coin Types:</strong> Hadamard (standard spreading ∝ t²) vs Grover (enhanced spreading)<br>
+                <strong>Boundary Conditions:</strong> Reflecting (flip at edges) vs Periodic (toroidal wrap-around)
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label>Coin Type:</label>
+                    <select id="coinType">
+                        <option value="hadamard">Hadamard (standard)</option>
+                        <option value="grover">Grover (enhanced spreading)</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Boundary Conditions:</label>
+                    <select id="boundaryType">
+                        <option value="reflecting">Reflecting (coin flip at edges)</option>
+                        <option value="periodic">Periodic/Toroidal (wrap-around)</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Lattice Size:</label>
+                    <input type="number" id="latticeSize" value="11" min="5" max="31" step="2">
+                    <span class="control-hint">(5-31, odd numbers work best)</span>
+                </div>
+                <div class="control-group">
+                    <label>Evolution Steps:</label>
+                    <input type="number" id="numSteps" value="10" min="1" max="100">
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button onclick="runWalk()">Run Simulation</button>
+                <button onclick="stepWalk()">Step (single)</button>
+                <button onclick="resetWalk()">Reset</button>
+                <button id="cancelBtn" onclick="cancelAnimation()" style="display: none; background-color: #e74c3c;">Cancel Animation</button>
+            </div>
+
+            <div class="results">
+                <div class="visualization" id="visualization"></div>
+
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-label">Current Step:</div>
+                        <div class="stat-value" id="currentStep">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Total Probability:</div>
+                        <div class="stat-value" id="totalProb">1.0000</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Center of Mass:</div>
+                        <div class="stat-value" id="com">—</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Variance:</div>
+                        <div class="stat-value" id="variance">0.0000</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Max Probability:</div>
+                        <div class="stat-value" id="maxProb">—</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Spread Width:</div>
+                        <div class="stat-value" id="spread">—</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 15px;">
+                    <strong>Position Distribution:</strong>
+                    <div class="distribution" id="distribution"></div>
+                </div>
+            </div>
+
+            <div class="equation">
+                $$|\psi(t+1)\rangle = S(C \otimes I)|\psi(t)\rangle$$
+            </div>
+        </div>
+
+        <!-- Quantum vs Classical Comparison -->
+        <div class="demo-section">
+            <h2>Quantum vs Classical Comparison</h2>
+            <p class="description">
+                Run quantum and classical walks side-by-side to observe the spreading advantage. Quantum walks spread quadratically (∝ t²) while classical walks spread linearly (∝ t).
+            </p>
+
+            <div class="info-box">
+                The quantum advantage in spreading is a fundamental difference between quantum and classical dynamics. This quadratic speedup is key to quantum algorithm performance.
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label>Lattice Size:</label>
+                    <input type="number" id="compLatticeSize" value="11" min="5" max="31" step="2">
+                </div>
+                <div class="control-group">
+                    <label>Evolution Steps:</label>
+                    <input type="number" id="compSteps" value="15" min="1" max="100">
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button onclick="runComparison()">Run Both Walks</button>
+                <button onclick="resetComparison()">Reset</button>
+            </div>
+
+            <div class="results">
+                <div class="comparison-grid">
+                    <div class="comparison-box quantum">
+                        <h3>Quantum Walk</h3>
+                        <div id="quantumViz" class="visualization"></div>
+                        <div style="font-size: 0.9em;">
+                            <div>Variance: <strong id="quantumVar">0.0000</strong></div>
+                            <div>COM: <strong id="quantumCOM">—</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="comparison-box classical">
+                        <h3>Classical Walk</h3>
+                        <div id="classicalViz" class="visualization"></div>
+                        <div style="font-size: 0.9em;">
+                            <div>Variance: <strong id="classicalVar">0.0000</strong></div>
+                            <div>COM: <strong id="classicalCOM">—</strong></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: var(--bg-secondary); padding: 15px; border-radius: 4px; margin-top: 15px;">
+                    <strong>Spreading Analysis:</strong>
+                    <div id="spreadAnalysis" style="margin-top: 10px; font-size: 0.9em;">
+                        <div>Quantum Spreading Rate: <strong id="quantumRate">—</strong> (variance/step)</div>
+                        <div>Classical Spreading Rate: <strong id="classicalRate">—</strong> (variance/step)</div>
+                        <div style="margin-top: 10px; color: var(--text-secondary);">Quantum Advantage: <strong id="advantage" style="color: #4caf50;">—</strong>x faster</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="equation">
+                $$\sigma^2_{\text{quantum}}(t) \propto t^2 \quad \text{vs} \quad \sigma^2_{\text{classical}}(t) \propto t$$
+            </div>
+        </div>
+
+        <!-- Analysis Tools -->
+        <div class="demo-section">
+            <h2>Classical Limit Analysis Tools</h2>
+            <p class="description">
+                Analyze variance growth, probability distributions, and how quantum walks approach classical limits. Investigate diffusion equation emergence.
+            </p>
+
+            <div class="info-box">
+                These tools help understand quantum-classical correspondence through variance analysis and distribution evolution. Essential for investigating classical limits and diffusion equation emergence.
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label>Analysis Type:</label>
+                    <select id="analysisType">
+                        <option value="variance-growth">Variance Growth (Quantum vs Classical)</option>
+                        <option value="distribution-snapshot">Distribution Snapshots</option>
+                        <option value="classical-limit">Classical Limit Behavior</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Lattice Size:</label>
+                    <input type="number" id="analysisLatticeSize" value="11" min="5" max="31" step="2">
+                </div>
+                <div class="control-group">
+                    <label>Max Steps:</label>
+                    <input type="number" id="analysisSteps" value="20" min="5" max="100">
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button onclick="runAnalysis()">Generate Analysis</button>
+            </div>
+
+            <div class="results">
+                <div id="analysisChart" class="visualization"></div>
+                <div class="analysis-display" id="analysisSummary"></div>
+            </div>
+
+            <div class="equation">
+                $$\text{Classical Limit: } P(x,t) \propto e^{-x^2/(4Dt)} \quad \text{(diffusion equation)}$$
+            </div>
+        </div>
+
+        <footer>
+            <p>ts-quantum Quantum Random Walk Explorer | Comprehensive demo for understanding quantum spreading dynamics</p>
+            <p><a href="showcase.html">← Back to Main Showcase</a></p>
+        </footer>
+    </div>
+
+    <script src="bundle.js"></script>
+    <script>
+        function ensureSimulationsReady() {
+            return typeof window.simulations !== 'undefined';
+        }
+
+        let animationRunning = false;
+        let animationCancelled = false;
+
+        async function runWalk() {
+            try {
+                if (!ensureSimulationsReady()) throw new Error('Simulations not ready');
+                const coinType = document.getElementById('coinType').value;
+                const boundaryType = document.getElementById('boundaryType').value;
+                const latticeSize = parseInt(document.getElementById('latticeSize').value);
+                const numSteps = parseInt(document.getElementById('numSteps').value);
+
+                if (latticeSize < 5 || latticeSize > 31) throw new Error('Lattice size must be between 5 and 31');
+                if (numSteps < 1 || numSteps > 100) throw new Error('Steps must be between 1 and 100');
+
+                if (animationRunning) {
+                    alert('Animation already running. Click Cancel to stop.');
+                    return;
+                }
+
+                animationRunning = true;
+                animationCancelled = false;
+
+                document.getElementById('coinType').disabled = true;
+                document.getElementById('boundaryType').disabled = true;
+                document.getElementById('latticeSize').disabled = true;
+                document.getElementById('numSteps').disabled = true;
+                const cancelBtn = document.getElementById('cancelBtn');
+                if (cancelBtn) cancelBtn.style.display = 'inline-block';
+
+                let initFunc, stepFunc, getStateFunc, resetFunc;
+                if (coinType === 'grover' && boundaryType === 'reflecting') {
+                    initFunc = window.simulations.initializeQuantumWalk1DGrover;
+                    stepFunc = window.simulations.stepQuantumWalk1DGrover;
+                    getStateFunc = window.simulations.getQuantumWalk1DGroverState;
+                    resetFunc = window.simulations.resetQuantumWalk1DGrover;
+                } else if (coinType === 'hadamard' && boundaryType === 'periodic') {
+                    initFunc = window.simulations.initializeQuantumWalk1DPeriodic;
+                    stepFunc = window.simulations.stepQuantumWalk1DPeriodic;
+                    getStateFunc = window.simulations.getQuantumWalk1DPeriodicState;
+                    resetFunc = window.simulations.resetQuantumWalk1DPeriodic;
+                } else {
+                    initFunc = window.simulations.initializeQuantumWalk1D;
+                    stepFunc = window.simulations.stepQuantumWalk1D;
+                    getStateFunc = window.simulations.getQuantumWalk1DState;
+                    resetFunc = window.simulations.resetQuantumWalk1D;
+                }
+
+                resetFunc();
+                initFunc(latticeSize);
+                updateDisplay(getStateFunc());
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                for (let step = 0; step < numSteps; step++) {
+                    if (animationCancelled) break;
+                    const data = stepFunc();
+                    updateDisplay(data);
+                    MathJax.typesetPromise().catch(e => console.log(e));
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+
+                animationRunning = false;
+                document.getElementById('coinType').disabled = false;
+                document.getElementById('boundaryType').disabled = false;
+                document.getElementById('latticeSize').disabled = false;
+                document.getElementById('numSteps').disabled = false;
+                if (cancelBtn) cancelBtn.style.display = 'none';
+
+            } catch (e) {
+                console.error('Error:', e);
+                alert('Error: ' + e.message);
+                animationRunning = false;
+                const cancelBtn = document.getElementById('cancelBtn');
+                if (cancelBtn) cancelBtn.style.display = 'none';
+            }
+        }
+
+        function stepWalk() {
+            try {
+                if (!ensureSimulationsReady()) throw new Error('Simulations not ready');
+                const coinType = document.getElementById('coinType').value;
+                const boundaryType = document.getElementById('boundaryType').value;
+
+                let stepFunc, getStateFunc;
+                if (coinType === 'grover' && boundaryType === 'reflecting') {
+                    stepFunc = window.simulations.stepQuantumWalk1DGrover;
+                    getStateFunc = window.simulations.getQuantumWalk1DGroverState;
+                } else if (coinType === 'hadamard' && boundaryType === 'periodic') {
+                    stepFunc = window.simulations.stepQuantumWalk1DPeriodic;
+                    getStateFunc = window.simulations.getQuantumWalk1DPeriodicState;
+                } else {
+                    stepFunc = window.simulations.stepQuantumWalk1D;
+                    getStateFunc = window.simulations.getQuantumWalk1DState;
+                }
+
+                try {
+                    getStateFunc();
+                } catch (e) {
+                    const latticeSize = parseInt(document.getElementById('latticeSize').value);
+                    if (coinType === 'grover' && boundaryType === 'reflecting') {
+                        window.simulations.initializeQuantumWalk1DGrover(latticeSize);
+                    } else if (coinType === 'hadamard' && boundaryType === 'periodic') {
+                        window.simulations.initializeQuantumWalk1DPeriodic(latticeSize);
+                    } else {
+                        window.simulations.initializeQuantumWalk1D(latticeSize);
+                    }
+                }
+
+                const data = stepFunc();
+                updateDisplay(data);
+                MathJax.typesetPromise().catch(e => console.log(e));
+            } catch (e) {
+                console.error('Error:', e);
+                alert('Error: ' + e.message);
+            }
+        }
+
+        function resetWalk() {
+            try {
+                if (!ensureSimulationsReady()) throw new Error('Simulations not ready');
+                window.simulations.resetQuantumWalk1D();
+                window.simulations.resetQuantumWalk1DGrover();
+                window.simulations.resetQuantumWalk1DPeriodic();
+                document.getElementById('visualization').innerHTML = '';
+                document.getElementById('currentStep').textContent = '0';
+                document.getElementById('totalProb').textContent = '1.0000';
+                document.getElementById('com').textContent = '—';
+                document.getElementById('variance').textContent = '0.0000';
+                document.getElementById('maxProb').textContent = '—';
+                document.getElementById('spread').textContent = '—';
+                document.getElementById('distribution').textContent = '';
+            } catch (e) {
+                console.error('Error:', e);
+                alert('Error: ' + e.message);
+            }
+        }
+
+        function cancelAnimation() {
+            animationCancelled = true;
+            animationRunning = false;
+            document.getElementById('coinType').disabled = false;
+            document.getElementById('boundaryType').disabled = false;
+            document.getElementById('latticeSize').disabled = false;
+            document.getElementById('numSteps').disabled = false;
+            const cancelBtn = document.getElementById('cancelBtn');
+            if (cancelBtn) cancelBtn.style.display = 'none';
+        }
+
+        function updateDisplay(data) {
+            document.getElementById('currentStep').textContent = data.step;
+            document.getElementById('totalProb').textContent = data.totalProbability.toFixed(4);
+            document.getElementById('com').textContent = data.centerOfMass.toFixed(2);
+            document.getElementById('variance').textContent = data.variance.toFixed(4);
+            document.getElementById('maxProb').textContent = data.maxProbability.toFixed(4);
+
+            const probs = data.probabilities;
+            const threshold = data.maxProbability * 0.1;
+            let minSpread = data.centerOfMass;
+            let maxSpread = data.centerOfMass;
+            for (let i = 0; i < probs.length; i++) {
+                if (probs[i].probability > threshold) {
+                    minSpread = Math.min(minSpread, i);
+                    maxSpread = Math.max(maxSpread, i);
+                }
+            }
+            document.getElementById('spread').textContent = (maxSpread - minSpread).toFixed(1);
+
+            const viz = document.getElementById('visualization');
+            const width = 600, height = 300, marginX = 40, marginY = 40;
+            const svgWidth = width + 2 * marginX, svgHeight = height + 2 * marginY;
+            const maxProb = Math.max(...probs.map(p => p.probability), 0.1);
+            const barWidth = Math.max(1, (width - 20) / probs.length);
+
+            let svg = `<svg width="${svgWidth}" height="${svgHeight}" style="border: 1px solid #ccc; background: white;">`;
+            svg += `<text x="${marginX + width/2}" y="${svgHeight - 5}" text-anchor="middle" font-size="12">Position</text>`;
+            svg += `<text x="15" y="${marginY + height/2}" text-anchor="middle" font-size="12" transform="rotate(-90 15 ${marginY + height/2})">Probability</text>`;
+
+            for (let i = 0; i < probs.length; i++) {
+                const prob = probs[i].probability;
+                const barHeight = (prob / maxProb) * height * 0.9;
+                const x = marginX + (i * barWidth) + 10;
+                const y = marginY + height - barHeight;
+                const color = `hsl(${(prob / maxProb) * 240}, 70%, 50%)`;
+                svg += `<rect x="${x}" y="${y}" width="${barWidth - 2}" height="${barHeight}" fill="${color}" stroke="none"/>`;
+            }
+
+            svg += `<line x1="${marginX}" y1="${marginY + height}" x2="${marginX + width}" y2="${marginY + height}" stroke="black" stroke-width="1"/>`;
+            svg += `<line x1="${marginX}" y1="${marginY}" x2="${marginX}" y2="${marginY + height}" stroke="black" stroke-width="1"/>`;
+            svg += `</svg>`;
+
+            viz.innerHTML = svg;
+
+            const distDiv = document.getElementById('distribution');
+            let html = '';
+            for (let i = 0; i < probs.length; i++) {
+                const prob = probs[i].probability;
+                if (prob > 0.01) {
+                    const barLength = Math.round((prob / maxProb) * 30);
+                    const bar = '█'.repeat(barLength);
+                    html += `Position ${i.toString().padStart(2)}: ${bar} ${prob.toFixed(4)}<br>`;
+                }
+            }
+            if (html === '') html = '<span style="opacity: 0.5;">No positions above 1% threshold</span>';
+            distDiv.innerHTML = html;
+        }
+
+        async function runComparison() {
+            try {
+                if (!ensureSimulationsReady()) throw new Error('Simulations not ready');
+                const latticeSize = parseInt(document.getElementById('compLatticeSize').value);
+                const numSteps = parseInt(document.getElementById('compSteps').value);
+
+                if (latticeSize < 5 || latticeSize > 31) throw new Error('Lattice size must be between 5 and 31');
+                if (numSteps < 1 || numSteps > 100) throw new Error('Steps must be between 1 and 100');
+
+                const quantumResult = window.simulations.runQuantumWalk1D(latticeSize, numSteps);
+                const quantumHistory = quantumResult.history;
+
+                window.simulations.initializeClassicalWalk1D(latticeSize);
+                const classicalHistory = [];
+                classicalHistory.push({ step: 0, data: window.simulations.getClassicalWalk1DState() });
+                for (let i = 0; i < numSteps; i++) {
+                    window.simulations.stepClassicalWalk1D();
+                    classicalHistory.push({ step: i + 1, data: window.simulations.getClassicalWalk1DState() });
+                }
+
+                updateComparisonDisplay(quantumHistory, classicalHistory);
+                const rates = window.simulations.compareSpreadingRates(quantumHistory, classicalHistory);
+                document.getElementById('quantumRate').textContent = rates.quantumRate.toFixed(4);
+                document.getElementById('classicalRate').textContent = rates.classicalRate.toFixed(4);
+                document.getElementById('advantage').textContent = rates.advantage > 0 ? rates.advantage.toFixed(2) : '—';
+
+                MathJax.typesetPromise().catch(e => console.log(e));
+            } catch (e) {
+                console.error('Error:', e);
+                alert('Error: ' + e.message);
+            }
+        }
+
+        function resetComparison() {
+            try {
+                if (!ensureSimulationsReady()) throw new Error('Simulations not ready');
+                window.simulations.resetQuantumWalk1D();
+                window.simulations.resetClassicalWalk1D();
+                document.getElementById('quantumViz').innerHTML = '';
+                document.getElementById('classicalViz').innerHTML = '';
+                document.getElementById('quantumVar').textContent = '0.0000';
+                document.getElementById('classicalVar').textContent = '0.0000';
+                document.getElementById('quantumCOM').textContent = '—';
+                document.getElementById('classicalCOM').textContent = '—';
+                document.getElementById('quantumRate').textContent = '—';
+                document.getElementById('classicalRate').textContent = '—';
+                document.getElementById('advantage').textContent = '—';
+            } catch (e) {
+                console.error('Error:', e);
+                alert('Error: ' + e.message);
+            }
+        }
+
+        function updateComparisonDisplay(quantumHistory, classicalHistory) {
+            const finalQ = quantumHistory[quantumHistory.length - 1].data;
+            const finalC = classicalHistory[classicalHistory.length - 1].data;
+
+            document.getElementById('quantumVar').textContent = finalQ.variance.toFixed(4);
+            document.getElementById('classicalVar').textContent = finalC.variance.toFixed(4);
+            document.getElementById('quantumCOM').textContent = finalQ.centerOfMass.toFixed(2);
+            document.getElementById('classicalCOM').textContent = finalC.centerOfMass.toFixed(2);
+
+            createComparisonViz(finalQ, 'quantumViz');
+            createComparisonViz(finalC, 'classicalViz');
+        }
+
+        function createComparisonViz(data, elementId) {
+            const viz = document.getElementById(elementId);
+            const width = 300, height = 200, marginX = 20, marginY = 20;
+            const svgWidth = width + 2 * marginX, svgHeight = height + 2 * marginY;
+            const probs = data.probabilities;
+            const maxProb = Math.max(...probs.map(p => p.probability), 0.1);
+            const barWidth = Math.max(1, (width - 10) / probs.length);
+
+            let svg = `<svg width="${svgWidth}" height="${svgHeight}" style="border: 1px solid #ccc; background: white;">`;
+
+            for (let i = 0; i < probs.length; i++) {
+                const prob = probs[i].probability;
+                const barHeight = (prob / maxProb) * height * 0.8;
+                const x = marginX + (i * barWidth) + 5;
+                const y = marginY + height - barHeight;
+                const color = `hsl(${(prob / maxProb) * 240}, 70%, 50%)`;
+                svg += `<rect x="${x}" y="${y}" width="${barWidth - 1}" height="${barHeight}" fill="${color}" stroke="none"/>`;
+            }
+
+            svg += `<line x1="${marginX}" y1="${marginY + height}" x2="${marginX + width}" y2="${marginY + height}" stroke="black" stroke-width="1"/>`;
+            svg += `<line x1="${marginX}" y1="${marginY}" x2="${marginX}" y2="${marginY + height}" stroke="black" stroke-width="1"/>`;
+            svg += `</svg>`;
+
+            viz.innerHTML = svg;
+        }
+
+        async function runAnalysis() {
+            try {
+                if (!ensureSimulationsReady()) throw new Error('Simulations not ready');
+                const analysisType = document.getElementById('analysisType').value;
+                const latticeSize = parseInt(document.getElementById('analysisLatticeSize').value);
+                const maxSteps = parseInt(document.getElementById('analysisSteps').value);
+
+                if (latticeSize < 5 || latticeSize > 31) throw new Error('Lattice size must be between 5 and 31');
+                if (maxSteps < 5 || maxSteps > 100) throw new Error('Steps must be between 5 and 100');
+
+                if (analysisType === 'variance-growth') {
+                    const quantumResult = window.simulations.runQuantumWalk1D(latticeSize, maxSteps);
+                    window.simulations.initializeClassicalWalk1D(latticeSize);
+                    const classicalHistory = [];
+                    classicalHistory.push({ step: 0, data: window.simulations.getClassicalWalk1DState() });
+                    for (let i = 0; i < maxSteps; i++) {
+                        window.simulations.stepClassicalWalk1D();
+                        classicalHistory.push({ step: i + 1, data: window.simulations.getClassicalWalk1DState() });
+                    }
+
+                    const analysis = window.simulations.analyzeVarianceGrowth(quantumResult.history, classicalHistory);
+                    displayVarianceGrowth(analysis);
+
+                } else if (analysisType === 'distribution-snapshot') {
+                    const quantumResult = window.simulations.runQuantumWalk1D(latticeSize, maxSteps);
+                    const steps = [0, Math.floor(maxSteps / 3), Math.floor(2 * maxSteps / 3), maxSteps];
+                    displayDistributionSnapshots(quantumResult.history, steps);
+
+                } else if (analysisType === 'classical-limit') {
+                    const quantumResult = window.simulations.runQuantumWalk1D(latticeSize, maxSteps);
+                    window.simulations.initializeClassicalWalk1D(latticeSize);
+                    const classicalHistory = [];
+                    classicalHistory.push({ step: 0, data: window.simulations.getClassicalWalk1DState() });
+                    for (let i = 0; i < maxSteps; i++) {
+                        window.simulations.stepClassicalWalk1D();
+                        classicalHistory.push({ step: i + 1, data: window.simulations.getClassicalWalk1DState() });
+                    }
+
+                    displayClassicalLimitAnalysis(quantumResult.history, classicalHistory);
+                }
+
+                MathJax.typesetPromise().catch(e => console.log(e));
+            } catch (e) {
+                console.error('Error:', e);
+                alert('Error: ' + e.message);
+            }
+        }
+
+        function displayVarianceGrowth(analysis) {
+            const chart = document.getElementById('analysisChart');
+            const summary = document.getElementById('analysisSummary');
+
+            let html = 'Variance Growth Analysis\nStep | Quantum σ² | Classical σ² | Advantage\n';
+            html += '----+----------+----------+----------\n';
+
+            for (let i = 0; i < analysis.length; i += Math.ceil(analysis.length / 10)) {
+                const a = analysis[i];
+                html += `${a.step.toString().padStart(3)} | ${a.quantumVariance.toFixed(3).padStart(9)} | ${a.classicalVariance.toFixed(3).padStart(10)} | ${a.advantage.toFixed(2).padStart(9)}x\n`;
+            }
+
+            summary.innerHTML = html;
+
+            const finalA = analysis[analysis.length - 1];
+            chart.innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <strong>Final Spreading Comparison (Step ${finalA.step})</strong><br><br>
+                    Quantum Variance: <strong>${finalA.quantumVariance.toFixed(4)}</strong> (∝ t²)<br>
+                    Classical Variance: <strong>${finalA.classicalVariance.toFixed(4)}</strong> (∝ t)<br>
+                    Quantum Advantage: <strong>${finalA.advantage.toFixed(2)}x</strong><br><br>
+                    <span style="font-size: 0.9em; color: gray;">Variance ∝ t² (quantum) vs ∝ t (classical)</span>
+                </div>
+            `;
+        }
+
+        function displayDistributionSnapshots(history, steps) {
+            const chart = document.getElementById('analysisChart');
+            const summary = document.getElementById('analysisSummary');
+
+            let html = 'Distribution Snapshots\n\n';
+            for (const step of steps) {
+                if (step < history.length) {
+                    const data = history[step].data;
+                    html += `Step ${step} (COM: ${data.centerOfMass.toFixed(2)}, σ²: ${data.variance.toFixed(4)})\n`;
+                    const maxProb = data.maxProbability;
+                    for (let i = 0; i < data.probabilities.length; i++) {
+                        const prob = data.probabilities[i].probability;
+                        if (prob > 0.01) {
+                            const barLen = Math.round((prob / maxProb) * 20);
+                            html += `  Pos ${i}: ${'█'.repeat(barLen)} ${prob.toFixed(3)}\n`;
+                        }
+                    }
+                    html += '\n';
+                }
+            }
+
+            summary.innerHTML = html;
+            chart.innerHTML = '<div style="padding: 20px; text-align: center;">Distribution snapshots shown in results below</div>';
+        }
+
+        function displayClassicalLimitAnalysis(quantumHistory, classicalHistory) {
+            const chart = document.getElementById('analysisChart');
+            const summary = document.getElementById('analysisSummary');
+
+            const finalQ = quantumHistory[quantumHistory.length - 1].data;
+            const finalC = classicalHistory[classicalHistory.length - 1].data;
+
+            let html = 'Classical Limit Behavior Analysis\n\n';
+            html += `Initial state: Both centered at position ${Math.floor(quantumHistory[0].data.centerOfMass)}\n\n`;
+            html += `Quantum Walk (Final State):\n`;
+            html += `  Center of Mass: ${finalQ.centerOfMass.toFixed(3)}\n`;
+            html += `  Variance: ${finalQ.variance.toFixed(4)}\n`;
+            html += `  Spreading behavior: ∝ t² (quantum advantage)\n\n`;
+            html += `Classical Walk (Final State):\n`;
+            html += `  Center of Mass: ${finalC.centerOfMass.toFixed(3)}\n`;
+            html += `  Variance: ${finalC.variance.toFixed(4)}\n`;
+            html += `  Spreading behavior: ∝ t (diffusion)\n\n`;
+            html += `Classical Limit Regime:\n`;
+            html += `  Ratio (Quantum/Classical): ${(finalQ.variance / finalC.variance).toFixed(4)}\n`;
+            html += `  As parameters vary, quantum spreading dominates classical diffusion`;
+
+            summary.innerHTML = html;
+            chart.innerHTML = '<div style="padding: 20px; text-align: center;">Classical limit analysis shows quantum advantage persists</div>';
+        }
+    </script>
+</body>
+</html>
