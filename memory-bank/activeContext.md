@@ -1,48 +1,60 @@
 # Active Context
-*Last Updated: 2026-01-04 20:23:01 IST*
+*Last Updated: 2026-01-05 18:58:00 IST*
 
 ## Current Focus
-T9: 1D Quantum Random Walk Implementation - COMPLETED
+T10: Dedicated Quantum Random Walk Demo Page - IN PROGRESS
 
 ## Context
-Implementation of interactive 1D quantum random walk simulation with real-time animated visualization. Features Hadamard coin operator, sparse shift operator, step-by-step and batch evolution modes, and comprehensive probability analysis. Increased step limit to 100 and created formal memory bank documentation.
+Planning and design phase for comprehensive QRW demo page extending T9 (1D walk) to support multiple variants: 1D/2D walks, different coin operators (Hadamard/Grover), boundary conditions (reflecting/periodic). Goal: understand classical limits and derive diffusion/telegraph equations. Detailed implementation plan and design documentation created.
 
-## Recent Changes
-- Increased evolution step limit from 20 to 100 (5× improvement)
-- Updated HTML input validation and JavaScript checks
-- Created formal T9 task file (tasks/T9.md)
-- Created implementation documentation (implementation-details/quantum-walk-design.md)
-- Created night session file (sessions/2026-01-04-night.md)
-- Updated tasks.md with T9 completion
-- Updated activeContext.md with current focus
+## Recent Changes (T10 Planning)
+- Analyzed T9 implementation (1D Hadamard coin walk)
+- Reviewed existing showcase.html structure (sidebar, categories, theming)
+- Reviewed docs/random-walk-plan.md (2D walk theory and boundary conditions)
+- Identified memory requirements and sparse operator needs
+- Created comprehensive T10 task file with completion criteria
+- Created detailed implementation design documentation (qrw-demo-page-design.md)
+- Updated tasks.md with T10 as active task
+- Updated activeContext.md with T10 focus
 
-## Implementation Status
-- Quantum walk simulation functions: Complete
-- Interactive showcase card with controls: Complete
-- Step-by-step evolution button: Complete
-- Real-time animated visualization (500ms/step): Complete
-- Cancel animation functionality: Complete
-- Probability conservation validation: Complete (1.0000)
-- Quantum spreading behavior: Complete (σ²(t) ∝ t²)
-- Step limit expansion to 100: Complete
-- Memory bank documentation: Complete
-- All exports to window.simulations: Complete
+## Implementation Status (T10)
+- ⬜ Plan complete: Full architecture, data structures, component layout
+- ⬜ Simulation functions: 1D/2D variants, coin operators, boundaries (to implement)
+- ⬜ HTML page structure: Sidebar navigation, content sections (to implement)
+- ⬜ JavaScript handlers: Controls, visualization, animation (to implement)
+- ⬜ Analysis tools: Variance curves, comparison modes, classical limits (to implement)
+- ⬜ Testing and integration: Unit/integration tests, bundle build (to implement)
+
+## Design Summary (T10)
+**Variants**:
+- 1D walks: Hadamard coin, Grover coin, periodic/reflecting boundaries
+- 2D walks: 4-direction coin, rectangular/periodic lattices, both boundary types
+- Classical reference: 1D and 2D for comparison
+
+**Key Features**:
+- Parameter controls: lattice size, steps, coin type, boundary conditions
+- Visualizations: SVG probability bars (1D), heatmaps (2D), variance curves
+- Analysis: Classical limit extraction, diffusion/telegraph equation investigation
+- Comparison mode: Quantum vs classical side-by-side with variance overlay
+
+**Performance Targets**:
+- 1D: <5ms per step (lattice up to 31)
+- 2D: <20ms per step (lattice up to 15×15), potential <100ms for 31×31
+- Animation: 500ms per step (consistent with T9)
 
 ## Memory Bank Protocol Status
-- ✅ Step 0: Identified relevant files (created 2 new docs)
-- ✅ Step 1: Determined current time in IST
-- ✅ Step 2: Updated task files (created T9.md)
-- ✅ Step 3: Created implementation documentation
-- ✅ Step 4: Created session file (2026-01-04-night.md)
-- ✅ Step 5: Updated session cache (pending: session_cache.md)
-- ✅ Step 6: Updated other files (tasks.md, activeContext.md updated)
-- ⏳ Step 7: Update edit history (in progress)
-- ⏳ Step 8: Create PR commit message (pending)
+- ✅ Step 0: Identified relevant files (T9 task, quantum-walk-design.md, random-walk-plan.md)
+- ✅ Step 1: Determined current time (2026-01-05 18:58:00 IST)
+- ✅ Step 2: Updated task files (created T10.md)
+- ✅ Step 3: Created implementation documentation (qrw-demo-page-design.md)
+- ⏳ Step 4: Create session file (to proceed)
+- ⏳ Step 5: Update session cache (to proceed)
+- ⏳ Step 6: Update other memory bank files (to proceed)
+- ⏳ Step 7: Update edit history (to proceed)
+- ⏳ Step 8: Prepare for implementation (to proceed)
 
 ## Next Steps
-- Complete edit_history.md update
-- Update session_cache.md with current session
-- Update changelog.md with feature completion
-- Rebuild web bundle (pnpm web:build)
-- Commit all changes with proper message
-- Generate PR title and description
+- Create session file (sessions/2026-01-05-afternoon.md)
+- Update session_cache.md with new session
+- Update edit_history.md with T10 planning entry
+- Await user approval for implementation to begin

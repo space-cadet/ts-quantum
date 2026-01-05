@@ -1,10 +1,10 @@
 # Task Registry
-*Last Updated: 2026-01-04 16:10:28 IST*
+*Last Updated: 2026-01-05 18:58:00 IST*
 
 ## Active Tasks
 | ID | Title | Status | Priority | Started | Dependencies | Details |
 |----|-------|--------|----------|---------|--------------|---------|
-| T8 | Documentation System Redesign | ✅ | HIGH | 2026-01-04 | T7 | [Details](tasks/T8.md) |
+| T10 | Dedicated Quantum Random Walk Demo Page | 🔄 | HIGH | 2026-01-05 | T9, T7 | [Details](tasks/T10.md) |
 
 ## Completed Tasks (Phase 1 & 2)
 | ID | Title | Completed | Phase |
