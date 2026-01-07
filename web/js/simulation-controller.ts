@@ -60,7 +60,14 @@ export class QuantumWalkController {
      * Setup UI components
      */
     private setupUI(): void {
-        // Create UI components
+        // Setup sidebar quick controls
+        const quickControls = this.uiComponents.createQuickControls();
+        const quickControlsContainer = document.getElementById('quickControls');
+        if (quickControlsContainer) {
+            quickControlsContainer.appendChild(quickControls);
+        }
+
+        // Create main content area components
         const controls = this.uiComponents.createControls();
         const comparisonCheckbox = this.uiComponents.createComparisonCheckbox();
         const buttonControls = this.uiComponents.createButtonControls();
@@ -69,18 +76,26 @@ export class QuantumWalkController {
         const comparisonStats = this.uiComponents.createComparisonStatistics();
         const progressBar = this.uiComponents.createProgressBar();
 
-        // 1. Prepend input controls, buttons, and timeline slider at the very top of the tab
-        // Order: Controls -> Checkbox -> Buttons -> Timeline Slider -> (Quantum Walk Plot is in HTML)
-        this.container.insertBefore(timelineSlider, this.container.firstChild);
-        this.container.insertBefore(buttonControls, timelineSlider);
-        this.container.insertBefore(comparisonCheckbox, buttonControls);
-        this.container.insertBefore(controls, comparisonCheckbox);
+        // Add controls to visualization view (below the title)
+        const visualizationView = document.getElementById('visualization-view');
+        if (visualizationView) {
+            // Insert after the h3 title
+            const title = visualizationView.querySelector('h3');
+            if (title) {
+                title.after(timelineSlider);
+                timelineSlider.after(controls);
+                controls.after(comparisonCheckbox);
+                comparisonCheckbox.after(buttonControls);
+            }
+        }
 
-        // 2. Append comparison plots and stats AFTER the pre-existing #visualization div
-        // Order: (Quantum Walk Plot) -> Comparison Stats (Classical Plot) -> Stats Grid -> Progress Bar
-        this.container.appendChild(comparisonStats);
-        this.container.appendChild(statsGrid);
-        this.container.appendChild(progressBar);
+        // Add comparison and stats after visualization
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) {
+            mainContent.appendChild(comparisonStats);
+            mainContent.appendChild(statsGrid);
+            mainContent.appendChild(progressBar);
+        }
     }
 
     /**

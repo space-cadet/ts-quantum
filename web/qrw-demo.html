@@ -16,36 +16,62 @@
             <p>Investigate quantum spreading behavior across multiple coins and boundary conditions</p>
         </header>
 
-        <div class="main-card">
-            <p class="description">
-                Explore quantum walks with different coin operators and boundary conditions. Observe spreading behavior (∝ t²) compared to classical diffusion (∝ t).
-            </p>
+        <div class="main-layout">
+            <!-- COLLAPSIBLE SIDEBAR -->
+            <div class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
+                        <span class="toggle-icon">◀</span>
+                    </button>
+                    <h3>Quantum Walk Explorer</h3>
+                </div>
+                
+                <nav class="sidebar-nav">
+                    <a href="#" class="nav-item active" onclick="switchView('visualization')" id="nav-visualization">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-text">Visualization</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="switchView('analysis')" id="nav-analysis">
+                        <span class="nav-icon">📈</span>
+                        <span class="nav-text">Analysis</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="switchView('education')" id="nav-education">
+                        <span class="nav-icon">📚</span>
+                        <span class="nav-text">Learn Quantum Walks</span>
+                    </a>
+                </nav>
 
-            <!-- UNIFIED PARAMETER CONTROLS -->
-            <div class="info-box">
-                <strong>Coin Types:</strong> Hadamard (standard spreading) vs Grover (enhanced spreading) |
-                <strong>Boundary Conditions:</strong> Reflecting (flip at edges) vs Periodic (toroidal wrap-around)
-            </div>
-
-            <!-- TAB HEADERS -->
-            <div class="tab-headers">
-                <button class="tab-header active" onclick="switchTab('visualization')">Visualization</button>
-                <button class="tab-header" onclick="switchTab('analysis')">Analysis</button>
-            </div>
-
-            <!-- VISUALIZATION TAB -->
-            <div id="visualization-tab" class="tab-content active">
-                <h3 style="margin-top: 20px; margin-bottom: 15px;">Quantum Walk</h3>
-                <div class="visualization" id="visualization"></div>
-
-                <div class="equation">
-                    $$|\psi(t+1)\rangle = S(C \otimes I)|\psi(t)\rangle$$
+                <div class="sidebar-controls">
+                    <div class="control-section">
+                        <h4>Quick Controls</h4>
+                        <div id="quickControls">
+                            <!-- Quick controls will be inserted here -->
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- ANALYSIS TAB -->
-            <div id="analysis-tab" class="tab-content">
-                <!-- Analysis panel will be created here -->
+            <!-- MAIN CONTENT AREA -->
+            <div class="main-content">
+                <!-- VISUALIZATION VIEW -->
+                <div id="visualization-view" class="content-view active">
+                    <h3 style="margin-top: 0; margin-bottom: 15px;">Quantum Walk</h3>
+                    <div class="visualization" id="visualization"></div>
+
+                    <div class="equation">
+                        $$|\psi(t+1)\rangle = S(C \otimes I)|\psi(t)\rangle$$
+                    </div>
+                </div>
+
+                <!-- ANALYSIS VIEW -->
+                <div id="analysis-view" class="content-view">
+                    <!-- Analysis panel will be created here -->
+                </div>
+
+                <!-- EDUCATION VIEW -->
+                <div id="education-view" class="content-view">
+                    <!-- Educational content will be created here -->
+                </div>
             </div>
         </div>
 

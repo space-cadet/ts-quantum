@@ -79612,7 +79612,41 @@
       return controls;
     }
     /**
-     * Create button controls
+     * Create quick controls for sidebar
+     */
+    createQuickControls() {
+      const quickControls = document.createElement("div");
+      quickControls.className = "quick-controls";
+      quickControls.innerHTML = `
+            <div class="quick-buttons">
+                <button onclick="runWalk()" id="runBtn" class="quick-btn primary">\u25B6 Run</button>
+                <button onclick="stepWalk()" class="quick-btn">\u23ED Step</button>
+                <button onclick="resetWalk()" class="quick-btn">\u21BA Reset</button>
+            </div>
+            <div class="quick-params">
+                <div class="param-row">
+                    <label>Lattice:</label>
+                    <select id="quickLatticeSize" onchange="updateFromQuickControls()">
+                        <option value="11">11</option>
+                        <option value="15">15</option>
+                        <option value="21">21</option>
+                        <option value="31">31</option>
+                    </select>
+                </div>
+                <div class="param-row">
+                    <label>Coin:</label>
+                    <select id="quickCoinType" onchange="updateFromQuickControls()">
+                        <option value="hadamard">Hadamard</option>
+                        <option value="grover">Grover</option>
+                        <option value="rotation">Rotation</option>
+                    </select>
+                </div>
+            </div>
+        `;
+      return quickControls;
+    }
+    /**
+     * Create button controls (for main content area)
      */
     createButtonControls() {
       const buttonGroup = document.createElement("div");
@@ -79897,6 +79931,11 @@
      * Setup UI components
      */
     setupUI() {
+      const quickControls = this.uiComponents.createQuickControls();
+      const quickControlsContainer = document.getElementById("quickControls");
+      if (quickControlsContainer) {
+        quickControlsContainer.appendChild(quickControls);
+      }
       const controls = this.uiComponents.createControls();
       const comparisonCheckbox = this.uiComponents.createComparisonCheckbox();
       const buttonControls = this.uiComponents.createButtonControls();
@@ -79904,13 +79943,22 @@
       const statsGrid = this.uiComponents.createStatisticsGrid();
       const comparisonStats = this.uiComponents.createComparisonStatistics();
       const progressBar = this.uiComponents.createProgressBar();
-      this.container.insertBefore(timelineSlider, this.container.firstChild);
-      this.container.insertBefore(buttonControls, timelineSlider);
-      this.container.insertBefore(comparisonCheckbox, buttonControls);
-      this.container.insertBefore(controls, comparisonCheckbox);
-      this.container.appendChild(comparisonStats);
-      this.container.appendChild(statsGrid);
-      this.container.appendChild(progressBar);
+      const visualizationView = document.getElementById("visualization-view");
+      if (visualizationView) {
+        const title = visualizationView.querySelector("h3");
+        if (title) {
+          title.after(timelineSlider);
+          timelineSlider.after(controls);
+          controls.after(comparisonCheckbox);
+          comparisonCheckbox.after(buttonControls);
+        }
+      }
+      const mainContent = document.querySelector(".main-content");
+      if (mainContent) {
+        mainContent.appendChild(comparisonStats);
+        mainContent.appendChild(statsGrid);
+        mainContent.appendChild(progressBar);
+      }
     }
     /**
      * Bind event handlers
@@ -80949,20 +80997,153 @@
     QuantumWalkController,
     AnalysisPanel
   };
+  globalThis.toggleSidebar = function() {
+    const sidebar = document.getElementById("sidebar");
+    if (sidebar) {
+      sidebar.classList.toggle("collapsed");
+    }
+  };
+  globalThis.switchView = function(viewName) {
+    const navItems = document.querySelectorAll(".nav-item");
+    navItems.forEach((item) => item.classList.remove("active"));
+    const activeNav = document.getElementById("nav-" + viewName);
+    if (activeNav) activeNav.classList.add("active");
+    const views = document.querySelectorAll(".content-view");
+    views.forEach((view) => view.classList.remove("active"));
+    const activeView = document.getElementById(viewName + "-view");
+    if (activeView) activeView.classList.add("active");
+    if (viewName === "education") {
+      setupEducationView();
+    }
+  };
+  globalThis.updateFromQuickControls = function() {
+    const quickLattice = document.getElementById("quickLatticeSize");
+    const quickCoin = document.getElementById("quickCoinType");
+    const mainLattice = document.getElementById("latticeSize");
+    const mainCoin = document.getElementById("coinType");
+    if (quickLattice && mainLattice) {
+      mainLattice.value = quickLattice.value;
+    }
+    if (quickCoin && mainCoin) {
+      mainCoin.value = quickCoin.value;
+    }
+  };
+  function setupEducationView() {
+    const educationView = document.getElementById("education-view");
+    if (educationView && educationView.children.length === 0) {
+      educationView.innerHTML = `
+      <div class="education-content">
+        <h2>Understanding Quantum Random Walks</h2>
+        
+        <section class="edu-section">
+          <h3>What is a Quantum Random Walk?</h3>
+          <p>A quantum random walk is the quantum analogue of a classical random walk. Instead of a walker being at definite positions, the quantum walker exists in a <strong>superposition</strong> of positions, creating interference patterns that lead to fundamentally different spreading behavior.</p>
+          
+          <div class="equation-box">
+            <h4>Quantum Evolution Equation</h4>
+            $$|psi(t+1)\rangle = S(C otimes I)|psi(t)\rangle$$
+            <ul>
+              <li><strong>C</strong>: Coin operator (creates superposition)</li>
+              <li><strong>S</strong>: Shift operator (moves based on coin state)</li>
+              <li><strong>I</strong>: Identity operator on position space</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="edu-section">
+          <h3>Ballistic vs Diffusive Spreading</h3>
+          <p>The key difference between quantum and classical walks is their spreading behavior:</p>
+          
+          <div class="comparison-box">
+            <div class="quantum-side">
+              <h4>\u{1F52C} Quantum Walk</h4>
+              <p><strong>Ballistic spreading:</strong> \u03C3\xB2 \u221D t\xB2</p>
+              <p>The walker spreads quadratically with time due to quantum interference and coherent superposition.</p>
+            </div>
+            <div class="classical-side">
+              <h4>\u{1F3B2} Classical Walk</h4>
+              <p><strong>Diffusive spreading:</strong> \u03C3\xB2 \u221D t</p>
+              <p>The walker spreads linearly with time due to random, uncorrelated steps.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="edu-section">
+          <h3>Coin Operators</h3>
+          <p>The coin operator determines how the quantum walker's "coin state" evolves, creating the superposition that enables quantum interference.</p>
+          
+          <div class="coin-examples">
+            <div class="coin-card">
+              <h4>Hadamard Coin</h4>
+              $$H = \frac{1}{sqrt{2}}\begin{bmatrix} 1 & 1 \\ 1 & -1 end{bmatrix}$$
+              <p>Creates equal superposition with relative phase, leading to symmetric spreading patterns.</p>
+            </div>
+            
+            <div class="coin-card">
+              <h4>Grover Coin (d=2)</h4>
+              $$G = 2|s\ranglelangle s| - I = \begin{bmatrix} 0 & 1 \\ 1 & 0 end{bmatrix}$$>
+              <p>For 2-dimensional coin space, reduces to NOT gate. Creates classical-like behavior without dispersion.</p>
+            </div>
+            
+            <div class="coin-card">
+              <h4>Rotation Coin</h4>
+              $$C(	heta) = \begin{bmatrix} cos	heta & sin	heta \\ sin	heta & -cos	heta end{bmatrix}$$
+              <p>Generalized coin with tunable parameter \u03B8. Controls the balance between superposition and bias.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="edu-section">
+          <h3>Boundary Conditions</h3>
+          <p>How the walk behaves at the edges of the lattice dramatically affects the interference patterns:</p>
+          
+          <div class="boundary-examples">
+            <div class="boundary-card">
+              <h4>Reflecting Boundaries</h4>
+              <p>At the edges, the coin state flips (LEFT \u2194 RIGHT), causing the walker to reflect back into the lattice. This creates standing wave patterns and enhances interference effects.</p>
+            </div>
+            
+            <div class="boundary-card">
+              <h4>Periodic Boundaries</h4>
+              <p>The lattice wraps around like a torus. Walking off one edge brings you back to the opposite side. This preserves translational symmetry and creates different interference patterns.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="edu-section">
+          <h3>Applications of Quantum Walks</h3>
+          <p>Quantum random walks are not just theoretical curiosities - they have practical applications in:</p>
+          
+          <ul class="applications-list">
+            <li><strong>Quantum Algorithms:</strong> Search algorithms, element distinctness, graph traversal</li>
+            <li><strong>Quantum Simulation:</strong> Modeling transport phenomena, energy transfer in photosynthesis</li>
+            <li><strong>Universal Quantum Computation:</strong> Quantum walks can be used to build quantum computers</li>
+            <li><strong>Complex Systems:</strong> Modeling biological processes, financial markets, social networks</li>
+          </ul>
+        </section>
+
+        <div class="action-box">
+          <h3>\u{1F680} Try It Yourself!</h3>
+          <p>Now that you understand the theory, switch to the <strong>Visualization</strong> tab to see these concepts in action. Experiment with different coins and boundary conditions to observe how they affect the quantum walk's behavior.</p>
+          <button onclick="switchView('visualization')" class="primary-btn">Go to Visualization</button>
+        </div>
+      </div>
+    `;
+    }
+  }
   globalThis.switchTab = function(tabName) {
-    const tabs = document.querySelectorAll(".tab-content");
-    const headers = document.querySelectorAll(".tab-header");
-    tabs.forEach((tab2) => tab2.classList.remove("active"));
-    headers.forEach((header) => header.classList.remove("active"));
-    const tab = document.getElementById(tabName + "-tab");
-    if (tab) tab.classList.add("active");
-    if (typeof event !== "undefined" && event && event.target && event.target.classList) {
-      event.target.classList.add("active");
+    const viewMapping = {
+      "visualization": "visualization",
+      "analysis": "analysis"
+    };
+    const viewName = viewMapping[tabName];
+    if (viewName) {
+      switchView(viewName);
     }
   };
   document.addEventListener("DOMContentLoaded", () => {
-    const vizContainer = document.getElementById("visualization-tab");
-    const analysisContainer = document.getElementById("analysis-tab");
+    const vizContainer = document.getElementById("visualization-view");
+    const analysisContainer = document.getElementById("analysis-view");
     if (vizContainer) {
       const controller = new QuantumWalkController(vizContainer);
       controller.initialize();

@@ -76,7 +76,42 @@ export class UIComponents {
     }
 
     /**
-     * Create button controls
+     * Create quick controls for sidebar
+     */
+    createQuickControls(): HTMLElement {
+        const quickControls = document.createElement('div');
+        quickControls.className = 'quick-controls';
+        quickControls.innerHTML = `
+            <div class="quick-buttons">
+                <button onclick="runWalk()" id="runBtn" class="quick-btn primary">▶ Run</button>
+                <button onclick="stepWalk()" class="quick-btn">⏭ Step</button>
+                <button onclick="resetWalk()" class="quick-btn">↺ Reset</button>
+            </div>
+            <div class="quick-params">
+                <div class="param-row">
+                    <label>Lattice:</label>
+                    <select id="quickLatticeSize" onchange="updateFromQuickControls()">
+                        <option value="11">11</option>
+                        <option value="15">15</option>
+                        <option value="21">21</option>
+                        <option value="31">31</option>
+                    </select>
+                </div>
+                <div class="param-row">
+                    <label>Coin:</label>
+                    <select id="quickCoinType" onchange="updateFromQuickControls()">
+                        <option value="hadamard">Hadamard</option>
+                        <option value="grover">Grover</option>
+                        <option value="rotation">Rotation</option>
+                    </select>
+                </div>
+            </div>
+        `;
+        return quickControls;
+    }
+
+    /**
+     * Create button controls (for main content area)
      */
     createButtonControls(): HTMLElement {
         const buttonGroup = document.createElement('div');
