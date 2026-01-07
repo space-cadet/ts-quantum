@@ -468,6 +468,9 @@ interface QuantumWalk1DData {
   maxProbability: number;
 }
 
+type QuantumWalk1DBoundary = 'reflecting' | 'periodic';
+type QuantumWalk1DCoin = 'hadamard' | 'grover' | 'rotation';
+
 // Store quantum walk state for step-by-step functionality
 let qw1dStateBuffer: QuantumWalk1DState | null = null;
 
@@ -636,6 +639,8 @@ function extractQuantumWalk1DData(state: StateVector, latticeSize: number, step:
   let centerOfMass = 0;
   let maxProb = 0;
 
+  const x0 = (latticeSize - 1) / 2;
+
   // Sum probabilities across both coin states for each position
   for (let pos = 0; pos < latticeSize; pos++) {
     const leftAmp = state.amplitudes[pos];
@@ -647,18 +652,20 @@ function extractQuantumWalk1DData(state: StateVector, latticeSize: number, step:
     const posProb = leftProb + rightProb;
     probabilities.push({ position: pos, probability: posProb });
     totalProb += posProb;
-    centerOfMass += pos * posProb;
+    const x = pos - x0;
+    centerOfMass += x * posProb;
     maxProb = Math.max(maxProb, posProb);
   }
 
   // Normalize center of mass
-  centerOfMass = totalProb > 0 ? centerOfMass / totalProb : latticeSize / 2;
+  centerOfMass = totalProb > 0 ? centerOfMass / totalProb : 0;
 
   // Calculate variance
   let variance = 0;
   for (let pos = 0; pos < latticeSize; pos++) {
     const posProb = probabilities[pos].probability;
-    variance += (pos - centerOfMass) ** 2 * posProb;
+    const x = pos - x0;
+    variance += (x - centerOfMass) ** 2 * posProb;
   }
 
   return {
@@ -986,19 +993,23 @@ function extractClassicalWalkData(probs: number[], latticeSize: number, step: nu
   let centerOfMass = 0;
   let maxProb = 0;
 
+  const x0 = (latticeSize - 1) / 2;
+
   for (let pos = 0; pos < latticeSize; pos++) {
     const posProb = probs[pos];
     probabilities.push({ position: pos, probability: posProb });
     totalProb += posProb;
-    centerOfMass += pos * posProb;
+    const x = pos - x0;
+    centerOfMass += x * posProb;
     maxProb = Math.max(maxProb, posProb);
   }
 
-  centerOfMass = totalProb > 0 ? centerOfMass / totalProb : latticeSize / 2;
+  centerOfMass = totalProb > 0 ? centerOfMass / totalProb : 0;
 
   let variance = 0;
   for (let pos = 0; pos < latticeSize; pos++) {
-    variance += (pos - centerOfMass) ** 2 * probs[pos];
+    const x = pos - x0;
+    variance += (x - centerOfMass) ** 2 * probs[pos];
   }
 
   return {
@@ -1035,7 +1046,7 @@ export function analyzeVarianceGrowth(
   for (let i = 0; i < maxSteps; i++) {
     const qVar = quantumHistory[i].data.variance;
     const cVar = classicalHistory[i].data.variance;
-    const advantage = qVar > 0 ? cVar / qVar : 0;
+    const advantage = cVar > 0 ? qVar / cVar : 0;
 
     result.push({
       step: i,
@@ -1046,6 +1057,371 @@ export function analyzeVarianceGrowth(
   }
 
   return result;
+}
+
+// ============================================================================
+// 1D QUANTUM RANDOM WALK - CONFIGURABLE COIN + BOUNDARY
+// ============================================================================
+
+interface QuantumWalk1DCustomState {
+  state: StateVector;
+  coinOp: MatrixOperator;
+  shiftOp: SparseOperator;
+  latticeSize: number;
+  currentStep: number;
+  history: Array<{ step: number; data: QuantumWalk1DData }>;
+}
+
+let qw1dCustomStateBuffer: QuantumWalk1DCustomState | null = null;
+
+function buildCoinOperator(coin: QuantumWalk1DCoin, theta: number): MatrixOperator {
+  if (coin === 'hadamard') {
+    const hadamardMatrix: any[][] = [
+      [math.complex(1 / Math.sqrt(2), 0), math.complex(1 / Math.sqrt(2), 0)],
+      [math.complex(1 / Math.sqrt(2), 0), math.complex(-1 / Math.sqrt(2), 0)]
+    ];
+    return new MatrixOperator(hadamardMatrix, 'unitary');
+  }
+
+  if (coin === 'grover') {
+    // Grover diffusion operator: G = 2|s><s| - I, |s> = (1,1)/sqrt(2)
+    // For d=2, this evaluates to [[0,1],[1,0]]
+    const d = 2;
+    const a = 2 / d;
+    const groverMatrix: any[][] = [
+      [math.complex(a - 1, 0), math.complex(a, 0)],
+      [math.complex(a, 0), math.complex(a - 1, 0)]
+    ];
+    return new MatrixOperator(groverMatrix, 'unitary');
+  }
+
+  // Rotation coin (real, unbiased family). A common 1-parameter choice:
+  // C(θ) = [[cosθ, sinθ],[sinθ, -cosθ]] (unitary, determinant -1)
+  const c = Math.cos(theta);
+  const s = Math.sin(theta);
+  const rotMatrix: any[][] = [
+    [math.complex(c, 0), math.complex(s, 0)],
+    [math.complex(s, 0), math.complex(-c, 0)]
+  ];
+  return new MatrixOperator(rotMatrix, 'unitary');
+}
+
+function buildShiftOperator1D(latticeSize: number, boundary: QuantumWalk1DBoundary): SparseOperator {
+  const dimension = 2 * latticeSize;
+  const shiftMatrix = createSparseMatrix(dimension, dimension);
+
+  for (let pos = 0; pos < latticeSize; pos++) {
+    const leftIndex = pos;
+
+    if (boundary === 'periodic') {
+      const prevPos = (pos - 1 + latticeSize) % latticeSize;
+      const rightIndexPrev = latticeSize + prevPos;
+      setSparseEntry(shiftMatrix, rightIndexPrev, leftIndex, math.complex(1, 0));
+    } else {
+      if (pos > 0) {
+        const rightIndexPrev = latticeSize + (pos - 1);
+        setSparseEntry(shiftMatrix, rightIndexPrev, leftIndex, math.complex(1, 0));
+      } else {
+        const rightIndex = latticeSize + 0;
+        setSparseEntry(shiftMatrix, rightIndex, leftIndex, math.complex(1, 0));
+      }
+    }
+
+    const rightIndex = latticeSize + pos;
+    if (boundary === 'periodic') {
+      const nextPos = (pos + 1) % latticeSize;
+      const leftIndexNext = nextPos;
+      setSparseEntry(shiftMatrix, leftIndexNext, rightIndex, math.complex(1, 0));
+    } else {
+      if (pos < latticeSize - 1) {
+        const leftIndexNext = pos + 1;
+        setSparseEntry(shiftMatrix, leftIndexNext, rightIndex, math.complex(1, 0));
+      } else {
+        const leftIndexBound = pos;
+        setSparseEntry(shiftMatrix, leftIndexBound, rightIndex, math.complex(1, 0));
+      }
+    }
+  }
+
+  return new SparseOperator(shiftMatrix, 'unitary');
+}
+
+export function initializeQuantumWalk1DCustom(
+  latticeSize: number,
+  coin: QuantumWalk1DCoin = 'hadamard',
+  boundary: QuantumWalk1DBoundary = 'reflecting',
+  theta: number = Math.PI / 4
+): QuantumWalk1DData {
+  const dimension = 2 * latticeSize;
+
+  const coinOp = buildCoinOperator(coin, theta);
+  const shiftOp = buildShiftOperator1D(latticeSize, boundary);
+
+  const center = Math.floor(latticeSize / 2);
+  const initialAmplitudes: any[] = new Array(dimension).fill(null).map(() => math.complex(0, 0));
+  const invSqrt2 = 1 / Math.sqrt(2);
+  initialAmplitudes[center] = math.complex(invSqrt2, 0);
+  initialAmplitudes[latticeSize + center] = math.complex(invSqrt2, 0);
+  const initialState = new StateVector(dimension, initialAmplitudes);
+
+  qw1dCustomStateBuffer = {
+    state: initialState,
+    coinOp,
+    shiftOp,
+    latticeSize,
+    currentStep: 0,
+    history: []
+  };
+
+  const initialData = extractQuantumWalk1DData(initialState, latticeSize, 0);
+  qw1dCustomStateBuffer.history.push({ step: 0, data: initialData });
+  return initialData;
+}
+
+export function stepQuantumWalk1DCustom(): QuantumWalk1DData {
+  if (!qw1dCustomStateBuffer) {
+    throw new Error('Custom quantum walk not initialized');
+  }
+
+  const { state, coinOp, shiftOp, latticeSize } = qw1dCustomStateBuffer;
+
+  const identityMatrix: any[][] = [];
+  for (let i = 0; i < latticeSize; i++) {
+    const row: any[] = [];
+    for (let j = 0; j < latticeSize; j++) {
+      row.push(i === j ? math.complex(1, 0) : math.complex(0, 0));
+    }
+    identityMatrix.push(row);
+  }
+  const identityOp = new MatrixOperator(identityMatrix, 'unitary');
+  const coinFullOp = coinOp.tensorProduct(identityOp);
+
+  let nextState = coinFullOp.apply(state);
+  nextState = shiftOp.apply(nextState);
+  nextState = nextState.normalize();
+
+  qw1dCustomStateBuffer.state = nextState;
+  qw1dCustomStateBuffer.currentStep++;
+
+  const data = extractQuantumWalk1DData(nextState, latticeSize, qw1dCustomStateBuffer.currentStep);
+  qw1dCustomStateBuffer.history.push({ step: qw1dCustomStateBuffer.currentStep, data });
+  return data;
+}
+
+export function resetQuantumWalk1DCustom(): void {
+  qw1dCustomStateBuffer = null;
+}
+
+export function getQuantumWalk1DCustomState(): QuantumWalk1DData {
+  if (!qw1dCustomStateBuffer || qw1dCustomStateBuffer.history.length === 0) {
+    throw new Error('Custom quantum walk not initialized');
+  }
+  return qw1dCustomStateBuffer.history[qw1dCustomStateBuffer.history.length - 1].data;
+}
+
+// ============================================================================
+// 1D QUANTUM RANDOM WALK - DECOHERENCE (COIN MEASUREMENT) ENSEMBLE
+// ============================================================================
+
+function measureCoinInComputationalBasis(state: StateVector, latticeSize: number): StateVector {
+  // Projectively measure coin (LEFT/RIGHT) and return collapsed state.
+  let pLeft = 0;
+  let pRight = 0;
+
+  for (let pos = 0; pos < latticeSize; pos++) {
+    const leftAmp = state.amplitudes[pos];
+    const rightAmp = state.amplitudes[latticeSize + pos];
+    pLeft += Math.abs(leftAmp.re) ** 2 + Math.abs(leftAmp.im) ** 2;
+    pRight += Math.abs(rightAmp.re) ** 2 + Math.abs(rightAmp.im) ** 2;
+  }
+
+  const r = Math.random();
+  const outcomeLeft = r < pLeft / (pLeft + pRight);
+  const newAmps: any[] = state.amplitudes.map((a: any) => math.complex(a.re, a.im));
+
+  for (let pos = 0; pos < latticeSize; pos++) {
+    if (outcomeLeft) {
+      newAmps[latticeSize + pos] = math.complex(0, 0);
+    } else {
+      newAmps[pos] = math.complex(0, 0);
+    }
+  }
+
+  return new StateVector(state.dimension, newAmps).normalize();
+}
+
+function averageProbabilities(
+  probsAcc: number[],
+  data: QuantumWalk1DData
+): void {
+  for (let i = 0; i < data.probabilities.length; i++) {
+    probsAcc[i] += data.probabilities[i].probability;
+  }
+}
+
+function buildDataFromAveragedProbabilities(avgProbs: number[], latticeSize: number, step: number): QuantumWalk1DData {
+  return extractClassicalWalkData(avgProbs, latticeSize, step);
+}
+
+export function runQuantumWalk1DDecoheredEnsemble(
+  latticeSize: number,
+  numSteps: number,
+  coin: QuantumWalk1DCoin = 'hadamard',
+  boundary: QuantumWalk1DBoundary = 'reflecting',
+  theta: number = Math.PI / 4,
+  pMeasure: number = 0,
+  ensembleSize: number = 50
+): { final: QuantumWalk1DData; history: Array<{ step: number; data: QuantumWalk1DData }> } {
+  const clampedP = Math.max(0, Math.min(1, pMeasure));
+  const M = Math.max(1, Math.floor(ensembleSize));
+
+  const coinOp = buildCoinOperator(coin, theta);
+  const shiftOp = buildShiftOperator1D(latticeSize, boundary);
+  const dimension = 2 * latticeSize;
+
+  const identityMatrix: any[][] = [];
+  for (let i = 0; i < latticeSize; i++) {
+    const row: any[] = [];
+    for (let j = 0; j < latticeSize; j++) {
+      row.push(i === j ? math.complex(1, 0) : math.complex(0, 0));
+    }
+    identityMatrix.push(row);
+  }
+  const identityOp = new MatrixOperator(identityMatrix, 'unitary');
+  const coinFullOp = coinOp.tensorProduct(identityOp);
+
+  const center = Math.floor(latticeSize / 2);
+  const history: Array<{ step: number; data: QuantumWalk1DData }> = [];
+
+  const probsAccByStep: number[][] = [];
+  for (let step = 0; step <= numSteps; step++) {
+    probsAccByStep.push(new Array(latticeSize).fill(0));
+  }
+
+  for (let m = 0; m < M; m++) {
+    const initialAmplitudes: any[] = new Array(dimension).fill(null).map(() => math.complex(0, 0));
+    const invSqrt2 = 1 / Math.sqrt(2);
+    initialAmplitudes[center] = math.complex(invSqrt2, 0);
+    initialAmplitudes[latticeSize + center] = math.complex(invSqrt2, 0);
+    let state = new StateVector(dimension, initialAmplitudes);
+
+    averageProbabilities(probsAccByStep[0], extractQuantumWalk1DData(state, latticeSize, 0));
+
+    for (let step = 1; step <= numSteps; step++) {
+      state = coinFullOp.apply(state);
+      state = shiftOp.apply(state);
+      state = state.normalize();
+
+      if (clampedP > 0 && Math.random() < clampedP) {
+        state = measureCoinInComputationalBasis(state, latticeSize);
+      }
+
+      averageProbabilities(probsAccByStep[step], extractQuantumWalk1DData(state, latticeSize, step));
+    }
+  }
+
+  for (let step = 0; step <= numSteps; step++) {
+    const avgProbs = probsAccByStep[step].map(v => v / M);
+    const avgData = buildDataFromAveragedProbabilities(avgProbs, latticeSize, step);
+    history.push({ step, data: avgData });
+  }
+
+  return { final: history[history.length - 1].data, history };
+}
+
+// ============================================================================
+// CLASSICAL RANDOM WALK - PERSISTENT TWO-COMPONENT (TELEGRAPH-LIKE)
+// ============================================================================
+
+interface PersistentClassicalWalk1DState {
+  pLeft: number[];
+  pRight: number[];
+  latticeSize: number;
+  currentStep: number;
+  persistence: number;
+  history: Array<{ step: number; data: QuantumWalk1DData }>;
+}
+
+let persistentClassicalWalk1DBuffer: PersistentClassicalWalk1DState | null = null;
+
+export function initializePersistentClassicalWalk1D(latticeSize: number, persistence: number = 0.9): QuantumWalk1DData {
+  const q = Math.max(0, Math.min(1, persistence));
+  const center = Math.floor(latticeSize / 2);
+
+  const pLeft = new Array(latticeSize).fill(0);
+  const pRight = new Array(latticeSize).fill(0);
+  pLeft[center] = 0.5;
+  pRight[center] = 0.5;
+
+  persistentClassicalWalk1DBuffer = {
+    pLeft,
+    pRight,
+    latticeSize,
+    currentStep: 0,
+    persistence: q,
+    history: []
+  };
+
+  const probs = pLeft.map((v, i) => v + pRight[i]);
+  const initialData = extractClassicalWalkData(probs, latticeSize, 0);
+  persistentClassicalWalk1DBuffer.history.push({ step: 0, data: initialData });
+  return initialData;
+}
+
+export function stepPersistentClassicalWalk1D(): QuantumWalk1DData {
+  if (!persistentClassicalWalk1DBuffer) {
+    throw new Error('Persistent classical walk not initialized');
+  }
+
+  const { pLeft, pRight, latticeSize, persistence } = persistentClassicalWalk1DBuffer;
+  const newLeft = new Array(latticeSize).fill(0);
+  const newRight = new Array(latticeSize).fill(0);
+
+  // Transport + velocity scattering.
+  // With probability persistence, keep direction; with (1-persistence), flip.
+  for (let pos = 0; pos < latticeSize; pos++) {
+    const pl = pLeft[pos];
+    const pr = pRight[pos];
+    if (pl > 0) {
+      const target = pos > 0 ? pos - 1 : 0;
+      // reflect at boundary by flipping direction if blocked
+      if (pos > 0) {
+        newLeft[target] += pl * persistence;
+        newRight[target] += pl * (1 - persistence);
+      } else {
+        newRight[target] += pl;
+      }
+    }
+    if (pr > 0) {
+      const target = pos < latticeSize - 1 ? pos + 1 : latticeSize - 1;
+      if (pos < latticeSize - 1) {
+        newRight[target] += pr * persistence;
+        newLeft[target] += pr * (1 - persistence);
+      } else {
+        newLeft[target] += pr;
+      }
+    }
+  }
+
+  persistentClassicalWalk1DBuffer.pLeft = newLeft;
+  persistentClassicalWalk1DBuffer.pRight = newRight;
+  persistentClassicalWalk1DBuffer.currentStep++;
+
+  const probs = newLeft.map((v, i) => v + newRight[i]);
+  const data = extractClassicalWalkData(probs, latticeSize, persistentClassicalWalk1DBuffer.currentStep);
+  persistentClassicalWalk1DBuffer.history.push({ step: persistentClassicalWalk1DBuffer.currentStep, data });
+  return data;
+}
+
+export function resetPersistentClassicalWalk1D(): void {
+  persistentClassicalWalk1DBuffer = null;
+}
+
+export function getPersistentClassicalWalk1DState(): QuantumWalk1DData {
+  if (!persistentClassicalWalk1DBuffer || persistentClassicalWalk1DBuffer.history.length === 0) {
+    throw new Error('Persistent classical walk not initialized');
+  }
+  return persistentClassicalWalk1DBuffer.history[persistentClassicalWalk1DBuffer.history.length - 1].data;
 }
 
 /**
@@ -1165,6 +1541,11 @@ const simulationFunctions = {
   runQuantumWalk1D,
   resetQuantumWalk1D,
   getQuantumWalk1DState,
+  initializeQuantumWalk1DCustom,
+  stepQuantumWalk1DCustom,
+  resetQuantumWalk1DCustom,
+  getQuantumWalk1DCustomState,
+  runQuantumWalk1DDecoheredEnsemble,
   initializeQuantumWalk1DGrover,
   stepQuantumWalk1DGrover,
   resetQuantumWalk1DGrover,
@@ -1177,6 +1558,10 @@ const simulationFunctions = {
   stepClassicalWalk1D,
   resetClassicalWalk1D,
   getClassicalWalk1DState,
+  initializePersistentClassicalWalk1D,
+  stepPersistentClassicalWalk1D,
+  resetPersistentClassicalWalk1D,
+  getPersistentClassicalWalk1DState,
   analyzeVarianceGrowth,
   getDistributionSnapshot,
   compareSpreadingRates

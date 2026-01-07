@@ -1,45 +1,53 @@
 /**
- * Build script to create browser bundle from simulations.ts
- * Usage: node web/build-bundle.js
+ * Build script for web showcase bundles
  *
- * This script:
- * 1. Takes the simulations.ts file which imports ts-quantum
- * 2. Bundles it with all dependencies using esbuild
- * 3. Creates bundle.js that can be loaded in a browser
- * 4. Generates source maps for debugging
+ * Produces:
+ * - web/bundle.js                  (legacy bundle from web/simulations.ts, used by showcase.html)
+ * - web/qrw-refactored.bundle.js    (refactored QRW app bundle from web/js/bundle.js)
  */
 
-const esbuild = require('esbuild');
 const path = require('path');
+const esbuild = require('esbuild');
 
-const buildConfig = {
-  entryPoints: [path.resolve(__dirname, 'simulations.ts')],
-  bundle: true,
-  platform: 'browser',
-  target: 'es2020',
-  outfile: path.resolve(__dirname, 'bundle.js'),
-  absWorkingDir: path.resolve(__dirname, '..'),
-  sourcemap: true,
-  logLevel: 'info',
-  define: {
-    'process.env.NODE_ENV': '"browser"'
-  }
-};
+const repoRoot = process.cwd().replace(/\/web$/, ''); // Remove /web if we're in web dir
+const webDir = path.join(repoRoot, 'web');
 
-console.log('Building web bundle from simulations.ts...');
-console.log('Configuration:', {
-  entry: 'web/simulations.ts',
-  output: 'web/bundle.js',
-  platform: 'browser',
-  target: 'es2020'
-});
+async function build() {
+  // Legacy bundle (window.simulations)
+  await esbuild.build({
+    entryPoints: [path.join(webDir, 'simulations.ts')],
+    bundle: true,
+    platform: 'browser',
+    target: 'es2020',
+    outfile: path.join(webDir, 'bundle.js'),
+    absWorkingDir: repoRoot,
+    sourcemap: true,
+    logLevel: 'info',
+    define: {
+      'process.env.NODE_ENV': '"browser"'
+    }
+  });
 
-esbuild.build(buildConfig).then(() => {
-  console.log('✅ Bundle created successfully!');
-  console.log('   Output: web/bundle.js (3.1+ MB with dependencies)');
-  console.log('   Source Maps: web/bundle.js.map');
-  console.log('\n📖 Open web/showcase.html in a browser to run simulations');
-}).catch(err => {
-  console.error('❌ Build failed:', err);
+  // Refactored QRW bundle
+  await esbuild.build({
+    entryPoints: [path.join(webDir, 'js', 'bundle.js')],
+    bundle: true,
+    platform: 'browser',
+    target: 'es2020',
+    outfile: path.join(webDir, 'qrw-refactored.bundle.js'),
+    absWorkingDir: repoRoot,
+    sourcemap: true,
+    logLevel: 'info',
+    define: {
+      'process.env.NODE_ENV': '"browser"'
+    }
+  });
+
+  console.log(`Built: ${path.join(webDir, 'bundle.js')}`);
+  console.log(`Built: ${path.join(webDir, 'qrw-refactored.bundle.js')}`);
+}
+
+build().catch(function(err) {
+  console.error('Build failed:', err);
   process.exit(1);
 });
