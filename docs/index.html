@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ts-quantum Documentation</title>
+    <link rel="stylesheet" href="showcase-v2/components/layout.css">
+    <link rel="stylesheet" href="showcase-v2/components/docs.css">
     <script type="module">
         import rehypeStringify from 'https://esm.sh/rehype-stringify@10?bundle';
         import remarkParse from 'https://esm.sh/remark-parse@11?bundle';
@@ -36,426 +38,186 @@
             }
         };
     </script>
-    <style>
-        :root {
-            --primary-color: #2563eb;
-            --secondary-color: #64748b;
-            --background: #ffffff;
-            --surface: #f8fafc;
-            --border: #e2e8f0;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --sidebar-width: 280px;
-        }
-        
-        [data-theme="dark"] {
-            --primary-color: #3b82f6;
-            --secondary-color: #94a3b8;
-            --background: #0f172a;
-            --surface: #1e293b;
-            --border: #334155;
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-        }
-        
-        * {
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            padding: 0;
-            background: var(--background);
-            color: var(--text-primary);
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-        
-        .container {
-            display: flex;
-            min-height: 100vh;
-        }
-        
-        .sidebar {
-            width: var(--sidebar-width);
-            background: var(--surface);
-            border-right: 1px solid var(--border);
-            padding: 2rem 1rem;
-            overflow-y: auto;
-            position: fixed;
-            height: 100vh;
-            left: 0;
-            top: 0;
-            z-index: 1000;
-            transition: transform 0.3s ease;
-        }
-        
-        .sidebar.collapsed {
-            transform: translateX(-100%);
-        }
-        
-        .sidebar-toggle {
-            display: none;
-            position: fixed;
-            top: 1rem;
-            left: 1rem;
-            z-index: 1001;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 0.5rem;
-            border-radius: 0.25rem;
-            cursor: pointer;
-        }
-        
-        .main-content {
-            flex: 1;
-            margin-left: var(--sidebar-width);
-            padding: 1rem 2rem 2rem 2rem;
-            max-width: none;
-        }
-        
-        .sidebar h1 {
-            color: var(--primary-color);
-            font-size: 1.5rem;
-            margin: 0 0 2rem 0;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid var(--border);
-        }
-        
-        .nav-section {
-            margin-bottom: 2rem;
-        }
-        
-        .nav-section h3 {
-            color: var(--text-primary);
-            font-size: 0.875rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin: 0 0 1rem 0;
-        }
-        
-        .nav-link {
-            display: block;
-            color: var(--text-secondary);
-            text-decoration: none;
-            padding: 0.5rem 0;
-            border-radius: 0.25rem;
-            transition: all 0.2s ease;
-            font-size: 0.875rem;
-        }
-        
-        .nav-link:hover {
-            color: var(--primary-color);
-            background: var(--background);
-            padding-left: 0.5rem;
-        }
-        
-        .nav-link.active {
-            color: var(--primary-color);
-            background: var(--background);
-            font-weight: 500;
-            padding-left: 0.5rem;
-        }
-        
-        .api-link {
-            display: inline-block;
-            background: var(--primary-color);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            text-decoration: none;
-            border-radius: 0.5rem;
-            font-weight: 600;
-            margin-bottom: 2rem;
-            transition: all 0.2s ease;
-        }
-        
-        .api-link:hover {
-            background: #1d4ed8;
-            transform: translateY(-1px);
-        }
-        
-        .markdown-content {
-            background: var(--surface);
-            border-radius: 0.5rem;
-            padding: 1rem;
-            margin-bottom: 2rem;
-            border: 1px solid var(--border);
-        }
-        
-        .back-link {
-            display: inline-flex;
-            align-items: center;
-            margin-bottom: 1rem;
-            color: var(--primary-color);
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.2s ease;
-        }
-        
-        .back-link:hover {
-            transform: translateX(-2px);
-        }
-        
-        .sidebar-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-        }
-        
-        .sidebar-overlay.show {
-            display: block;
-        }
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            color: var(--text-primary);
-            padding: 0.5rem;
-            border-radius: 0.25rem;
-            cursor: pointer;
-            z-index: 1002;
-            transition: all 0.2s ease;
-        }
-        
-        .theme-toggle:hover {
-            background: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-        }
-        
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-            
-            .sidebar.open {
-                transform: translateX(0);
-            }
-            
-            .main-content {
-                margin-left: 0;
-                padding: 1rem;
-            }
-            
-            #markdown-content {
-                margin-left: 0 !important;
-            }
-            
-            .sidebar-toggle {
-                display: block;
-            }
-        }
-        
-        /* Markdown content styling */
-        .markdown-content h1 {
-            color: var(--text-primary);
-            border-bottom: 2px solid var(--border);
-            padding-bottom: 0.5rem;
-        }
-        
-        .markdown-content h2 {
-            color: var(--text-primary);
-            margin-top: 2rem;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 0.3rem;
-        }
-        
-        .markdown-content h3 {
-            color: var(--text-primary);
-        }
-        
-        .markdown-content code {
-            background: var(--background);
-            padding: 0.2rem 0.4rem;
-            border-radius: 0.25rem;
-            font-family: 'Monaco', 'Menlo', monospace;
-            font-size: 0.875rem;
-        }
-        
-        .markdown-content pre {
-            background: var(--background);
-            padding: 1rem;
-            border-radius: 0.5rem;
-            overflow-x: auto;
-            border: 1px solid var(--border);
-        }
-        
-        .markdown-content blockquote {
-            border-left: 4px solid var(--primary-color);
-            padding-left: 1rem;
-            margin: 1rem 0;
-            color: var(--text-secondary);
-        }
-        
-        .markdown-content table {
-            border-collapse: collapse;
-            width: 100%;
-            margin: 1rem 0;
-        }
-        
-        .markdown-content th,
-        .markdown-content td {
-            border: 1px solid var(--border);
-            padding: 0.5rem;
-            text-align: left;
-        }
-        
-        .markdown-content th {
-            background: var(--surface);
-            font-weight: 600;
-        }
-    </style>
 </head>
 <body>
-    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
-    <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
-    
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
-    
-    <div class="container">
+    <div class="app">
+        <!-- Mobile overlay -->
+        <div class="mobile-overlay" id="mobileOverlay"></div>
+
+        <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
-            <h1>ts-quantum</h1>
-            
-            <div class="nav-section">
-                <h3>Getting Started</h3>
-                <a href="showcase.html" class="nav-link">🎯 Interactive Showcase</a>
-                <a href="showcase-v2/index.html" class="nav-link" style="color: #ff6b6b; font-weight: bold;" onclick="event.preventDefault(); window.location.href='showcase-v2/index.html';">🆕 Showcase v2</a>
-                <a href="api/index.html" class="nav-link">📚 Full API Documentation</a>
+            <div class="sidebar-header">
+                <a href="index.html" class="logo">
+                    <span class="logo-icon">⚛️</span>
+                    <span class="logo-text">ts-quantum</span>
+                </a>
+                <button class="sidebar-toggle" id="sidebarToggle" title="Collapse sidebar">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </button>
             </div>
             
-            <div class="nav-section">
-                <h3>Implementation</h3>
-                <a href="angular-momentum-implementation.html" class="nav-link">Angular Momentum</a>
-                <a href="architecture.html" class="nav-link">Architecture</a>
-                <a href="clebsch-gordan-algorithm.html" class="nav-link">Clebsch-Gordan Algorithm</a>
-                <a href="clebsch-gordan-data-structures.html" class="nav-link">CG Data Structures</a>
-                <a href="wigner-6j-theory.html" class="nav-link">Wigner 6j Theory</a>
-                <a href="wigner-implementation.html" class="nav-link">Wigner Implementation</a>
-            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">Getting Started</span>
+                    <a href="showcase-v2/index.html" class="nav-item external" style="color: #ff6b6b; font-weight: bold;" onclick="event.preventDefault(); window.location.href='showcase-v2/index.html';">
+                        <span class="nav-icon">🆕</span>
+                        <span class="nav-text">Showcase v2</span>
+                    </a>
+                    <a href="showcase.html" class="nav-item external">
+                        <span class="nav-icon">🎯</span>
+                        <span class="nav-text">Interactive Showcase</span>
+                    </a>
+                    <a href="api/index.html" class="nav-item external">
+                        <span class="nav-icon">📚</span>
+                        <span class="nav-text">Full API Docs</span>
+                    </a>
+                </div>
+                
+                <div class="nav-section">
+                    <span class="nav-section-title">Implementation</span>
+                    <a href="angular-momentum-implementation.html" class="nav-link nav-item">Angular Momentum</a>
+                    <a href="architecture.html" class="nav-link nav-item">Architecture</a>
+                    <a href="clebsch-gordan-algorithm.html" class="nav-link nav-item">Clebsch-Gordan Algorithm</a>
+                    <a href="clebsch-gordan-data-structures.html" class="nav-link nav-item">CG Data Structures</a>
+                    <a href="wigner-6j-theory.html" class="nav-link nav-item">Wigner 6j Theory</a>
+                    <a href="wigner-implementation.html" class="nav-link nav-item">Wigner Implementation</a>
+                </div>
+                
+                <div class="nav-section">
+                    <span class="nav-section-title">Advanced Plans</span>
+                    <a href="graph-entanglement-plan.html" class="nav-link nav-item">Graph Entanglement</a>
+                    <a href="intertwiner-module-design.html" class="nav-link nav-item">Intertwiner Module</a>
+                    <a href="partial_trace_implementation.html" class="nav-link nav-item">Partial Trace</a>
+                    <a href="sparse-ops-implementation-plan.html" class="nav-link nav-item">Sparse Operations</a>
+                    <a href="subsystem-extraction-plan.html" class="nav-link nav-item">Subsystem Extraction</a>
+                    <a href="tensor-network-plan.html" class="nav-link nav-item">Tensor Networks</a>
+                    <a href="tetrahedron-plan.html" class="nav-link nav-item">Tetrahedron Operations</a>
+                    <a href="random-walk-plan.html" class="nav-link nav-item">Random Walk</a>
+                </div>
+                
+                <div class="nav-section">
+                    <span class="nav-section-title">Research</span>
+                    <a href="papers/provost-vallee-implementation-plan.md" class="nav-link nav-item">Provost-Vallée</a>
+                </div>
+                
+                <div class="nav-section">
+                    <span class="nav-section-title">References</span>
+                    <a href="Varshalovich.pdf" class="nav-item external">
+                        <span class="nav-icon">📖</span>
+                        <span class="nav-text">Varshalovich</span>
+                    </a>
+                    <a href="Varshalovich_6j_symbols.pdf" class="nav-item external">
+                        <span class="nav-icon">📖</span>
+                        <span class="nav-text">Varshalovich 6j</span>
+                    </a>
+                    <a href="cg-sparse-j1-j2-leq-2.json" class="nav-item external">
+                        <span class="nav-icon">📄</span>
+                        <span class="nav-text">CG Sparse Data</span>
+                    </a>
+                </div>
+            </nav>
             
-            <div class="nav-section">
-                <h3>Advanced Plans</h3>
-                <a href="graph-entanglement-plan.html" class="nav-link">Graph Entanglement</a>
-                <a href="intertwiner-module-design.html" class="nav-link">Intertwiner Module</a>
-                <a href="partial-trace_implementation.html" class="nav-link">Partial Trace</a>
-                <a href="sparse-ops-implementation-plan.html" class="nav-link">Sparse Operations</a>
-                <a href="subsystem-extraction-plan.html" class="nav-link">Subsystem Extraction</a>
-                <a href="tensor-network-plan.html" class="nav-link">Tensor Networks</a>
-                <a href="tetrahedron-plan.html" class="nav-link">Tetrahedron Operations</a>
-                <a href="random-walk-plan.html" class="nav-link">Random Walk</a>
-            </div>
-            
-            <div class="nav-section">
-                <h3>Research</h3>
-                <a href="papers/provost-vallee-implementation-plan.md" class="nav-link">Provost-Vallée</a>
-            </div>
-            
-            <div class="nav-section">
-                <h3>References</h3>
-                <a href="Varshalovich.pdf" class="nav-link">Varshalovich Reference</a>
-                <a href="Varshalovich_6j_symbols.pdf" class="nav-link">Varshalovich 6j</a>
-                <a href="cg-sparse-j1-j2-leq-2.json" class="nav-link">CG Sparse Data</a>
+            <div class="sidebar-footer">
+                <span class="version">v0.9.0</span>
             </div>
         </aside>
         
-        <main class="main-content" id="main-content">
-            <div class="markdown-content">
-                <h1>ts-quantum Documentation</h1>
-                <p>A TypeScript library for quantum mechanics calculations and utilities.</p>
-                <p>Navigate through the documentation using the sidebar on the left. Click on any topic to view its content here.</p>
+        <!-- Main Content -->
+        <main class="main">
+            <header class="top-bar">
+                <div class="top-bar-left">
+                    <button class="hamburger" id="hamburger" title="Open menu">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                    <h1>ts-quantum Documentation</h1>
+                </div>
+                <div class="top-bar-actions">
+                    <button class="theme-toggle" id="themeToggle" title="Toggle theme">
+                        <span id="themeIcon">🌙</span>
+                    </button>
+                </div>
+            </header>
+            
+            <div class="content" id="content">
+                <!-- Default view -->
+                <div id="main-content">
+                    <div class="markdown-content docs-intro">
+                        <h1>ts-quantum Documentation</h1>
+                        <p>A TypeScript library for quantum mechanics calculations and utilities.</p>
+                        <p>Navigate through the documentation using the sidebar on the left. Click on any topic to view its content here.</p>
+                    </div>
+                </div>
+
+                <!-- Markdown-rendered view -->
+                <div id="markdown-view" style="display: none;">
+                    <div style="padding: 0 0 1rem 0;">
+                        <a href="#" class="back-link" onclick="showMainContent()">← Back to Documentation</a>
+                    </div>
+                    <div class="markdown-content">
+                        <div id="rendered-markdown"></div>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
 
-    <div id="markdown-content" class="main-content" style="display: none; margin-left: var(--sidebar-width); padding: 0;">
-        <div style="padding: 0.5rem 2rem 0 2rem;">
-            <a href="#" class="back-link" onclick="showMainContent()" style="margin: 0;">&larr; Back to Documentation</a>
-        </div>
-        <div class="markdown-content" style="padding: 1rem; margin: 0 2rem 2rem 2rem;">
-            <div id="rendered-markdown"></div>
-        </div>
-    </div>
-
+    <script src="showcase-v2/components/layout.js"></script>
     <script>
-        // renderMarkdown function is defined above in the module script
-        
         // Theme management
         function initTheme() {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            updateThemeToggle(savedTheme);
+            const savedTheme = localStorage.getItem('tsq-theme') || 'light';
+            document.documentElement.classList.toggle('dark-theme', savedTheme === 'dark');
+            const icon = document.getElementById('themeIcon');
+            if (icon) icon.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
         }
-        
-        function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            updateThemeToggle(newTheme);
-        }
-        
-        function updateThemeToggle(theme) {
-            const toggle = document.querySelector('.theme-toggle');
-            toggle.textContent = theme === 'dark' ? '☀️' : '🌙';
-        }
-        
+
         // Sidebar management
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            sidebar.classList.toggle('open');
-            if (overlay) overlay.classList.toggle('show');
-        }
-        
         function closeSidebar() {
             const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            sidebar.classList.remove('open');
+            const overlay = document.getElementById('mobileOverlay');
+            if (sidebar) sidebar.classList.remove('open');
             if (overlay) overlay.classList.remove('show');
         }
-        
+
         function showMainContent() {
             document.getElementById('main-content').style.display = 'block';
-            document.getElementById('markdown-content').style.display = 'none';
+            document.getElementById('markdown-view').style.display = 'none';
             window.history.replaceState({ view: 'main' }, '', window.location.pathname);
             
-            // Remove active class from all nav links
-            document.querySelectorAll('.nav-link').forEach(link => {
+            // Remove active class from all nav items
+            document.querySelectorAll('.nav-item').forEach(link => {
                 link.classList.remove('active');
             });
         }
-        
+
         function showMarkdown(file) {
-            console.log('Attempting to load:', file); // Debug
+            console.log('Attempting to load:', file);
             fetch(file)
                 .then(response => {
-                    console.log('Fetch response:', response.status, response.ok); // Debug
+                    console.log('Fetch response:', response.status, response.ok);
                     if (!response.ok) throw new Error('File not found');
                     return response.text();
                 })
                 .then(text => {
-                    console.log('File loaded successfully'); // Debug
+                    console.log('File loaded successfully');
                     document.getElementById('rendered-markdown').innerHTML = renderMarkdown(text);
                     document.getElementById('main-content').style.display = 'none';
-                    document.getElementById('markdown-content').style.display = 'block';
+                    document.getElementById('markdown-view').style.display = 'block';
                     window.history.pushState({ view: 'markdown', file: file }, '', `?file=${file}`);
                     
-                    // Trigger MathJax to render math expressions
+                    // Trigger MathJax
                     if (window.MathJax) {
                         MathJax.typesetPromise().catch(err => console.log('MathJax error:', err));
                     }
                     
                     // Highlight active nav link
-                    document.querySelectorAll('.nav-link').forEach(link => {
+                    document.querySelectorAll('.nav-item').forEach(link => {
                         link.classList.remove('active');
                         if (link.getAttribute('href') === file) {
                             link.classList.add('active');
@@ -471,7 +233,7 @@
                     alert('Could not load markdown file: ' + file);
                 });
         }
-        
+
         function showHtmlPage(page) {
             fetch(page)
                 .then(response => {
@@ -479,30 +241,26 @@
                     return response.text();
                 })
                 .then(html => {
-                    // Extract the body content from the HTML page
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(html, 'text/html');
                     const bodyContent = doc.body.innerHTML;
                     
                     document.getElementById('rendered-markdown').innerHTML = bodyContent;
                     document.getElementById('main-content').style.display = 'none';
-                    document.getElementById('markdown-content').style.display = 'block';
+                    document.getElementById('markdown-view').style.display = 'block';
                     window.history.pushState({ view: 'html', page: page }, '', `?page=${page}`);
                     
-                    // Trigger MathJax to render math expressions
                     if (window.MathJax) {
                         MathJax.typesetPromise().catch(err => console.log('MathJax error:', err));
                     }
                     
-                    // Highlight active nav link
-                    document.querySelectorAll('.nav-link').forEach(link => {
+                    document.querySelectorAll('.nav-item').forEach(link => {
                         link.classList.remove('active');
                         if (link.getAttribute('href') === page) {
                             link.classList.add('active');
                         }
                     });
                     
-                    // Close sidebar on mobile
                     if (window.innerWidth <= 768) {
                         closeSidebar();
                     }
@@ -511,22 +269,23 @@
                     alert('Could not load HTML page: ' + page);
                 });
         }
-        
+
         // Handle .md and .html links
         document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('nav-link')) {
-                const href = e.target.getAttribute('href');
-                if (href.endsWith('.md')) {
+            const link = e.target.closest('.nav-link');
+            if (link) {
+                const href = link.getAttribute('href');
+                if (href && href.endsWith('.md')) {
                     e.preventDefault();
                     showMarkdown(href);
-                } else if (href.endsWith('.html') && !href.includes('api/') && href !== 'showcase.html') {
+                } else if (href && href.endsWith('.html') && !href.includes('api/') && href !== 'showcase.html') {
                     e.preventDefault();
                     showHtmlPage(href);
                 }
                 // Let /showcase.html and api/ links open normally
             }
         });
-        
+
         // Handle back button
         window.addEventListener('popstate', function(e) {
             if (e.state && e.state.view === 'markdown' && e.state.file) {
@@ -537,12 +296,12 @@
                 showMainContent();
             }
         });
-        
+
         // Handle direct URLs on page load
         const urlParams = new URLSearchParams(window.location.search);
         const file = urlParams.get('file');
         const page = urlParams.get('page');
-        console.log('URL parameters - file:', file, 'page:', page); // Debug
+        console.log('URL parameters - file:', file, 'page:', page);
         
         if (file && file.endsWith('.md')) {
             showMarkdown(file);
@@ -551,22 +310,16 @@
         } else {
             showMainContent();
         }
-        
-        // Initialize theme on load
+
+        // Initialize
         initTheme();
-        
+
         // Handle window resize for mobile sidebar
         window.addEventListener('resize', function() {
             if (window.innerWidth > 768) {
                 closeSidebar();
             }
         });
-        
-        // Overlay click to close sidebar
-        const overlay = document.getElementById('sidebarOverlay');
-        if (overlay) {
-            overlay.addEventListener('click', closeSidebar);
-        }
     </script>
 </body>
 </html>
