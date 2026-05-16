@@ -453,9 +453,9 @@ export function eigenDecomposition(
         // Compute eigendecomposition using mathjs
         const result = math.eigs(mathMatrix);
 
-        // Process eigenvalues
-        const values = (result.values as math.Matrix).valueOf() as Complex[];
-        const complexValues = values.map(v => {
+        // Get all eigenvalues from mathjs (preserve all, including for defective matrices)
+        const rawValues = (result.values as math.Matrix).valueOf() as Complex[];
+        const allValues = rawValues.map(v => {
             if (typeof v === 'number') {
                 return math.complex(v, 0);
             }
@@ -464,20 +464,19 @@ export function eigenDecomposition(
 
         // If eigenvectors weren't requested, return early
         if (!options.computeEigenvectors) {
-            return { values: complexValues };
+            return { values: allValues };
         }
 
         // Process eigenvectors
         let vectors: ComplexMatrix | undefined;
+        let complexValues: Complex[];
         try {
             const eigenvectors = result.eigenvectors as {
                 value: number | math.BigNumber;
                 vector: math.MathCollection;
             }[];
 
-            // let vectors = eigenvectors;
-
-            // Sort eigenvectors to match eigenvalue order
+            // Sort eigenvectors by eigenvalue real part ascending
             const sortedEigenvectors = eigenvectors.sort((a, b) => {
                 const aVal = math.isNumber(a.value) ? a.value
                     : math.isComplex(a.value) ? (a.value as math.Complex).re
@@ -490,13 +489,51 @@ export function eigenDecomposition(
                 return aVal - bVal;
             });
 
+            // Sort all eigenvalues using the same criterion to match eigenvector order.
+            // For non-defective matrices this aligns values with vectors.
+            // For defective matrices, extra eigenvalues (without eigenvectors) are preserved.
+            complexValues = [...allValues].sort((a, b) => {
+                const aVal = (a as Complex).re;
+                const bVal = (b as Complex).re;
+                return aVal - bVal;
+            });
+
             vectors = sortedEigenvectors.map(entry => {
-                const vectorData = entry.vector.valueOf() as (number | Complex)[];
-                return vectorData.map(v => {
+                const rawVector = entry.vector.valueOf();
+                
+                // mathjs returns eigenvectors as either 1D [v1, v2, ...] or 2D [[v1], [v2], ...]
+                let vectorData: (number | Complex)[];
+                if (Array.isArray(rawVector) && rawVector.length > 0 && Array.isArray(rawVector[0])) {
+                    // 2D column vector format: [[v1], [v2], ...] — flatten to [v1, v2, ...]
+                    vectorData = (rawVector as (number | Complex)[][]).map(row => row[0]);
+                } else {
+                    // 1D vector format: [v1, v2, ...]
+                    vectorData = rawVector as (number | Complex)[];
+                }
+                
+                // Convert to Complex and normalize (mathjs does not consistently normalize
+                // eigenvectors for general complex matrices)
+                const complexVector = vectorData.map(v => {
                     if (typeof v === 'number') {
                         return math.complex(v, 0);
                     }
                     return v as Complex;
+                });
+                
+                const normSquared = complexVector.reduce((sum, v) => {
+                    const c = v as Complex;
+                    return sum + c.re * c.re + c.im * c.im;
+                }, 0);
+                const norm = Math.sqrt(normSquared);
+                
+                if (norm < 1e-12) {
+                    // Avoid division by near-zero; mathjs returned garbage for this eigenvector
+                    return complexVector;
+                }
+                
+                return complexVector.map(v => {
+                    const c = v as Complex;
+                    return math.complex(c.re / norm, c.im / norm) as Complex;
                 });
             });
 
@@ -510,7 +547,8 @@ export function eigenDecomposition(
             } else {
                 console.warn('Unknown eigenvector computation error');
             }
-            return { values: complexValues };
+            // Fallback: return eigenvalues only
+            return { values: allValues };
         }
 
         return {
@@ -590,7 +628,7 @@ function normalizeVectors(vectors: ComplexMatrix): ComplexMatrix {
 
             const maxComponent = vector[maxMagnitudeIdx];
             const currentPhase = math.arg(maxComponent);
-            const correction = math.exp(-currentPhase);
+            const correction = math.exp(math.complex(0, -currentPhase));
             return vector.map(v => math.multiply(v, correction) as Complex);
         });
     }

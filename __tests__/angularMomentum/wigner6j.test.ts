@@ -23,21 +23,21 @@ describe('Wigner 6j Symbols', () => {
   });
   
   describe('Known values from Varshalovich', () => {
-    it('should calculate {1/2 1/2 1; 1/2 1/2 0} = -1/3', () => {
+    it('should calculate {1/2 1/2 1; 1/2 1/2 0} = 1/2', () => {
       const result = wigner6j(0.5, 0.5, 1, 0.5, 0.5, 0);
-      expect(result.re).toBeCloseTo(-1/3, 6);
+      expect(result.re).toBeCloseTo(0.5, 6);
       expect(math.abs(result.im)).toBeCloseTo(0, 10);
     });
     
-    it('should calculate {1 1 2; 1 1 0} = 1/(2√5)', () => {
+    it('should calculate {1 1 2; 1 1 0} = 1/3', () => {
       const result = wigner6j(1, 1, 2, 1, 1, 0);
-      expect(result.re).toBeCloseTo(1/(2*Math.sqrt(5)), 6);
+      expect(result.re).toBeCloseTo(1/3, 6);
       expect(math.abs(result.im)).toBeCloseTo(0, 10);
     });
     
-    it('should calculate {3/2 3/2 3; 3/2 3/2 0} = -1/(2√5)', () => {
+    it('should calculate {3/2 3/2 3; 3/2 3/2 0} = 1/4', () => {
       const result = wigner6j(1.5, 1.5, 3, 1.5, 1.5, 0);
-      expect(result.re).toBeCloseTo(-1/(2*Math.sqrt(5)), 6);
+      expect(result.re).toBeCloseTo(1/4, 6);
       expect(math.abs(result.im)).toBeCloseTo(0, 10);
     });
   });
@@ -46,15 +46,14 @@ describe('Wigner 6j Symbols', () => {
     it('should handle zero argument case correctly', () => {
       // From theory: If one argument is 0, symbol reduces to delta function
       const result = wigner6j(1, 1, 1, 1, 1, 0);
-      const expected = (-1)**(1+1) * (1 === 1 ? 1/3 : 0); // delta_bc/((2b+1)(2e+1))^(1/2)
-      expect(result.re).toBeCloseTo(expected, 6);
+      expect(result.re).toBeCloseTo(-1/3, 6);
     });
 
     it('should handle equal pairs case correctly', () => {
       // From theory: When a=b and d=e, special formula applies
       const result = wigner6j(1, 1, 2, 1, 1, 2);
-      // Expected value from Varshalovich Table
-      expect(result.re).toBeCloseTo(1/10, 6);
+      // Expected value from sympy
+      expect(result.re).toBeCloseTo(1/30, 6);
     });
   });
 
@@ -65,10 +64,11 @@ describe('Wigner 6j Symbols', () => {
       expect(original.re).toBeCloseTo(permuted.re, 6);
     });
 
-    it('should satisfy Regge symmetry', () => {
-      const original = wigner6j(1, 1, 2, 1, 1, 2);
-      const regge = wigner6j(1, 1, 1, 2, 2, 1);    // Regge symmetry
-      expect(original.re).toBeCloseTo(regge.re, 6);
+    it('should satisfy column permutation symmetry', () => {
+      // Permuting columns should leave the 6j symbol invariant
+      const original = wigner6j(2, 1, 1, 2, 1, 1);
+      const permuted = wigner6j(1, 2, 1, 1, 2, 1); // Swap columns 1 and 2
+      expect(original.re).toBeCloseTo(permuted.re, 6);
     });
   });
 
@@ -80,7 +80,7 @@ describe('Wigner 6j Symbols', () => {
         const symbol = wigner6j(j1, j2, j, l2, l2, j3);
         sum += (2*j + 1) * symbol.re * symbol.re;
       }
-      expect(sum).toBeCloseTo(1/(2*l2 + 1), 6);
+      expect(sum).toBeCloseTo(1/(2*j3 + 1), 6);
     });
 
     it('should satisfy Racah backcoupling rule', () => {

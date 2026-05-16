@@ -120,8 +120,8 @@ export function wigner3j(
   // NOTE: Critical fix - using -m3 as the last argument
   const cgCoeff = clebschGordan(j1, m1, j2, m2, j3, -m3);
   
-  // Phase factor: (-1)^(j1-j2+m3)
-  const phase = phaseFactor(j1 - j2 + m3);
+  // Phase factor: (-1)^(j1-j2-m3)
+  const phase = phaseFactor(j1 - j2 - m3);
   
   // Normalization factor: 1/sqrt(2*j3+1)
   const normalization = 1 / Math.sqrt(2 * j3 + 1);
@@ -243,8 +243,14 @@ export function wigner6j(
   );
 
   // Calculate sum using log factorials for numerical stability
-  let sumLog = -Infinity;
+  // Each term has sign (-1)^z and magnitude (z+1)! / [denominator factorials]
+  let maxLog = -Infinity;
+  const terms: { logMag: number; sign: number }[] = [];
+
   for (let z = Math.round(zMin); z <= Math.round(zMax); z++) {
+    // Calculate log of numerator: (z+1)!
+    const logNumer = logFactorial(z + 1);
+
     // Calculate log of denominator terms
     const logDenom = (
       logFactorial(z - Math.round(j1 + j2 + j3)) +
@@ -256,20 +262,25 @@ export function wigner6j(
       logFactorial(Math.round(j3 + j1 + l3 + l1 - z))
     );
 
-    // Add term to sum (in log space)
-    const logTerm = -logDenom;
-    if (sumLog === -Infinity) {
-      sumLog = logTerm;
-    } else {
-      // Use log sum exp trick for numerical stability
-      const maxLog = Math.max(sumLog, logTerm);
-      sumLog = maxLog + Math.log(Math.exp(sumLog - maxLog) + Math.exp(logTerm - maxLog));
+    const logMag = logNumer - logDenom;
+    const sign = Math.pow(-1, z);
+    terms.push({ logMag, sign });
+
+    if (logMag > maxLog) {
+      maxLog = logMag;
+    }
+  }
+
+  // Sum signed terms with scaling for numerical stability
+  let sum = 0;
+  if (maxLog !== -Infinity) {
+    for (const term of terms) {
+      sum += term.sign * Math.exp(term.logMag - maxLog);
     }
   }
 
   // Calculate final result
-  const phaseFactor = Math.pow(-1, Math.round(j1 + j2 + j3 + l1 + l2 + l3));
-  const result = phaseFactor * delta1 * delta2 * delta3 * delta4 * Math.exp(sumLog);
+  const result = delta1 * delta2 * delta3 * delta4 * sum * Math.exp(maxLog);
 
   return math.complex(result, 0);
 }

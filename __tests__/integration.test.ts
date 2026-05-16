@@ -6,6 +6,7 @@ import { describe, it, expect } from 'vitest';
 
 import { HilbertSpace } from '../src/core/hilbertSpace';
 import { MatrixOperator } from '../src/operators/operator';
+import { StateVector } from '../src/states/stateVector';
 import { TEST_SPACES, TEST_OPERATORS, TEST_STATES } from './utils/testFixtures';
 import { stateVectorApproxEqual, createRandomState } from './utils/testHelpers';
 import * as math from 'mathjs';
@@ -22,16 +23,12 @@ describe('Quantum Integration Tests', () => {
       const state2 = space2.computationalBasisState(1);  // |1⟩
       
       // Expected |01⟩ state in composed space
-      const expected = {
-        dimension: 4,
-        amplitudes: [
-          { re: 0, im: 0 },
-          { re: 1, im: 0 },
-          { re: 0, im: 0 },
-          { re: 0, im: 0 }
-        ],
-        basis: '|01⟩'
-      };
+      const expected = new StateVector(4, [
+        math.complex(0, 0),
+        math.complex(1, 0),
+        math.complex(0, 0),
+        math.complex(0, 0)
+      ], '|01⟩');
       
       // Verify state in composed space
       const composedState = composedSpace.computationalBasisState(1);
@@ -67,16 +64,12 @@ describe('Quantum Integration Tests', () => {
       const initialState = space.computationalBasisState(0);  // |00⟩
       
       // Expected: |10⟩
-      const expected = {
-        dimension: 4,
-        amplitudes: [
-          { re: 0, im: 0 },
-          { re: 0, im: 0 },
-          { re: 1, im: 0 },
-          { re: 0, im: 0 }
-        ],
-        basis: '|10⟩'
-      };
+      const expected = new StateVector(4, [
+        math.complex(0, 0),
+        math.complex(0, 0),
+        math.complex(1, 0),
+        math.complex(0, 0)
+      ], '|10⟩');
       
       // Create X⊗I using tensor product
       const XI = X.tensorProduct(I);
@@ -150,16 +143,12 @@ describe('Quantum Integration Tests', () => {
       const result = XI.compose(IZ).apply(state);
       
       // Expected state: (|10⟩ - |01⟩)/√2
-      const expected = {
-        dimension: 4,
-        amplitudes: [
-          { re: 0, im: 0 },
-          { re: -1/Math.sqrt(2), im: 0 },
-          { re: 1/Math.sqrt(2), im: 0 },
-          { re: 0, im: 0 }
-        ],
-        basis: '|ψ⟩'
-      };
+      const expected = new StateVector(4, [
+        math.complex(0, 0),
+        math.complex(-1/Math.sqrt(2), 0),
+        math.complex(1/Math.sqrt(2), 0),
+        math.complex(0, 0)
+      ], '|ψ⟩');
       
       expect(stateVectorApproxEqual(result, expected)).toBe(true);
     });

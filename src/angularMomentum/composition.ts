@@ -217,8 +217,8 @@ function generateCGTableCoeff(j1: number, m1: number, j2: number, m2: number, j:
       logFactorial(Math.round(j1 + j2 - j - k)) +
       logFactorial(Math.round(j1 - m1 - k)) +
       logFactorial(Math.round(j2 + m2 - k)) +
-      logFactorial(Math.round(j - j1 + m2 + k)) +
-      logFactorial(Math.round(j - j2 - m1 + k));
+      logFactorial(Math.round(j - j2 + m1 + k)) +
+      logFactorial(Math.round(j - j1 - m2 + k));
 
     // Add the term using exp(log) to avoid overflow
     const termValue = Math.exp(-logDenominatorTerms); // It's 1/denominator

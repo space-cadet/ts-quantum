@@ -57,14 +57,14 @@ describe('Angular Momentum Composition', () => {
       console.log('CG j1=1, j2=1/2 case: j1=1, m1=1, j2=1/2, m2=1/2, j=3/2, m=3/2 => CG =', c1, 'Expected: 1');
       expect(math.abs(math.subtract((c1 as any).re ?? c1, 1))).toBeLessThan(1e-10);
       
-      // |3/2, 1/2⟩ = √(2/3)|1, 1⟩|1/2, -1/2⟩ + √(1/3)|1, 0⟩|1/2, 1/2⟩
+      // |3/2, 1/2⟩ = √(1/3)|1, 1⟩|1/2, -1/2⟩ + √(2/3)|1, 0⟩|1/2, 1/2⟩
       const c2 = clebschGordan(1, 1, 0.5, -0.5, 1.5, 0.5);
-      console.log('CG j1=1, j2=1/2 case: j1=1, m1=1, j2=1/2, m2=-1/2, j=3/2, m=1/2 => CG =', c2, 'Expected: √(2/3) =', Math.sqrt(2/3));
-      expect(math.abs(math.subtract((c2 as any).re ?? c2, Math.sqrt(2/3)))).toBeLessThan(1e-10);
+      console.log('CG j1=1, j2=1/2 case: j1=1, m1=1, j2=1/2, m2=-1/2, j=3/2, m=1/2 => CG =', c2, 'Expected: √(1/3) =', Math.sqrt(1/3));
+      expect(math.abs(math.subtract((c2 as any).re ?? c2, Math.sqrt(1/3)))).toBeLessThan(1e-10);
       
       const c3 = clebschGordan(1, 0, 0.5, 0.5, 1.5, 0.5);
-      console.log('CG j1=1, j2=1/2 case: j1=1, m1=0, j2=1/2, m2=1/2, j=3/2, m=1/2 => CG =', c3, 'Expected: √(1/3) =', Math.sqrt(1/3));
-      expect(math.abs(math.subtract((c3 as any).re ?? c3, Math.sqrt(1/3)))).toBeLessThan(1e-10);
+      console.log('CG j1=1, j2=1/2 case: j1=1, m1=0, j2=1/2, m2=1/2, j=3/2, m=1/2 => CG =', c3, 'Expected: √(2/3) =', Math.sqrt(2/3));
+      expect(math.abs(math.subtract((c3 as any).re ?? c3, Math.sqrt(2/3)))).toBeLessThan(1e-10);
     });
   });
   

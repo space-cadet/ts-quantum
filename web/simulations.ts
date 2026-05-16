@@ -35,7 +35,7 @@ import {
   setSparseEntry,
   SparseOperator,
   denseToSparse
-} from '../dist/index.js';
+} from '../src/index';
 import * as math from 'mathjs';
 
 // ============================================================================
@@ -123,7 +123,7 @@ export function applyGate(
       break;
     case 'S':
       // S gate: diagonal matrix with [1, i]
-      const SGate = new (require('../dist/index.js').MatrixOperator)([
+      const SGate = new MatrixOperator([
         [math.complex(1, 0), math.complex(0, 0)],
         [math.complex(0, 0), math.complex(0, 1)]
       ], 'unitary');
@@ -131,7 +131,7 @@ export function applyGate(
       break;
     case 'T':
       // T gate: diagonal matrix with [1, e^(iπ/4)]
-      const TGate = new (require('../dist/index.js').MatrixOperator)([
+      const TGate = new MatrixOperator([
         [math.complex(1, 0), math.complex(0, 0)],
         [math.complex(0, 0), math.complex(Math.cos(Math.PI / 4), Math.sin(Math.PI / 4))]
       ], 'unitary');

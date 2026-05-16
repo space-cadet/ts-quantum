@@ -1,91 +1,74 @@
 # Active Context
-*Last Updated: 2026-01-08 03:09:00 IST*
+*Last Updated: 2026-05-16 12:30:00 IST*
 
 ## Current Focus
-T11: QRW Sidebar Navigation and Educational Content Implementation - COMPLETED
+T12: Critical Bug Fixes — Test Suite Restoration - COMPLETED
 
 ## Context
-Successfully implemented a comprehensive collapsible sidebar navigation system replacing the tab-based UI. Added three navigation sections (Visualization, Analysis, Education), integrated comprehensive educational content with mathematical explanations, and implemented quick controls for enhanced user experience. The transformation converts the QRW demo from a technical tool into an educational platform while maintaining all existing functionality.
+Successfully restored the test suite to 100% passing (451/451). Fixed 29 failing tests across 8 test files spanning Wigner symbols, angular momentum algebra, geometric quantum mechanics, matrix operations, and integration tests.
 
-## Recent Changes (T11: Sidebar Implementation - 2026-01-08 Early Morning)
+## Recent Changes (T12: Bug Fixes - 2026-05-16 Morning)
 
-### Session Work (1 session, 03:09 IST, Jan 8)
-1. **Sidebar Navigation System** (Complete overhaul)
-   - Replaced tab system with collapsible sidebar (280px → 60px)
-   - Implemented toggle functionality with rotating chevron indicator
-   - Added three navigation sections with icons and active states
-   - Created responsive design for mobile compatibility
-
-2. **Educational Content Integration** (Major enhancement)
-   - Created comprehensive educational page with mathematical rigor
-   - Integrated MathJax for LaTeX formula rendering
-   - Structured content: fundamentals, spreading behavior, coin operators, boundaries, applications
-   - Added interactive elements and visual comparisons
-
-3. **Quick Controls Implementation** (UX improvement)
-   - Added essential controls to sidebar (Run, Step, Reset)
-   - Implemented parameter selection (lattice size, coin type)
-   - Created synchronization with main control panel
-   - Optimized for collapsed sidebar state
-
-4. **Technical Implementation** (Architecture update)
-   - Updated HTML structure in `qrw-demo.html`
-   - Created comprehensive CSS styling in `qrw-demo.css`
-   - Modified UI components and simulation controller
-   - Implemented view switching logic in `bundle.js`
+### Session Work (1 session, 11:15-12:30 IST, May 16)
+1. **Wigner 6j Symbols** — Added missing `(z+1)!` numerator in Racah formula; fixed per-term phase
+2. **Wigner 3j Symbols** — Corrected global phase exponent sign
+3. **Clebsch-Gordan Coefficients** — Fixed swapped factorial signs; removed spurious phase factor
+4. **Bloch Sphere Geometry** — Corrected geodesic distance formula
+5. **Eigendecomposition** — Fixed critical `math.exp()` bug (real vs complex exponential); fixed value/vector alignment
+6. **Matrix Functions** — Fixed identity and square function implementations
+7. **Integration Tests** — Fixed StateVector API usage
+8. **Web Simulations** — Replaced hacky require() with proper imports
 
 ### Technical Achievements
-- **User Experience**: Persistent navigation, one-click access, educational integration
-- **Code Quality**: Modular architecture, type safety, responsive design
-- **Performance**: Optimized bundle generation (3.1MB), smooth animations
-- **Accessibility**: ARIA labels, keyboard navigation, screen reader support
+- **Test Suite**: 93.6% → 100% (29 tests fixed)
+- **Angular Momentum**: All 78 tests passing (7 files)
+- **Build System**: `pnpm build` and `pnpm web:build` verified
+- **Verification**: All formulas cross-checked with sympy
 
 ### Files Created/Modified
-- **New**: T11.md, qrw-sidebar-design.md, 2026-01-08-early-morning.md
-- **Modified**: qrw-demo.html, qrw-demo.css, ui-components.ts, simulation-controller.ts, bundle.js
-- **Generated**: qrw-refactored.bundle.js, qrw-refactored.bundle.js.map
-- **Memory Bank**: Updated tasks.md, session_cache.md, activeContext.md
+- **New**: T12.md, 123000-T12.md (edit chunk)
+- **Modified**: 8 source files, 5 test files
+- **Memory Bank**: Updated tasks.md, activeContext.md, session_cache.md
 
-## Implementation Status (T11: COMPLETED)
-- ✅ Sidebar navigation system with collapse functionality
-- ✅ Three-section navigation with icons and active states
-- ✅ Quick controls integration and synchronization
-- ✅ Comprehensive educational content with mathematical explanations
-- ✅ Responsive design and mobile compatibility
-- ✅ MathJax integration for formula rendering
-- ✅ Performance optimization and bundle generation
-- ✅ Documentation and memory bank updates
+## Implementation Status (T12: COMPLETED)
+- ✅ Wigner 6j formula corrected
+- ✅ Wigner 3j phase fixed
+- ✅ Clebsch-Gordan coefficients accurate
+- ✅ Bloch sphere distance formula correct
+- ✅ Eigendecomposition orthonormal eigenvectors
+- ✅ Matrix functions working
+- ✅ Integration tests using proper API
+- ✅ Web simulations using proper imports
+- ✅ 451/451 tests passing
+- ✅ Build and web build verified
 
-## Design Summary (T11)
-**Architecture**: Collapsible sidebar with main content area
-**Navigation**: Icon-based three-section system (Visualization, Analysis, Education)
-**Controls**: Quick access panel with essential parameters
-**Education**: Mathematical rigor with interactive elements
-**Quality**: Responsive design with accessibility compliance
+## Design Summary (T12)
+**Scope**: Pure bugfix session — no new features
+**Method**: Parallel subagent execution + direct fixes
+**Verification**: sympy cross-check for angular momentum; mathjs docs for matrix ops
+**Impact**: Test suite fully green, mathematical correctness restored
 
 ## Memory Bank Protocol Status
-- ✅ Step 0: Identified relevant files (sidebar implementation, educational content)
-- ✅ Step 1: Determined current time (2026-01-08 03:09:00 IST)
-- ✅ Step 2: Created T11 task file and updated tasks.md registry
-- ✅ Step 3: Created implementation documentation (qrw-sidebar-design.md)
-- ✅ Step 4: Created session file (2026-01-08-early-morning.md)
-- ✅ Step 5: Updated session cache with new session metadata
-- ✅ Step 6: Updated activeContext.md with current focus
-- ⏳ Step 7: Update edit_history.md (to proceed)
-- ⏳ Step 8: Generate commit message (to proceed)
+- ✅ Step 0: Identified relevant files
+- ✅ Step 1: Determined current time (2026-05-16 12:30 IST)
+- ✅ Step 2: Created T12 task file
+- ✅ Step 3: Updated tasks.md registry
+- ✅ Step 4: Created edit chunk (123000-T12.md)
+- ✅ Step 5: Updated activeContext.md
+- ✅ Step 6: Updated session_cache.md
+- ⏳ Step 7: Commit changes (ready)
 
 ## Next Steps
-- Update edit_history.md with T11 completion details
-- Generate commit message for sidebar implementation
-- Plan T12: Click-to-open tooltip system implementation
-- Consider T10 Phase 2 planning (2D quantum walks)
+- Commit all changes to repository
+- Consider setting up CI/CD to prevent regressions
+- Resume feature work (T10 Phase 2, or new tasks)
 
 ## Impact on Project
-The T11 sidebar implementation provides:
-- **User Experience**: Significantly improved navigation and discoverability
-- **Educational Value**: Comprehensive learning resources with mathematical rigor
-- **Technical Foundation**: Modern UI architecture for future enhancements
-- **Platform Transformation**: From demo to educational tool
+The T12 bugfix session ensures:
+- **Mathematical Correctness**: Wigner symbols, CG coefficients, geometry formulas verified
+- **Code Quality**: 100% test coverage passing
+- **Reliability**: Eigendecomposition critical bug fixed (phase rotation)
+- **Maintainability**: Proper imports, clean API usage
 
-## Previous Context (T10a: Refactoring - 2026-01-07 Evening)
-Successfully refactored QRW Explorer from monolithic HTML into modular TypeScript architecture with 15 specialized modules, dual-bundle build system, and extracted CSS. Established solid foundation for T11 sidebar implementation.
+## Previous Context (T11: QRW Sidebar - 2026-01-08)
+Successfully implemented collapsible sidebar navigation with educational content for the QRW demo. All T11 work complete.

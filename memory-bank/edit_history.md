@@ -1,6 +1,28 @@
 # Edit History
 *Created: 2025-07-06 17:53:45 IST*
-*Last Updated: 2026-01-08 03:09:00 IST*
+*Last Updated: 2026-05-16 12:30:00 IST*
+
+### 2026-05-16
+
+#### 12:30:00 IST - T12: Critical Bug Fixes — Test Suite Restoration Complete
+- Modified `src/angularMomentum/wignerSymbols.ts` - Fixed Wigner 6j Racah formula: added missing `(z+1)!` numerator; corrected per-term `(-1)^z` phase. Fixed Wigner 3j global phase: `(-1)^(j1-j2-m3)` instead of `(-1)^(j1-j2+m3)`
+- Modified `src/angularMomentum/composition.ts` - Fixed CG coefficient Racah formula: corrected swapped signs in two denominator factorial terms; removed incorrect extra `(-1)^(j1-j2+m)` phase factor
+- Modified `src/geometry/quantumDistance.ts` - Fixed Bloch sphere geodesic distance: `√(2 − 2cos(γ/2))` instead of `√2·sin(γ/2)`
+- Modified `src/utils/matrixOperations.ts` - Fixed CRITICAL `normalizeVectors()` bug: `math.exp(math.complex(0, -currentPhase))` instead of `math.exp(-currentPhase)` (real exponential → complex phase rotation). Fixed eigenvalue/vector sorting alignment. Preserved all eigenvalues for defective matrices.
+- Modified `src/utils/matrixFunctions.ts` - Fixed identity and square function implementations on eigenvalues
+- Modified `web/simulations.ts` - Replaced hacky `require('../dist/index.js')` with proper static imports from `../src/index`
+- Modified `__tests__/angularMomentum/wigner6j.test.ts` - Updated 6 test expectations (verified with sympy); replaced incorrect Regge symmetry with column permutation symmetry
+- Modified `__tests__/angularMomentum/wigner3j.test.ts` - Fixed sign for `wigner3j(0.5, 0.5, 1; 0.5, -0.5, 0)` = +1/√6
+- Modified `__tests__/angularMomentum/composition.test.ts` - Swapped two CG coefficient expectations (verified with sympy + ladder operators)
+- Modified `__tests__/eigendecomposition.test.ts` - Added `{computeEigenvectors: true}` to complex Hermitian test; fixed Pauli Z test value/vector correspondence
+- Modified `__tests__/eigen.test.ts` - Fixed matrix reconstruction: use `adjoint(U)` instead of element-wise conjugate
+- Modified `__tests__/integration.test.ts` - Replaced plain objects with proper `StateVector` instances; added `StateVector` import
+- Created `memory-bank/tasks/T12.md` - Complete task documentation for bugfix session
+- Created `memory-bank/edits/2026-05-16/123000-T12.md` - Edit chunk with full change log
+- Created `memory-bank/sessions/2026-05-16-morning.md` - Session documentation
+- Updated `memory-bank/tasks.md` - Added T12 to completed tasks registry
+- Updated `memory-bank/activeContext.md` - Updated focus to T12 completion
+- Updated `memory-bank/session_cache.md` - Updated current session metadata
 
 ### 2026-01-08
 

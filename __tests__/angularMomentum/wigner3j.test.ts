@@ -54,9 +54,9 @@ describe('Wigner 3j Symbols', () => {
       expect(math.abs(result.im)).toBeCloseTo(0, 10);
     });
 
-    it('should calculate (1/2 1/2 1; 1/2 -1/2 0) = -1/sqrt(6)', () => {
+    it('should calculate (1/2 1/2 1; 1/2 -1/2 0) = 1/sqrt(6)', () => {
       const result = wigner3j(0.5, 0.5, 1, 0.5, -0.5, 0);
-      expect(result.re).toBeCloseTo(-1 / Math.sqrt(6), 6);
+      expect(result.re).toBeCloseTo(1 / Math.sqrt(6), 6);
       expect(math.abs(result.im)).toBeCloseTo(0, 10);
     });
   });

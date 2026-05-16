@@ -139,10 +139,10 @@ export class BlochSphere {
   /**
    * Calculates the quantum distance on the Bloch sphere
    * This matches the Provost-Vallee quantum distance for qubit states
-   * 
-   * The relationship is: D_quantum = √2 * sin(θ_bloch/2)
-   * where θ_bloch is the angle between Bloch vectors
-   * 
+   *
+   * For qubits, |⟨ψ₁|ψ₂⟩| = cos(γ/2) where γ is the angle between Bloch vectors.
+   * The quantum distance is D = √(2 - 2|⟨ψ₁|ψ₂⟩|) = √(2 - 2cos(γ/2)).
+   *
    * @param theta1 Polar angle of first state
    * @param phi1 Azimuthal angle of first state
    * @param theta2 Polar angle of second state
@@ -154,20 +154,20 @@ export class BlochSphere {
     const x1 = Math.sin(theta1) * Math.cos(phi1);
     const y1 = Math.sin(theta1) * Math.sin(phi1);
     const z1 = Math.cos(theta1);
-    
+
     const x2 = Math.sin(theta2) * Math.cos(phi2);
     const y2 = Math.sin(theta2) * Math.sin(phi2);
     const z2 = Math.cos(theta2);
-    
+
     // Dot product of Bloch vectors
     const dotProduct = x1*x2 + y1*y2 + z1*z2;
-    
+
     // Angle between Bloch vectors
     const clampedDot = Math.max(-1, Math.min(1, dotProduct));
     const blochAngle = Math.acos(clampedDot);
-    
-    // Convert to quantum distance: D = √2 * sin(θ_bloch/2)
-    return Math.sqrt(2) * Math.sin(blochAngle / 2);
+
+    // Convert to quantum distance: D = √(2 - 2cos(γ/2))
+    return Math.sqrt(Math.max(0, 2 - 2 * Math.cos(blochAngle / 2)));
   }
   
   /**

@@ -13,6 +13,7 @@ import {
   adjoint, 
   multiplyMatrices,
   scaleMatrix,
+  transpose,
   ComplexMatrix 
 } from './matrixOperations';
 import * as math from 'mathjs';
@@ -51,8 +52,8 @@ export function matrixFunction(
       )
     );
     
-    // The vectors are already in the correct format
-    const U = vectors;
+    // vectors stores eigenvectors as rows; U = transpose(vectors) has columns as eigenvectors
+    const U = transpose(vectors);
     
     // Calculate U†
     const UDagger = adjoint(U);

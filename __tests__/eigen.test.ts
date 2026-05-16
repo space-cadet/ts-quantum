@@ -11,7 +11,9 @@ import * as math from 'mathjs';
 import {
   eigenDecomposition,
   ComplexMatrix,
-  multiplyMatrices
+  multiplyMatrices,
+  transpose,
+  adjoint
 } from '../src/utils/matrixOperations';
 import { Complex } from '../src/core/types';
 import { formatComplex, formatMatrix } from './utils/testHelpers';
@@ -130,9 +132,9 @@ describe('eigenDecomposition Visual Test', () => {
       console.log('\nV·D:');
       console.log(formatMatrix(VD));
       
-      // Calculate V·D·V^T (for real symmetric matrices)
-      const VT = vectors.map((_, j) => vectors.map(row => row[j]));
-      const reconstructed = multiplyMatrices(VD, VT);
+      // Calculate U·D·U^T where U = transpose(vectors) has eigenvectors as columns
+      const U = vectors.map((_, j) => vectors.map(row => row[j]));
+      const reconstructed = multiplyMatrices(multiplyMatrices(U, D), U);
       console.log('\nReconstructed Matrix V·D·V^T:');
       console.log(formatMatrix(reconstructed));
       
@@ -562,19 +564,20 @@ describe('eigenDecomposition Visual Test', () => {
       console.log('\nV·D:');
       console.log(formatMatrix(VD));
       
-      // For Hermitian matrices, we use V·D·V† for reconstruction
-      // Compute V† (conjugate transpose of V)
-      const vDagger: ComplexMatrix = Array(3).fill(null).map((_, i) => 
-        Array(3).fill(null).map((_, j) => 
-          math.complex(vectors[j][i].re, -vectors[j][i].im)
-        )
-      );
-      console.log('\nV† (Conjugate Transpose):');
-      console.log(formatMatrix(vDagger));
+      // For Hermitian matrices, we use U·D·U† for reconstruction where U = transpose(vectors)
+      // U has eigenvectors as columns
+      const U = transpose(vectors);
+      console.log('\nU (eigenvectors as columns):');
+      console.log(formatMatrix(U));
       
-      // Complete reconstruction V·D·V†
-      const reconstructed = multiplyMatrices(VD, vDagger);
-      console.log('\nReconstructed Matrix V·D·V†:');
+      // Compute U† = adjoint(U) = conjugate transpose
+      const uDagger = adjoint(U);
+      console.log('\nU† (Conjugate Transpose):');
+      console.log(formatMatrix(uDagger));
+      
+      // Complete reconstruction U·D·U†
+      const reconstructed = multiplyMatrices(multiplyMatrices(U, D), uDagger);
+      console.log('\nReconstructed Matrix U·D·U†:');
       console.log(formatMatrix(reconstructed));
       
       // Compare original and reconstructed
