@@ -199,7 +199,20 @@
             transform: translateX(-2px);
         }
         
-        .theme-toggle {
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        
+        .sidebar-overlay.show {
+            display: block;
+        }
             position: fixed;
             top: 1rem;
             right: 1rem;
@@ -306,6 +319,8 @@
     <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
     <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
     
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
     <div class="container">
         <aside class="sidebar" id="sidebar">
             <h1>ts-quantum</h1>
@@ -396,12 +411,16 @@
         // Sidebar management
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
             sidebar.classList.toggle('open');
+            if (overlay) overlay.classList.toggle('show');
         }
         
         function closeSidebar() {
             const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
             sidebar.classList.remove('open');
+            if (overlay) overlay.classList.remove('show');
         }
         
         function showMainContent() {
@@ -542,6 +561,12 @@
                 closeSidebar();
             }
         });
+        
+        // Overlay click to close sidebar
+        const overlay = document.getElementById('sidebarOverlay');
+        if (overlay) {
+            overlay.addEventListener('click', closeSidebar);
+        }
     </script>
 </body>
 </html>
