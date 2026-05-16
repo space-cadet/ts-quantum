@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Random Walk Explorer | ts-quantum</title>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="stylesheet" href="styles/qrw-demo.css">
+</head>
+<body>
+    <div class="container">
+        <a href="showcase.html" class="back-button">← Back to Showcase</a>
+
+        <header>
+            <h1>Quantum Random Walk Explorer</h1>
+            <p>Investigate quantum spreading behavior across multiple coins and boundary conditions</p>
+        </header>
+
+        <div class="main-layout">
+            <!-- COLLAPSIBLE SIDEBAR -->
+            <div class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
+                        <span class="toggle-icon">◀</span>
+                    </button>
+                    <h3>Quantum Walk Explorer</h3>
+                </div>
+                
+                <nav class="sidebar-nav">
+                    <a href="#" class="nav-item active" onclick="switchView('visualization')" id="nav-visualization">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-text">Visualization</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="switchView('analysis')" id="nav-analysis">
+                        <span class="nav-icon">📈</span>
+                        <span class="nav-text">Analysis</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="switchView('education')" id="nav-education">
+                        <span class="nav-icon">📚</span>
+                        <span class="nav-text">Learn Quantum Walks</span>
+                    </a>
+                </nav>
+
+                <div class="sidebar-controls">
+                    <div class="control-section">
+                        <h4>Quick Controls</h4>
+                        <div id="quickControls">
+                            <!-- Quick controls will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MAIN CONTENT AREA -->
+            <div class="main-content">
+                <!-- VISUALIZATION VIEW -->
+                <div id="visualization-view" class="content-view active">
+                    <h3 style="margin-top: 0; margin-bottom: 15px;">Quantum Walk</h3>
+                    <div class="visualization" id="visualization"></div>
+
+                    <div class="equation">
+                        $$|\psi(t+1)\rangle = S(C \otimes I)|\psi(t)\rangle$$
+                    </div>
+                </div>
+
+                <!-- ANALYSIS VIEW -->
+                <div id="analysis-view" class="content-view">
+                    <!-- Analysis panel will be created here -->
+                </div>
+
+                <!-- EDUCATION VIEW -->
+                <div id="education-view" class="content-view">
+                    <!-- Educational content will be created here -->
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>ts-quantum Quantum Random Walk Explorer | Comprehensive demo for understanding quantum spreading dynamics</p>
+            <p><a href="showcase.html">← Back to Main Showcase</a></p>
+        </footer>
+    </div>
+
+    <script src="qrw-refactored.bundle.js"></script>
+</body>
+</html>

@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ts-quantum: Interactive Quantum Simulations</title>
+    
+    <!-- MathJax for LaTeX rendering -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Light theme (default) */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f5f5f5;
+            --bg-tertiary: #e3f2fd;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --text-tertiary: #1a237e;
+            --border-color: #ddd;
+            --accent-primary: #2a5298;
+            --accent-secondary: #1e3c72;
+            --card-shadow: rgba(0, 0, 0, 0.1);
+            --card-shadow-hover: rgba(0, 0, 0, 0.2);
+            --header-bg: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            --header-text: #ffffff;
+            --sidebar-bg: #f9f9f9;
+            --sidebar-border: #e0e0e0;
+            --sidebar-hover: #f0f0f0;
+        }
+
+        html.dark-theme {
+            --bg-primary: #1e1e1e;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #1a3a52;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --text-tertiary: #b3e5fc;
+            --border-color: #444;
+            --accent-primary: #64b5f6;
+            --accent-secondary: #42a5f5;
+            --card-shadow: rgba(0, 0, 0, 0.3);
+            --card-shadow-hover: rgba(0, 0, 0, 0.5);
+            --header-bg: linear-gradient(135deg, #0d47a1 0%, #1565c0 100%);
+            --header-text: #ffffff;
+            --sidebar-bg: #252525;
+            --sidebar-border: #404040;
+            --sidebar-hover: #333333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Header */
+        header {
+            background: var(--header-bg);
+            color: var(--header-text);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        header h1 {
+            font-size: 1.8em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .theme-toggle:hover {
+            background: white;
+            color: var(--accent-secondary);
+        }
+
+        .hamburger {
+            display: block;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.5em;
+            transition: all 0.3s;
+        }
+
+        .hamburger:hover {
+            background: white;
+            color: var(--accent-secondary);
+        }
+
+        /* Main layout */
+        .main-wrapper {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--sidebar-border);
+            overflow-y: auto;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        .sidebar.collapsed {
+            margin-left: -280px;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 99;
+        }
+
+        .sidebar-overlay.show {
+            display: block;
+        }
+
+        .category-group {
+            margin-bottom: 15px;
+        }
+
+        .category-header {
+            background: var(--bg-secondary);
+            padding: 10px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-primary);
+            user-select: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+        }
+
+        .category-header:hover {
+            background: var(--sidebar-hover);
+        }
+
+        .category-toggle {
+            display: inline-block;
+            transition: transform 0.3s;
+            transform: rotate(-90deg);
+        }
+
+        .category-toggle.expanded {
+            transform: rotate(0deg);
+        }
+
+        .category-items {
+            display: none;
+            padding-left: 10px;
+            margin-top: 8px;
+        }
+
+        .category-items.show {
+            display: block;
+        }
+
+        .demo-link {
+            display: block;
+            padding: 8px 10px;
+            margin-bottom: 5px;
+            background: var(--bg-primary);
+            border-left: 3px solid var(--accent-primary);
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: 3px;
+            transition: all 0.2s;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .demo-link:hover {
+            background: var(--bg-secondary);
+            border-left-color: var(--accent-secondary);
+        }
+
+        .demo-link.active {
+            background: var(--accent-primary);
+            color: white;
+            border-left-color: var(--accent-secondary);
+        }
+
+        .simulation-card.highlighted {
+            border: 2px solid var(--accent-primary);
+            box-shadow: 0 0 12px var(--accent-primary);
+        }
+
+        /* Content area */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .header-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.05em;
+            margin-bottom: 20px;
+        }
+
+        /* Simulations grid */
+        .simulations {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+            width: 100%;
+        }
+
+        .simulation-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 6px var(--card-shadow);
+            transition: transform 0.3s, box-shadow 0.3s;
+            scroll-margin-top: 100px;
+        }
+
+        .simulation-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px var(--card-shadow-hover);
+        }
+
+        .simulation-card h2 {
+            color: var(--accent-primary);
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            border-bottom: 3px solid var(--accent-secondary);
+            padding-bottom: 10px;
+        }
+
+        .simulation-card .description {
+            color: var(--text-secondary);
+            font-size: 0.95em;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .controls {
+            margin: 15px 0;
+        }
+
+        .control-group {
+            margin-bottom: 12px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .control-group select,
+        .control-group input[type="number"],
+        .control-group input[type="range"] {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 0.95em;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: border-color 0.3s;
+        }
+
+        .control-group select:focus,
+        .control-group input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .control-group input[type="range"] {
+            padding: 5px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px 15px;
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+            font-size: 0.95em;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: var(--accent-secondary);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .results {
+            background: var(--bg-secondary);
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            border-left: 4px solid var(--accent-primary);
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .result-item {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .result-value {
+            color: var(--accent-primary);
+            font-family: 'Courier New', monospace;
+            margin-top: 3px;
+            word-break: break-all;
+        }
+
+        .info-box {
+            background: var(--bg-tertiary);
+            border-left: 4px solid var(--accent-secondary);
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            color: var(--text-tertiary);
+        }
+
+        .equation {
+            background: var(--bg-secondary);
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .stat-item {
+            background: var(--bg-primary);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 1.1em;
+            color: var(--accent-primary);
+            font-weight: 600;
+            margin-top: 5px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .amplitude-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .amplitude-label {
+            width: 50px;
+            font-weight: 600;
+            font-size: 0.9em;
+            text-align: right;
+            margin-right: 10px;
+        }
+
+        .amplitude-meter {
+            flex: 1;
+            height: 25px;
+            background: var(--bg-secondary);
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid var(--border-color);
+        }
+
+        .amplitude-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            transition: width 0.5s ease;
+        }
+
+        .amplitude-value {
+            margin-left: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            min-width: 60px;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            color: var(--header-text);
+            background: var(--header-bg);
+            padding: 20px;
+            margin-top: 40px;
+            opacity: 0.95;
+        }
+
+        footer a {
+            color: white;
+            text-decoration: none;
+            border-bottom: 1px dotted white;
+        }
+
+        footer a:hover {
+            border-bottom-style: solid;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header {
+                padding: 12px 15px;
+            }
+
+            header h1 {
+                font-size: 1.4em;
+            }
+
+            .hamburger {
+                display: block;
+            }
+
+            .sidebar {
+                position: fixed;
+                top: 60px;
+                left: 0;
+                height: calc(100vh - 60px);
+                z-index: 100;
+                border-right: none;
+                box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            }
+
+            .sidebar.collapsed {
+                margin-left: -280px;
+            }
+
+            .content {
+                padding: 20px 15px;
+                max-width: 100%;
+                width: 100%;
+                overflow-x: hidden;
+            }
+
+            .simulations {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                width: 100%;
+            }
+
+            .simulation-card {
+                width: 100%;
+                max-width: 100%;
+                padding: 20px;
+                margin: 0;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header {
+                padding: 10px 12px;
+                gap: 8px;
+            }
+
+            header h1 {
+                font-size: 1.2em;
+            }
+
+            .theme-toggle {
+                padding: 6px 10px;
+                font-size: 0.8em;
+            }
+
+            .hamburger {
+                padding: 6px 10px;
+                font-size: 1.2em;
+            }
+
+            .content {
+                padding: 15px 10px;
+            }
+
+            .simulation-card {
+                padding: 15px;
+            }
+
+            .simulation-card h2 {
+                font-size: 1.2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>⚛️ ts-quantum Showcase</h1>
+        <div class="header-controls">
+            <button class="theme-toggle" id="themeToggle">🌙 Dark</button>
+            <button class="hamburger" id="hamburger">☰</button>
+        </div>
+    </header>
+
+    <div class="main-wrapper">
+        <aside class="sidebar" id="sidebar">
+            <div class="category-group">
+                <div class="category-header" data-category="basics">
+                    <span>Basic States</span>
+                    <span class="category-toggle">▼</span>
+                </div>
+                <div class="category-items">
+                    <a class="demo-link" data-demo="multi-qubit">Multi-Qubit States</a>
+                </div>
+            </div>
+
+            <div class="category-group">
+                <div class="category-header" data-category="gates">
+                    <span>Quantum Gates</span>
+                    <span class="category-toggle">▼</span>
+                </div>
+                <div class="category-items">
+                    <a class="demo-link" data-demo="gate-visualizer">Gate Visualizer</a>
+                    <a class="demo-link" data-demo="circuit-sim">Circuit Simulator</a>
+                </div>
+            </div>
+
+            <div class="category-group">
+                <div class="category-header" data-category="entanglement">
+                    <span>Entanglement</span>
+                    <span class="category-toggle">▼</span>
+                </div>
+                <div class="category-items">
+                    <a class="demo-link" data-demo="bell-state">Bell State Creator</a>
+                    <a class="demo-link" data-demo="entanglement-analysis">Entanglement Analysis</a>
+                </div>
+            </div>
+
+            <div class="category-group">
+                <div class="category-header" data-category="dynamics">
+                    <span>Dynamics</span>
+                    <span class="category-toggle">▼</span>
+                </div>
+                <div class="category-items">
+                    <a class="demo-link" data-demo="angular-momentum">Angular Momentum</a>
+                </div>
+            </div>
+
+            <div class="category-group">
+                <div class="category-header" data-category="quantum-walks">
+                    <span>Quantum Walks</span>
+                    <span class="category-toggle">▼</span>
+                </div>
+                <div class="category-items">
+                    <a href="qrw-demo.html">Quantum Random Walk Explorer</a>
+                </div>
+            </div>
+
+            <div class="category-group">
+                <div class="category-header" data-category="advanced">
+                    <span>Advanced</span>
+                    <span class="category-toggle">▼</span>
+                </div>
+                <div class="category-items">
+                    <a class="demo-link" data-demo="fidelity-analyzer">Fidelity Analyzer</a>
+                </div>
+            </div>
+        </aside>
+
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <main class="content">
+            <p class="header-subtitle">Interactive Quantum Simulations with TypeScript</p>
+
+            <div class="simulations">
+                <!-- Bell State Creator -->
+                <div class="simulation-card" id="bell-state" data-demo="bell-state">
+                    <h2>Bell State Creator</h2>
+                    <p class="description">Create and measure maximally entangled two-qubit Bell states.</p>
+
+                    <div class="info-box">
+                        Bell states are maximally entangled pure states of two qubits.
+                    </div>
+
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Bell State:</label>
+                            <select id="bellStateSelect">
+                                <option value="Phi+">Φ⁺</option>
+                                <option value="Phi-">Φ⁻</option>
+                                <option value="Psi+">Ψ⁺</option>
+                                <option value="Psi-">Ψ⁻</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button onclick="generateBellState()">Create Bell State</button>
+
+                    <div class="results" id="bellResults">
+                        <div class="result-item">
+                            <div class="result-label">State Vector:</div>
+                            <div class="result-value" id="bellStateVector"></div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Entanglement Entropy:</div>
+                            <div class="result-value" id="bellEntropy"></div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Measurement Probabilities:</div>
+                            <div id="bellProbabilities"></div>
+                        </div>
+                    </div>
+
+                    <div class="equation">
+                        $$|\Phi^+\rangle = \frac{1}{\sqrt{2}}(|00\rangle + |11\rangle)$$
+                    </div>
+                </div>
+
+                <!-- Quantum Gate Visualizer -->
+                <div class="simulation-card" id="gate-visualizer" data-demo="gate-visualizer">
+                    <h2>Quantum Gate Visualizer</h2>
+                    <p class="description">Apply quantum gates and observe state transformations.</p>
+
+                    <div class="info-box">
+                        Pauli gates, Hadamard, Phase gates transform quantum states.
+                    </div>
+
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Initial State:</label>
+                            <select id="initialStateSelect">
+                                <option value="|0⟩">|0⟩</option>
+                                <option value="|1⟩">|1⟩</option>
+                                <option value="|+⟩">|+⟩</option>
+                            </select>
+                        </div>
+                        <label>Apply Gate:</label>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+                            <button onclick="applyGate('X')">Pauli X</button>
+                            <button onclick="applyGate('Y')">Pauli Y</button>
+                            <button onclick="applyGate('Z')">Pauli Z</button>
+                            <button onclick="applyGate('H')">Hadamard</button>
+                            <button onclick="applyGate('S')">Phase S</button>
+                            <button onclick="applyGate('T')">T Gate</button>
+                        </div>
+                    </div>
+
+                    <div class="results" id="gateResults">
+                        <div class="result-item">
+                            <div class="result-label">Result State:</div>
+                            <div class="result-value" id="gateResultState"></div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Amplitudes:</div>
+                            <div id="gateAmplitudes"></div>
+                        </div>
+                    </div>
+
+                    <div class="equation">
+                        $$\sigma_X = \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix}, \quad H = \frac{1}{\sqrt{2}}\begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix}$$
+                    </div>
+                </div>
+
+                <!-- Entanglement Analysis -->
+                <div class="simulation-card" id="entanglement-analysis" data-demo="entanglement-analysis">
+                    <h2>Entanglement Analysis</h2>
+                    <p class="description">Analyze entanglement using information theory functions.</p>
+
+                    <div class="info-box">
+                        Comprehensive entanglement analysis using entropy, concurrence, and negativity.
+                    </div>
+
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Two-Qubit State:</label>
+                            <select id="twoQubitStateSelect">
+                                <option value="product">Product State</option>
+                                <option value="bell">Bell State</option>
+                                <option value="partial">Partial</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button onclick="analyzeEntanglement()">Analyze</button>
+
+                    <div class="results" id="entanglementResults">
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-label">Entanglement Entropy:</div>
+                                <div class="stat-value" id="entropyValue"></div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Concurrence:</div>
+                                <div class="stat-value" id="concurrenceValue"></div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Negativity:</div>
+                                <div class="stat-value" id="negativityValue"></div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Type:</div>
+                                <div class="stat-value" id="entanglementType"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="equation">
+                        $$S(\rho) = -\text{Tr}(\rho \log_2 \rho)$$
+                    </div>
+                </div>
+
+                <!-- Multi-Qubit States -->
+                <div class="simulation-card" id="multi-qubit" data-demo="multi-qubit">
+                    <h2>Multi-Qubit States</h2>
+                    <p class="description">Generate GHZ and W states for multi-particle entanglement.</p>
+
+                    <div class="info-box">
+                        GHZ and W states demonstrate multi-particle entanglement patterns.
+                    </div>
+
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>State Type:</label>
+                            <select id="multiQubitStateSelect">
+                                <option value="ghz2">GHZ-2</option>
+                                <option value="ghz3">GHZ-3</option>
+                                <option value="w2">W-2</option>
+                                <option value="w3">W-3</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button onclick="generateMultiQubitState()">Generate</button>
+
+                    <div class="results" id="multiQubitResults">
+                        <div class="result-item">
+                            <div class="result-label">State Vector:</div>
+                            <div class="result-value" id="multiQubitVector"></div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Components:</div>
+                            <div id="multiQubitComponents"></div>
+                        </div>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-label">Dimension:</div>
+                                <div class="stat-value" id="multiQubitDim"></div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Norm:</div>
+                                <div class="stat-value" id="multiQubitNorm"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="equation">
+                        $$|\text{GHZ}_n\rangle = \frac{1}{\sqrt{2}}(|0\rangle^{\otimes n} + |1\rangle^{\otimes n})$$
+                    </div>
+                </div>
+
+                <!-- Angular Momentum -->
+                <div class="simulation-card" id="angular-momentum" data-demo="angular-momentum">
+                    <h2>Angular Momentum States</h2>
+                    <p class="description">Create spin states using angular momentum operators.</p>
+
+                    <div class="info-box">
+                        Eigenstates of the angular momentum operators with definite eigenvalues.
+                    </div>
+
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Spin j:</label>
+                            <select id="jSelect">
+                                <option value="0.5">j = 1/2</option>
+                                <option value="1">j = 1</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>m value:</label>
+                            <select id="mSelect">
+                                <option value="-0.5">m = -1/2</option>
+                                <option value="0.5">m = +1/2</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button onclick="generateAngularMomentumState()">Create State</button>
+
+                    <div class="results" id="amResults">
+                        <div class="result-item">
+                            <div class="result-label">State |j,m⟩:</div>
+                            <div class="result-value" id="amState"></div>
+                        </div>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-label">Jz eigenvalue:</div>
+                                <div class="stat-value" id="jzEigenvalue"></div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">J² eigenvalue:</div>
+                                <div class="stat-value" id="j2Eigenvalue"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="equation">
+                        $$J_z |j,m\rangle = \hbar m |j,m\rangle, \quad J^2 |j,m\rangle = \hbar^2 j(j+1) |j,m\rangle$$
+                    </div>
+                </div>
+
+                <!-- 1D Quantum Random Walk -->
+                <div class="simulation-card" id="quantum-walk-1d" data-demo="quantum-walk-1d">
+                    <h2>1D Quantum Random Walk</h2>
+                    <p class="description">Simulate a quantum particle on a 1D lattice using a Hadamard coin operator. Observe quantum spreading behavior through step-by-step evolution.</p>
+
+                    <div class="info-box">
+                        A quantum random walk combines coin flips (coin operator) with conditional position shifts. Unlike classical walks with peaked distributions, quantum walks show interference and spread faster across the lattice.
+                    </div>
+
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>Lattice Size:</label>
+                            <input type="number" id="qw1dLatticeSize" value="11" min="5" max="31" step="2">
+                            <span class="control-hint">(5-31, odd numbers work best)</span>
+                        </div>
+                        <div class="control-group">
+                            <label>Evolution Steps:</label>
+                            <input type="number" id="qw1dSteps" value="10" min="1" max="100">
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button onclick="runQuantumWalk1D()">Run Simulation</button>
+                        <button onclick="stepQuantumWalk1D()">Step (single)</button>
+                        <button onclick="resetQuantumWalk1D()">Reset</button>
+                        <button id="qw1dCancelBtn" onclick="cancelQuantumWalk1DAnimation()" style="display: none; background-color: #e74c3c;">Cancel Animation</button>
+                    </div>
+
+                    <div class="results" id="qw1dResults">
+                        <div id="qw1dVisualization" style="margin: 20px 0; text-align: center;">
+                            <!-- Bar chart will be inserted here -->
+                        </div>
+
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-label">Current Step:</div>
+                                <div class="stat-value" id="qw1dCurrentStep">0</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Total Probability:</div>
+                                <div class="stat-value" id="qw1dTotalProb">1.0000</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Center of Mass:</div>
+                                <div class="stat-value" id="qw1dCOM">—</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Variance:</div>
+                                <div class="stat-value" id="qw1dVariance">0.0000</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Max Probability:</div>
+                                <div class="stat-value" id="qw1dMaxProb">—</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Spread Width:</div>
+                                <div class="stat-value" id="qw1dSpread">—</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 15px; font-size: 0.9em; color: var(--text-secondary);">
+                            <strong>Position Distribution:</strong>
+                            <div id="qw1dDistribution" style="font-family: monospace; margin-top: 8px; font-size: 0.85em;"></div>
+                        </div>
+                    </div>
+
+                    <div class="equation">
+                        $$|\psi(t+1)\rangle = S(C \otimes I)|\psi(t)\rangle$$
+                    </div>
+                </div>
+
+                <!-- Circuit Simulator -->
+                <div class="simulation-card full-width" id="circuit-sim" data-demo="circuit-sim">
+                    <h2>Quantum Circuit Simulator</h2>
+                    <p class="description">Build quantum circuits using Hadamard and CNOT gates.</p>
+
+                    <div class="info-box">
+                        Create Bell states from computational basis using quantum circuits.
+                    </div>
+
+                    <button onclick="runQuantumCircuit()">Create Bell State Circuit</button>
+                    <div class="results" id="circuitResults">
+                        <div class="result-item">
+                            <div class="result-label">Circuit Steps:</div>
+                            <div id="circuitDesc"></div>
+                        </div>
+                    </div>
+
+                    <div class="equation">
+                        $$|\psi\rangle = \text{CNOT} \cdot (H \otimes I) |00\rangle$$
+                    </div>
+                </div>
+
+                <!-- Fidelity Analyzer -->
+                <div class="simulation-card full-width" id="fidelity-analyzer" data-demo="fidelity-analyzer">
+                    <h2>Quantum Fidelity Analyzer</h2>
+                    <p class="description">Compare quantum states using inner product and fidelity.</p>
+
+                    <div class="info-box">
+                        Quantify overlap and similarity between quantum states.
+                    </div>
+
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>State A:</label>
+                            <select id="stateASelect">
+                                <option value="|0⟩">|0⟩</option>
+                                <option value="|1⟩">|1⟩</option>
+                                <option value="|+⟩">|+⟩</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>State B:</label>
+                            <select id="stateBSelect">
+                                <option value="|0⟩">|0⟩</option>
+                                <option value="|1⟩" selected>|1⟩</option>
+                                <option value="|+⟩">|+⟩</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button onclick="computeFidelity()">Compute Fidelity</button>
+
+                    <div class="results" id="fidelityResults">
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-label">Fidelity:</div>
+                                <div class="stat-value" id="fidelityValue"></div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">⟨ψ|φ⟩:</div>
+                                <div class="stat-value" id="innerProduct"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="equation">
+                        $$F(\psi, \phi) = |\langle\psi|\phi\rangle|^2$$
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer>
+        <p>ts-quantum Interactive Showcase | Real Simulations Using TypeScript Quantum Library</p>
+        <p style="margin-top: 10px; font-size: 0.9em;">
+            <a href="https://github.com/space-cadet/ts-quantum">GitHub Repository</a> |
+            Version 0.9.0
+        </p>
+    </footer>
+
+    <script src="bundle.js"></script>
+    <script>
+        // Theme management
+        const html = document.documentElement;
+        const themeToggle = document.getElementById('themeToggle');
+        const theme = localStorage.getItem('theme') || 'light';
+
+        function setTheme(newTheme) {
+            if (newTheme === 'dark') {
+                html.classList.add('dark-theme');
+                themeToggle.textContent = '☀️ Light';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                html.classList.remove('dark-theme');
+                themeToggle.textContent = '🌙 Dark';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        setTheme(theme);
+        themeToggle.addEventListener('click', () => {
+            const current = localStorage.getItem('theme') || 'light';
+            setTheme(current === 'light' ? 'dark' : 'light');
+        });
+
+        // Sidebar management
+        const hamburger = document.getElementById('hamburger');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+
+        hamburger.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            overlay.classList.toggle('show');
+        });
+
+        overlay.addEventListener('click', () => {
+            sidebar.classList.add('collapsed');
+            overlay.classList.remove('show');
+        });
+
+        // Category expansion
+        document.querySelectorAll('.category-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const items = header.nextElementSibling;
+                const toggle = header.querySelector('.category-toggle');
+                items.classList.toggle('show');
+                toggle.classList.toggle('expanded');
+            });
+        });
+
+        // Demo navigation
+        document.querySelectorAll('.demo-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const demoId = link.dataset.demo;
+                const card = document.getElementById(demoId);
+                
+                // Remove active state and highlight from all
+                document.querySelectorAll('.demo-link').forEach(l => l.classList.remove('active'));
+                document.querySelectorAll('.simulation-card').forEach(c => c.classList.remove('highlighted'));
+                
+                // Add active state to clicked link
+                link.classList.add('active');
+                
+                // Highlight the card
+                if (card) {
+                    card.classList.add('highlighted');
+                    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+                
+                // Close sidebar on mobile
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.add('collapsed');
+                    overlay.classList.remove('show');
+                }
+            });
+        });
+
+        // Simulations check
+        let simulationsReady = false;
+
+        function ensureSimulationsReady() {
+            if (typeof window.simulations === 'undefined') {
+                console.error('ERROR: window.simulations not found');
+                alert('Error loading simulations. Please refresh the page.');
+                return false;
+            }
+            return true;
+        }
+
+        window.addEventListener('load', function() {
+            if (ensureSimulationsReady()) {
+                simulationsReady = true;
+                console.log('✓ Simulations loaded');
+            }
+        });
+
+        setTimeout(() => {
+            if (typeof window.simulations !== 'undefined' && !simulationsReady) {
+                simulationsReady = true;
+            }
+        }, 1000);
+
+        // Helper: Create amplitude bar
+        function createAmplitudeBar(label, magnitude) {
+            const percent = Math.min(100, Math.abs(magnitude) * 100);
+            return `
+                <div class="amplitude-bar">
+                    <div class="amplitude-label">${label}</div>
+                    <div class="amplitude-meter">
+                        <div class="amplitude-bar-fill" style="width: ${percent}%"></div>
+                    </div>
+                    <div class="amplitude-value">${magnitude.toFixed(4)}</div>
+                </div>
+            `;
+        }
+
+        // Bell State
+        async function generateBellState() {
+            try {
+                if (!ensureSimulationsReady()) throw new Error('Simulations not ready');
+                const stateType = document.getElementById('bellStateSelect').value;
+                const result = window.simulations.generateBellState(stateType);
+
+                document.getElementById('bellStateVector').textContent = result.vector;
+                document.getElementById('bellEntropy').textContent = result.entropy.toFixed(4);
+                document.getElementById('bellProbabilities').innerHTML = result.probabilities
+                    .map(p => createAmplitudeBar(p.label, p.prob))
+                    .join('');
+                document.getElementById('bellResults').classList.add('show');
+                MathJax.typesetPromise().catch(e => console.log(e));
+            } catch (e) {
+                console.error('Error:', e);
+                alert('Error: ' + e.message);
+            }
+        }
+
+        // Apply Gate
+        async function applyGate(gateName) {
+            try {
+                if (!ensureSimulationsReady()) throw new Error('Simulations not ready');
+                const initialState = document.getElementById('initialStateSelect').value;
+                const result = window.simulations.applyGate(initialState, gateName);
+
+                document.getElementById('gateResultState').textContent = result.resultState;
+                document.getElementById('gateAmplitudes').innerHTML = result.amplitudes
+                    .map(a => createAmplitudeBar(a.label, a.magnitude))
+                    .join('');
+                document.getElementById('gateResults').classList.add('show');
+                MathJax.typesetPromise().catch(e => console.log(e));
+            } catch (e) {
+                console.error('Error:', e);
+                alert('Error: ' + e.message);
+            }
+        }
+
+        // Entanglement Analysis
+        async function analyzeEntanglement() {
+            try {
+                if (!ensureSimulationsReady()) throw new Error('Simulations not ready');
+                const stateType = document.getElementById('twoQubitStateSelect').value;
+                const result = window.simulations.analyzeEntanglement(stateType);
+
+                document.getElementById('entropyValue').textContent = result.entropy.toFixed(4);
+                document.getElementById('concurrenceValue').textContent = result.concurrence.toFixed(4);
+                document.getElementById('negativityValue').textContent = result.negativity.toFixed(4);
+                document.getElementById('entanglementType').textContent = result.type;
+                document.getElementById('entanglementResults').classList.add('show');
+                MathJax.typesetPromise().catch(e => console.log(e));
+            } catch (e) {
+                console.error('Error:', e);
+                alert('Error: ' + e.message);
+            }
+        }
+
+        // Multi-Qubit States
+        async function generateMultiQubitState() {
+            try {
+                if (!ensureSimulationsReady()) throw new Error('Simulations not ready');
+                const stateType = document.getElementById('multiQubitStateSelect').value;
+                const result = window.simulations.generateMultiQubitState(stateType);
+
+                document.getElementById('multiQubitVector').textContent = result.vector;
+                document.getElementById('multiQubitComponents').innerHTML = result.components
+                    .map(c => `<div style="margin: 5px 0;"><strong>${c.label}:</strong> ${c.amplitude}</div>`)
+                    .join('');
+                document.getElementById('multiQubitDim').textContent = result.dimension;
+                document.getElementById('multiQubitNorm').textContent = result.norm.toFixed(4);
+                document.getElementById('multiQubitResults').classList.add('show');
+                MathJax.typesetPromise().catch(e => console.log(e));
+            } catch (e) {
+                console.error('Error:', e);
+                alert('Error: ' + e.message);
+            }
+        }
+
+        // Angular Momentum
+        async function generateAngularMomentumState() {
+            try {
+                if (!ensureSimulationsReady()) throw new Error('Simulations not ready');
+                const j = parseFloat(document.getElementById('jSelect').value);
+                const m = parseFloat(document.getElementById('mSelect').value);
+                const result = window.simulations.generateAngularMomentumState(j, m);
+
+                document.getElementById('amState').textContent = result.stateStr;
+                document.getElementById('jzEigenvalue').textContent = result.jzEigenvalue.toFixed(2) + 'ℏ';
+                document.getElementById('j2Eigenvalue').textContent = result.j2Eigenvalue.toFixed(2) + 'ℏ²';
+                document.getElementById('amResults').classList.add('show');
+                MathJax.typesetPromise().catch(e => console.log(e));
+            } catch (e) {
+                console.error('Error:', e);
+                alert('Error: ' + e.message);
+            }
+        }
+
+        // Circuit Simulator
+        async function runQuantumCircuit() {
+            try {
+                if (!ensureSimulationsReady()) throw new Error('Simulations not ready');
+                const result = window.simulations.runQuantumCircuit();
+
+                const desc = `
+                    <div style="font-family: monospace; line-height: 1.6;">
+                        <div><strong>${result.circuitDesc}</strong></div>
+                        <div style="margin-top: 10px;">
+                            <div>Step 1: ${result.step1}</div>
+                            <div>Step 2: ${result.step2}</div>
+                            <div>Step 3: ${result.step3}</div>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('circuitDesc').innerHTML = desc;
+                document.getElementById('circuitResults').classList.add('show');
+                MathJax.typesetPromise().catch(e => console.log(e));
+            } catch (e) {
+                console.error('Error:', e);
+                alert('Error: ' + e.message);
+            }
+        }
+
+        // Fidelity
+        async function computeFidelity() {
+            try {
+                if (!ensureSimulationsReady()) throw new Error('Simulations not ready');
+                const stateA = document.getElementById('stateASelect').value;
+                const stateB = document.getElementById('stateBSelect').value;
+                const result = window.simulations.computeFidelity(stateA, stateB);
+
+                document.getElementById('fidelityValue').textContent = result.fidelity.toFixed(4);
+                document.getElementById('innerProduct').textContent = result.innerProduct;
+                document.getElementById('fidelityResults').classList.add('show');
+                MathJax.typesetPromise().catch(e => console.log(e));
+            } catch (e) {
+                console.error('Error:', e);
+                alert('Error: ' + e.message);
+            }
+        }
+
+        // Animation control for quantum walk
+        let qw1dAnimationRunning = false;
+        let qw1dAnimationCancelled = false;
+
+        async function runQuantumWalk1D() {
+            try {
+                if (!ensureSimulationsReady()) throw new Error('Simulations not ready');
+                const latticeSize = parseInt(document.getElementById('qw1dLatticeSize').value);
+                const numSteps = parseInt(document.getElementById('qw1dSteps').value);
+
+                if (latticeSize < 5 || latticeSize > 31) {
+                    throw new Error('Lattice size must be between 5 and 31');
+                }
+                if (numSteps < 1 || numSteps > 100) {
+                    throw new Error('Steps must be between 1 and 100');
+                }
+
+                if (qw1dAnimationRunning) {
+                    alert('Animation already running. Click Cancel to stop.');
+                    return;
+                }
+
+                qw1dAnimationRunning = true;
+                qw1dAnimationCancelled = false;
+
+                // Disable controls during animation
+                document.getElementById('qw1dLatticeSize').disabled = true;
+                document.getElementById('qw1dSteps').disabled = true;
+                document.querySelector('[onclick="runQuantumWalk1D()"]').disabled = true;
+                document.querySelector('[onclick="stepQuantumWalk1D()"]').disabled = true;
+
+                // Show cancel button
+                const cancelBtn = document.getElementById('qw1dCancelBtn');
+                if (cancelBtn) cancelBtn.style.display = 'inline-block';
+
+                // Initialize walk
+                window.simulations.initializeQuantumWalk1D(latticeSize);
+                updateQuantumWalk1DDisplay(window.simulations.getQuantumWalk1DState());
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                // Animate each step
+                for (let step = 0; step < numSteps; step++) {
+                    if (qw1dAnimationCancelled) break;
+
+                    const data = window.simulations.stepQuantumWalk1D();
+                    updateQuantumWalk1DDisplay(data);
+                    MathJax.typesetPromise().catch(e => console.log(e));
+
+                    // Delay between steps (500ms = comfortable viewing speed)
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+
+                // Re-enable controls
+                qw1dAnimationRunning = false;
+                document.getElementById('qw1dLatticeSize').disabled = false;
+                document.getElementById('qw1dSteps').disabled = false;
+                document.querySelector('[onclick="runQuantumWalk1D()"]').disabled = false;
+                document.querySelector('[onclick="stepQuantumWalk1D()"]').disabled = false;
+                if (cancelBtn) cancelBtn.style.display = 'none';
+
+            } catch (e) {
+                console.error('Error:', e);
+                alert('Error: ' + e.message);
+                qw1dAnimationRunning = false;
+                const cancelBtn = document.getElementById('qw1dCancelBtn');
+                if (cancelBtn) cancelBtn.style.display = 'none';
+            }
+        }
+
+        function cancelQuantumWalk1DAnimation() {
+            qw1dAnimationCancelled = true;
+            qw1dAnimationRunning = false;
+
+            // Re-enable controls
+            document.getElementById('qw1dLatticeSize').disabled = false;
+            document.getElementById('qw1dSteps').disabled = false;
+            document.querySelector('[onclick="runQuantumWalk1D()"]').disabled = false;
+            document.querySelector('[onclick="stepQuantumWalk1D()"]').disabled = false;
+
+            const cancelBtn = document.getElementById('qw1dCancelBtn');
+            if (cancelBtn) cancelBtn.style.display = 'none';
+        }
+
+        async function stepQuantumWalk1D() {
+            try {
+                if (!ensureSimulationsReady()) throw new Error('Simulations not ready');
+
+                // Check if walk is initialized
+                let data;
+                try {
+                    data = window.simulations.getQuantumWalk1DState();
+                } catch (e) {
+                    // Not initialized yet, initialize first
+                    const latticeSize = parseInt(document.getElementById('qw1dLatticeSize').value);
+                    window.simulations.initializeQuantumWalk1D(latticeSize);
+                    data = window.simulations.getQuantumWalk1DState();
+                }
+
+                // Step once
+                data = window.simulations.stepQuantumWalk1D();
+                updateQuantumWalk1DDisplay(data);
+                MathJax.typesetPromise().catch(e => console.log(e));
+            } catch (e) {
+                console.error('Error:', e);
+                alert('Error: ' + e.message);
+            }
+        }
+
+        function resetQuantumWalk1D() {
+            try {
+                if (!ensureSimulationsReady()) throw new Error('Simulations not ready');
+                window.simulations.resetQuantumWalk1D();
+                document.getElementById('qw1dVisualization').innerHTML = '';
+                document.getElementById('qw1dCurrentStep').textContent = '0';
+                document.getElementById('qw1dTotalProb').textContent = '1.0000';
+                document.getElementById('qw1dCOM').textContent = '—';
+                document.getElementById('qw1dVariance').textContent = '0.0000';
+                document.getElementById('qw1dMaxProb').textContent = '—';
+                document.getElementById('qw1dSpread').textContent = '—';
+                document.getElementById('qw1dDistribution').textContent = '';
+            } catch (e) {
+                console.error('Error:', e);
+                alert('Error: ' + e.message);
+            }
+        }
+
+        function updateQuantumWalk1DDisplay(data) {
+            // Update statistics
+            document.getElementById('qw1dCurrentStep').textContent = data.step;
+            document.getElementById('qw1dTotalProb').textContent = data.totalProbability.toFixed(4);
+            document.getElementById('qw1dCOM').textContent = data.centerOfMass.toFixed(2);
+            document.getElementById('qw1dVariance').textContent = data.variance.toFixed(4);
+            document.getElementById('qw1dMaxProb').textContent = data.maxProbability.toFixed(4);
+
+            // Calculate spread width (distance from center to max probability positions)
+            const probs = data.probabilities;
+            const threshold = data.maxProbability * 0.1; // 10% of max
+            let minSpread = data.centerOfMass;
+            let maxSpread = data.centerOfMass;
+            for (let i = 0; i < probs.length; i++) {
+                if (probs[i].probability > threshold) {
+                    minSpread = Math.min(minSpread, i);
+                    maxSpread = Math.max(maxSpread, i);
+                }
+            }
+            document.getElementById('qw1dSpread').textContent = (maxSpread - minSpread).toFixed(1);
+
+            // Create visualization
+            createQuantumWalk1DVisualization(data);
+
+            // Create distribution table
+            createQuantumWalk1DDistribution(data);
+
+            document.getElementById('qw1dResults').classList.add('show');
+        }
+
+        function createQuantumWalk1DVisualization(data) {
+            const container = document.getElementById('qw1dVisualization');
+            const maxProb = data.maxProbability || 0.1;
+            const barHeight = 200; // pixels
+            const barWidth = Math.max(8, Math.floor(600 / data.probabilities.length));
+
+            let svg = `<svg width="100%" height="250" style="border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-secondary);">`;
+            svg += `<text x="10" y="20" font-size="12" fill="var(--text-secondary)">Probability Distribution</text>`;
+
+            // Y-axis scale
+            svg += `<line x1="30" y1="40" x2="30" y2="220" stroke="var(--text-secondary)" stroke-width="1"/>`;
+            svg += `<text x="0" y="225" font-size="10" fill="var(--text-secondary)">0</text>`;
+            svg += `<text x="0" y="50" font-size="10" fill="var(--text-secondary)">${maxProb.toFixed(2)}</text>`;
+
+            // X-axis
+            svg += `<line x1="30" y1="220" x2="100%" y2="220" stroke="var(--text-secondary)" stroke-width="1"/>`;
+
+            // Bars
+            const startX = 40;
+            for (let i = 0; i < data.probabilities.length; i++) {
+                const prob = data.probabilities[i].probability;
+                const height = Math.max(1, (prob / maxProb) * barHeight);
+                const x = startX + i * barWidth;
+                const y = 220 - height;
+
+                // Color gradient based on probability
+                const intensity = prob / maxProb;
+                const color = `rgba(70, 130, 180, ${0.3 + 0.7 * intensity})`;
+
+                svg += `<rect x="${x}" y="${y}" width="${barWidth - 2}" height="${height}" fill="${color}" stroke="var(--text-secondary)" stroke-width="0.5"/>`;
+            }
+
+            // Center of mass line
+            const comX = startX + (data.centerOfMass / data.probabilities.length) * (barWidth * data.probabilities.length);
+            svg += `<line x1="${comX}" y1="40" x2="${comX}" y2="220" stroke="red" stroke-width="2" stroke-dasharray="4,4" opacity="0.7"/>`;
+            svg += `<text x="${comX - 15}" y="35" font-size="10" fill="red">COM</text>`;
+
+            svg += `</svg>`;
+            container.innerHTML = svg;
+        }
+
+        function createQuantumWalk1DDistribution(data) {
+            const container = document.getElementById('qw1dDistribution');
+            let html = '';
+
+            // Show only positions with significant probability
+            const threshold = data.maxProbability * 0.01; // 1% of max
+
+            for (let i = 0; i < data.probabilities.length; i++) {
+                const prob = data.probabilities[i].probability;
+                if (prob > threshold) {
+                    const barLength = Math.round(prob / data.maxProbability * 40);
+                    const bar = '█'.repeat(barLength);
+                    html += `Position ${i.toString().padStart(2)}: ${bar} ${prob.toFixed(4)}<br>`;
+                }
+            }
+
+            if (html === '') {
+                html = '<span style="opacity: 0.5;">No positions above 1% threshold</span>';
+            }
+
+            container.innerHTML = html;
+        }
+
+    </script>
+</body>
+</html>
