@@ -1,0 +1,2446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ts-quantum: Interactive Quantum Showcase</title>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg: #0f1117;
+            --bg-elevated: #161b22;
+            --bg-card: #1c2128;
+            --border: #30363d;
+            --text: #c9d1d9;
+            --text-secondary: #8b949e;
+            --text-tertiary: #58a6ff;
+            --accent: #58a6ff;
+            --accent-secondary: #79c0ff;
+            --accent-glow: rgba(88, 166, 255, 0.15);
+            --success: #3fb950;
+            --warning: #d29922;
+            --danger: #f85149;
+            --quantum: #a371f7;
+            --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        html.light-theme {
+            --bg: #ffffff;
+            --bg-elevated: #f6f8fa;
+            --bg-card: #ffffff;
+            --border: #d0d7de;
+            --text: #1f2328;
+            --text-secondary: #656d76;
+            --text-tertiary: #0969da;
+            --accent: #0969da;
+            --accent-secondary: #218bff;
+            --accent-glow: rgba(9, 105, 218, 0.1);
+            --success: #1a7f37;
+            --warning: #9a6700;
+            --danger: #cf222e;
+            --quantum: #8250df;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .site-header {
+            background: var(--bg-elevated);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            backdrop-filter: blur(12px);
+        }
+
+        .site-header h1 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .site-header h1 .logo-icon {
+            width: 32px; height: 32px;
+            background: linear-gradient(135deg, var(--accent), var(--quantum));
+            border-radius: 8px;
+            display: grid; place-items: center;
+            font-size: 1.1rem;
+        }
+
+        .header-controls {
+            display: flex; gap: 10px; align-items: center;
+        }
+
+        .btn-icon {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            display: flex; align-items: center; gap: 6px;
+        }
+
+        .btn-icon:hover {
+            background: var(--accent-glow);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            min-height: calc(100vh - 65px);
+        }
+
+        .sidebar {
+            background: var(--bg-elevated);
+            border-right: 1px solid var(--border);
+            padding: 20px 16px;
+            overflow-y: auto;
+            position: sticky;
+            top: 65px;
+            height: calc(100vh - 65px);
+        }
+
+        .sidebar h3 {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin: 20px 0 10px;
+            padding-left: 8px;
+        }
+
+        .sidebar h3:first-child { margin-top: 0; }
+
+        .nav-link {
+            display: block;
+            padding: 8px 12px;
+            border-radius: 6px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-link:hover {
+            background: var(--accent-glow);
+            color: var(--text);
+        }
+
+        .nav-link.active {
+            background: var(--accent-glow);
+            color: var(--accent);
+            border-left-color: var(--accent);
+            font-weight: 500;
+        }
+
+        .main-content {
+            padding: 24px 32px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 40px 20px;
+            margin-bottom: 30px;
+        }
+
+        .hero h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--accent), var(--quantum));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .demo-section {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .demo-section.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .demo-title {
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex; align-items: center; gap: 10px;
+        }
+
+        .demo-title .badge {
+            font-size: 0.65rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background: var(--accent-glow);
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .demo-desc {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            font-size: 0.95rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .card-subtitle {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .canvas-container {
+            background: var(--bg);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .canvas-container canvas {
+            display: block;
+            width: 100%;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .control-group label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent);
+        }
+
+        .control-group select,
+        .control-group input[type="number"] {
+            padding: 8px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 0.9rem;
+            font-family: var(--font-mono);
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover { background: var(--accent-secondary); }
+
+        .btn-secondary {
+            background: var(--bg-elevated);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover { background: var(--border); }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--accent);
+            font-family: var(--font-mono);
+        }
+
+        .gate-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .gate-btn {
+            padding: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg-elevated);
+            color: var(--text);
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .gate-btn:hover {
+            border-color: var(--accent);
+            background: var(--accent-glow);
+        }
+
+        .gate-btn.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .state-display {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .state-display .complex-num {
+            color: var(--accent);
+        }
+
+        .heatmap-container {
+            display: grid;
+            gap: 1px;
+            background: var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+            padding: 1px;
+        }
+
+        .heatmap-cell {
+            aspect-ratio: 1;
+            display: grid;
+            place-items: center;
+            font-size: 0.7rem;
+            font-family: var(--font-mono);
+            color: white;
+            text-shadow: 0 0 2px rgba(0,0,0,0.8);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .heatmap-cell:hover {
+            transform: scale(1.05);
+            z-index: 1;
+            outline: 2px solid var(--accent);
+        }
+
+        .circuit-container {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            min-height: 200px;
+            overflow-x: auto;
+        }
+
+        .circuit-qubit-label {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            width: 50px;
+            text-align: right;
+            padding-right: 10px;
+        }
+
+        .circuit-wire {
+            height: 2px;
+            background: var(--text-secondary);
+            flex: 1;
+            position: relative;
+        }
+
+        .circuit-gate {
+            width: 36px;
+            height: 36px;
+            border: 2px solid var(--accent);
+            border-radius: 4px;
+            display: grid;
+            place-items: center;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--accent);
+            background: var(--bg-card);
+            cursor: grab;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 2;
+        }
+
+        .circuit-gate:hover {
+            background: var(--accent-glow);
+        }
+
+        .circuit-gate.multi-qubit {
+            border-style: dashed;
+        }
+
+        .lattice-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            padding: 20px;
+        }
+
+        .lattice-cell {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            display: grid;
+            place-items: center;
+            font-size: 0.7rem;
+            font-family: var(--font-mono);
+            transition: all 0.3s;
+        }
+
+        .slider-value {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--accent);
+            min-width: 50px;
+            text-align: right;
+        }
+
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .slider-row input[type="range"] { flex: 1; }
+
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .layout { grid-template-columns: 1fr; }
+            .sidebar {
+                position: fixed;
+                top: 65px; left: 0;
+                width: 260px; height: calc(100vh - 65px);
+                z-index: 90;
+                transform: translateX(-100%);
+                transition: transform 0.3s;
+            }
+            .sidebar.open { transform: translateX(0); }
+            .two-col { grid-template-columns: 1fr; }
+            .hero h2 { font-size: 1.6rem; }
+        }
+
+        .histogram-bar {
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            height: 150px;
+            padding: 10px;
+        }
+
+        .histogram-bar > div {
+            flex: 1;
+            background: linear-gradient(to top, var(--accent), var(--quantum));
+            border-radius: 3px 3px 0 0;
+            transition: height 0.5s ease;
+            min-height: 2px;
+            position: relative;
+        }
+
+        .histogram-bar > div:hover::after {
+            content: attr(data-label);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            background: var(--bg-elevated);
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        .ladder-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 0;
+        }
+
+        .ladder-rung {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 8px 0;
+        }
+
+        .ladder-m-label {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            width: 40px;
+            text-align: center;
+        }
+
+        .ladder-state {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            display: grid;
+            place-items: center;
+            font-size: 0.7rem;
+            transition: all 0.3s;
+        }
+
+        .ladder-state.active {
+            border-color: var(--accent);
+            background: var(--accent-glow);
+            box-shadow: 0 0 12px var(--accent-glow);
+        }
+
+        .ladder-arrow {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: color 0.2s;
+            padding: 4px;
+        }
+
+        .ladder-arrow:hover { color: var(--accent); }
+
+        .site-footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border);
+            margin-top: 40px;
+        }
+
+        .site-footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 80;
+        }
+
+        .sidebar-overlay.show { display: block; }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <h1>
+            <span class="logo-icon">⚛️</span>
+            ts-quantum
+        </h1>
+        <div class="header-controls">
+            <button class="btn-icon" id="themeToggle" title="Toggle theme">🌙 Dark</button>
+            <button class="btn-icon" id="menuToggle" title="Menu">☰</button>
+        </div>
+    </header>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="layout">
+        <aside class="sidebar" id="sidebar">
+            <h3>Demos</h3>
+            <a class="nav-link active" data-demo="qubit">🎯 Qubit Playground</a>
+            <a class="nav-link" data-demo="walk">🚶 Quantum Walk</a>
+            <a class="nav-link" data-demo="entanglement">🔗 Entanglement Lab</a>
+            <a class="nav-link" data-demo="angular">🌀 Angular Momentum</a>
+            <a class="nav-link" data-demo="circuit">⚡ Circuit Builder</a>
+
+            <h3>Library</h3>
+            <a class="nav-link" href="https://github.com/space-cadet/ts-quantum" target="_blank">📦 GitHub Repo</a>
+            <a class="nav-link" href="index.html">📚 Documentation</a>
+        </aside>
+
+        <main class="main-content">
+            <div class="hero">
+                <h2>Interactive Quantum Showcase</h2>
+                <p>Explore quantum mechanics through rich, interactive visualizations powered by the ts-quantum TypeScript library.</p>
+            </div>
+
+            <!-- ==================== DEMO 1: QUBIT PLAYGROUND ==================== -->
+            <section class="demo-section active" id="demo-qubit">
+                <div class="demo-title">Qubit Playground <span class="badge">Interactive</span></div>
+                <div class="demo-desc">Visualize single-qubit states on the Bloch sphere. Drag to rotate, apply gates, and measure.</div>
+
+                <div class="two-col">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Bloch Sphere</div>
+                                <div class="card-subtitle">Drag to rotate the state vector</div>
+                            </div>
+                        </div>
+                        <div class="canvas-container">
+                            <canvas id="blochCanvas" width="400" height="400"></canvas>
+                        </div>
+                        <div style="margin-top: 12px; text-align: center; font-size: 0.8rem; color: var(--text-secondary);">
+                            θ = <span id="blochTheta">0.000</span> rad, φ = <span id="blochPhi">0.000</span> rad
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-title">Apply Gates</div>
+                            </div>
+                            <div class="gate-grid">
+                                <button class="gate-btn" onclick="appQubit.applyGate('X')">X</button>
+                                <button class="gate-btn" onclick="appQubit.applyGate('Y')">Y</button>
+                                <button class="gate-btn" onclick="appQubit.applyGate('Z')">Z</button>
+                                <button class="gate-btn" onclick="appQubit.applyGate('H')">H</button>
+                                <button class="gate-btn" onclick="appQubit.applyGate('S')">S</button>
+                                <button class="gate-btn" onclick="appQubit.applyGate('T')">T</button>
+                                <button class="gate-btn" onclick="appQubit.applyGate('Rx')">Rx</button>
+                                <button class="gate-btn" onclick="appQubit.applyGate('Ry')">Ry</button>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-secondary btn-sm" onclick="appQubit.resetState()">|0⟩</button>
+                                <button class="btn btn-secondary btn-sm" onclick="appQubit.setState(1,0,0,0)">|1⟩</button>
+                                <button class="btn btn-secondary btn-sm" onclick="appQubit.setState(1/Math.SQRT2,0,1/Math.SQRT2,0)">|+⟩</button>
+                                <button class="btn btn-secondary btn-sm" onclick="appQubit.setState(1/Math.SQRT2,0,0,1/Math.SQRT2)">|i⟩</button>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-title">State Vector</div>
+                            </div>
+                            <div class="state-display" id="qubitStateDisplay">
+                                |ψ⟩ = <span class="complex-num">1.0000</span>|0⟩ + <span class="complex-num">0.0000</span>|1⟩
+                            </div>
+                            <div class="stats-grid" style="margin-top: 12px;">
+                                <div class="stat-card">
+                                    <div class="stat-label">Purity</div>
+                                    <div class="stat-value" id="qubitPurity">1.0000</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-label">⟨σz⟩</div>
+                                    <div class="stat-value" id="qubitExpZ">1.0000</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Measurement Simulation</div>
+                        <div class="card-subtitle">Simulate projective measurements in the computational basis</div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="appQubit.measure(100)">100 shots</button>
+                        <button class="btn btn-primary" onclick="appQubit.measure(1000)">1000 shots</button>
+                        <button class="btn btn-secondary" onclick="appQubit.clearMeasurements()">Clear</button>
+                    </div>
+                    <div class="histogram-bar" id="measurementHistogram" style="margin-top: 12px;">
+                        <div data-label="|0⟩: 0%" style="height: 2px;"></div>
+                        <div data-label="|1⟩: 0%" style="height: 2px;"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-around; margin-top: 8px; font-size: 0.8rem; color: var(--text-secondary);">
+                        <span>|0⟩</span>
+                        <span>|1⟩</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== DEMO 2: QUANTUM WALK ==================== -->
+            <section class="demo-section" id="demo-walk">
+                <div class="demo-title">Quantum Walk Explorer <span class="badge">Animated</span></div>
+                <div class="demo-desc">Compare quantum vs classical random walks on a 1D lattice. Quantum walks spread quadratically faster!</div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Parameters</div>
+                    </div>
+                    <div class="controls-grid">
+                        <div class="control-group">
+                            <label>Coin Operator</label>
+                            <select id="walkCoin">
+                                <option value="hadamard">Hadamard</option>
+                                <option value="grover">Grover</option>
+                                <option value="custom">Custom Rotation</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>Lattice Size</label>
+                            <input type="number" id="walkLattice" value="21" min="5" max="51" step="2">
+                        </div>
+                        <div class="control-group">
+                            <label>Total Steps</label>
+                            <input type="number" id="walkSteps" value="20" min="1" max="100">
+                        </div>
+                        <div class="control-group">
+                            <label>Animation Speed</label>
+                            <select id="walkSpeed">
+                                <option value="200">Fast</option>
+                                <option value="500" selected>Normal</option>
+                                <option value="1000">Slow</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="slider-row">
+                        <label style="font-size: 0.8rem; color: var(--text-secondary);">Custom θ:</label>
+                        <input type="range" id="walkTheta" min="0" max="180" value="45">
+                        <span class="slider-value" id="walkThetaVal">45°</span>
+                    </div>
+                    <div class="btn-group" style="margin-top: 12px;">
+                        <button class="btn btn-primary" onclick="appWalk.run()" id="walkRunBtn">▶ Run</button>
+                        <button class="btn btn-secondary" onclick="appWalk.step()">Step</button>
+                        <button class="btn btn-danger" onclick="appWalk.stop()">⏹ Stop</button>
+                        <button class="btn btn-secondary" onclick="appWalk.reset()">Reset</button>
+                    </div>
+                </div>
+
+                <div class="two-col">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Quantum Walk</div>
+                            <div class="card-subtitle" id="walkQuantumStats">Step 0 | Variance: 0.00</div>
+                        </div>
+                        <div class="canvas-container">
+                            <canvas id="walkQuantumCanvas" width="500" height="250"></canvas>
+                        </div>
+                        <div class="lattice-container" id="walkQuantumLattice"></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Classical Walk</div>
+                            <div class="card-subtitle" id="walkClassicalStats">Step 0 | Variance: 0.00</div>
+                        </div>
+                        <div class="canvas-container">
+                            <canvas id="walkClassicalCanvas" width="500" height="250"></canvas>
+                        </div>
+                        <div class="lattice-container" id="walkClassicalLattice"></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Variance Comparison</div>
+                        <div class="card-subtitle">Quantum variance grows as t²; classical as t</div>
+                    </div>
+                    <div class="canvas-container">
+                        <canvas id="varianceCanvas" width="800" height="300"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== DEMO 3: ENTANGLEMENT LAB ==================== -->
+            <section class="demo-section" id="demo-entanglement">
+                <div class="demo-title">Entanglement Lab <span class="badge">Real-time</span></div>
+                <div class="demo-desc">Create arbitrary two-qubit states, visualize their density matrix, and compute entanglement measures.</div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">State Parameters</div>
+                        <div class="card-subtitle">Adjust amplitudes to create any pure two-qubit state</div>
+                    </div>
+                    <div class="controls-grid">
+                        <div class="control-group slider-row">
+                            <label>Re(α):</label>
+                            <input type="range" id="entAlphaRe" min="-100" max="100" value="71" oninput="appEnt.update()">
+                            <span class="slider-value" id="entAlphaReVal">0.71</span>
+                        </div>
+                        <div class="control-group slider-row">
+                            <label>Im(α):</label>
+                            <input type="range" id="entAlphaIm" min="-100" max="100" value="0" oninput="appEnt.update()">
+                            <span class="slider-value" id="entAlphaImVal">0.00</span>
+                        </div>
+                        <div class="control-group slider-row">
+                            <label>Re(β):</label>
+                            <input type="range" id="entBetaRe" min="-100" max="100" value="0" oninput="appEnt.update()">
+                            <span class="slider-value" id="entBetaReVal">0.00</span>
+                        </div>
+                        <div class="control-group slider-row">
+                            <label>Im(β):</label>
+                            <input type="range" id="entBetaIm" min="-100" max="100" value="0" oninput="appEnt.update()">
+                            <span class="slider-value" id="entBetaImVal">0.00</span>
+                        </div>
+                        <div class="control-group slider-row">
+                            <label>Re(γ):</label>
+                            <input type="range" id="entGammaRe" min="-100" max="100" value="0" oninput="appEnt.update()">
+                            <span class="slider-value" id="entGammaReVal">0.00</span>
+                        </div>
+                        <div class="control-group slider-row">
+                            <label>Im(γ):</label>
+                            <input type="range" id="entGammaIm" min="-100" max="100" value="0" oninput="appEnt.update()">
+                            <span class="slider-value" id="entGammaImVal">0.00</span>
+                        </div>
+                        <div class="control-group slider-row">
+                            <label>Re(δ):</label>
+                            <input type="range" id="entDeltaRe" min="-100" max="100" value="71" oninput="appEnt.update()">
+                            <span class="slider-value" id="entDeltaReVal">0.71</span>
+                        </div>
+                        <div class="control-group slider-row">
+                            <label>Im(δ):</label>
+                            <input type="range" id="entDeltaIm" min="-100" max="100" value="0" oninput="appEnt.update()">
+                            <span class="slider-value" id="entDeltaImVal">0.00</span>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary btn-sm" onclick="appEnt.preset('bell')">Bell Φ⁺</button>
+                        <button class="btn btn-secondary btn-sm" onclick="appEnt.preset('product')">|00⟩</button>
+                        <button class="btn btn-secondary btn-sm" onclick="appEnt.preset('w')">W-like</button>
+                        <button class="btn btn-secondary btn-sm" onclick="appEnt.preset('maximal')">Maximally Mixed</button>
+                    </div>
+                </div>
+
+                <div class="two-col">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Density Matrix |ρ⟩⟨ρ|</div>
+                            <div class="card-subtitle">Magnitude heatmap (4×4)</div>
+                        </div>
+                        <div id="densityHeatmap" style="display: flex; justify-content: center;">
+                            <div class="heatmap-container" id="densityGrid" style="grid-template-columns: repeat(4, 1fr); width: 280px;"></div>
+                        </div>
+                        <div style="margin-top: 12px; text-align: center; font-size: 0.75rem; color: var(--text-secondary);">
+                            |00⟩ |01⟩ |10⟩ |11⟩
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Entanglement Measures</div>
+                        </div>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-label">Von Neumann S</div>
+                                <div class="stat-value" id="entEntropy">1.0000</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Concurrence</div>
+                                <div class="stat-value" id="entConcurrence">1.0000</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Negativity</div>
+                                <div class="stat-value" id="entNegativity">0.5000</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Purity Tr(ρ²)</div>
+                                <div class="stat-value" id="entPurity">1.0000</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 12px; padding: 12px; background: var(--bg); border-radius: 6px; font-size: 0.85rem;">
+                            <strong>Bell Inequality:</strong> <span id="bellInequality">CHSH = 2√2 ≈ 2.828 (violated ✓)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Schmidt Decomposition</div>
+                        <div class="card-subtitle">|ψ⟩ = Σᵢ λᵢ |aᵢ⟩ ⊗ |bᵢ⟩</div>
+                    </div>
+                    <div class="state-display" id="schmidtDisplay">
+                        λ₁ = 0.7071, λ₂ = 0.7071
+                    </div>
+                    <div class="canvas-container" style="margin-top: 12px;">
+                        <canvas id="schmidtCanvas" width="500" height="150"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== DEMO 4: ANGULAR MOMENTUM ==================== -->
+            <section class="demo-section" id="demo-angular">
+                <div class="demo-title">Angular Momentum Visualizer <span class="badge">SU(2)</span></div>
+                <div class="demo-desc">Explore spin-j states, ladder operators, and Clebsch-Gordan coupling for quantum angular momentum.</div>
+
+                <div class="two-col">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Spin-j State |j,m⟩</div>
+                        </div>
+                        <div class="controls-grid">
+                            <div class="control-group">
+                                <label>Total spin j</label>
+                                <select id="amJ" onchange="appAngular.updateMOptions()">
+                                    <option value="0.5" selected>1/2</option>
+                                    <option value="1">1</option>
+                                    <option value="1.5">3/2</option>
+                                    <option value="2">2</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label>Magnetic quantum m</label>
+                                <select id="amM" onchange="appAngular.update()">
+                                    <option value="-0.5">-1/2</option>
+                                    <option value="0.5" selected>+1/2</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="ladder-container" id="ladderContainer" style="margin-top: 16px;">
+                            <!-- Generated by JS -->
+                        </div>
+                        <div class="btn-group" style="margin-top: 12px;">
+                            <button class="btn btn-secondary btn-sm" onclick="appAngular.ladderUp()">J⁺ | Raise</button>
+                            <button class="btn btn-secondary btn-sm" onclick="appAngular.ladderDown()">J⁻ | Lower</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Eigenvalues</div>
+                        </div>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-label">Jz |m⟩</div>
+                                <div class="stat-value" id="amJz">+0.50 ℏ</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">J² |j,m⟩</div>
+                                <div class="stat-value" id="amJ2">0.75 ℏ²</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Dimension</div>
+                                <div class="stat-value" id="amDim">2</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Degeneracy</div>
+                                <div class="stat-value" id="amDeg">2j+1 = 2</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 16px; padding: 12px; background: var(--bg); border-radius: 6px;">
+                            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px;">State Vector</div>
+                            <div class="state-display" id="amStateVec">
+                                |↑⟩ = [1, 0]
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Clebsch-Gordan Coupling</div>
+                        <div class="card-subtitle">Combine two spins: |j₁,m₁⟩ ⊗ |j₂,m₂⟩ = Σ C^{j,m}_{j₁,m₁;j₂,m₂} |j,m⟩</div>
+                    </div>
+                    <div class="controls-grid">
+                        <div class="control-group">
+                            <label>j₁</label>
+                            <select id="cgJ1" onchange="appAngular.updateCG()">
+                                <option value="0.5">1/2</option>
+                                <option value="1" selected>1</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>j₂</label>
+                            <select id="cgJ2" onchange="appAngular.updateCG()">
+                                <option value="0.5" selected>1/2</option>
+                                <option value="1">1</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="margin-top: 16px;" id="cgResult">
+                        <div style="font-size: 0.9rem; color: var(--text-secondary); text-align: center; padding: 20px;">
+                            Select spins to see Clebsch-Gordan decomposition
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== DEMO 5: CIRCUIT BUILDER ==================== -->
+            <section class="demo-section" id="demo-circuit">
+                <div class="demo-title">Quantum Circuit Builder <span class="badge">Drag & Drop</span></div>
+                <div class="demo-desc">Build quantum circuits gate-by-gate and step through execution to see state evolution.</div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Gate Palette</div>
+                        <div class="card-subtitle">Click to add gates to the circuit</div>
+                    </div>
+                    <div class="gate-grid" style="max-width: 600px;">
+                        <button class="gate-btn" onclick="appCircuit.addGate('H', 0)">H₀</button>
+                        <button class="gate-btn" onclick="appCircuit.addGate('H', 1)">H₁</button>
+                        <button class="gate-btn" onclick="appCircuit.addGate('X', 0)">X₀</button>
+                        <button class="gate-btn" onclick="appCircuit.addGate('X', 1)">X₁</button>
+                        <button class="gate-btn" onclick="appCircuit.addGate('Z', 0)">Z₀</button>
+                        <button class="gate-btn" onclick="appCircuit.addGate('Z', 1)">Z₁</button>
+                        <button class="gate-btn" onclick="appCircuit.addGate('CNOT')">CNOT</button>
+                        <button class="gate-btn" onclick="appCircuit.addGate('CZ')">CZ</button>
+                        <button class="gate-btn" onclick="appCircuit.addGate('S', 0)">S₀</button>
+                        <button class="gate-btn" onclick="appCircuit.addGate('T', 0)">T₀</button>
+                    </div>
+                </div>
+
+                <div class="two-col">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Circuit Diagram</div>
+                            <div class="card-subtitle">2-qubit circuit</div>
+                        </div>
+                        <div class="circuit-container" id="circuitDiagram">
+                            <!-- Generated by JS -->
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-secondary btn-sm" onclick="appCircuit.clear()">Clear All</button>
+                            <button class="btn btn-danger btn-sm" onclick="appCircuit.removeLast()">↩ Undo</button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Execution</div>
+                        </div>
+                        <div class="state-display" id="circuitState">
+                            |ψ⟩ = |00⟩
+                        </div>
+                        <div class="btn-group" style="margin-top: 12px;">
+                            <button class="btn btn-primary" onclick="appCircuit.step()">Step →</button>
+                            <button class="btn btn-primary" onclick="appCircuit.runAll()">▶ Run All</button>
+                            <button class="btn btn-secondary" onclick="appCircuit.reset()">Reset</button>
+                        </div>
+                        <div style="margin-top: 12px; font-size: 0.8rem; color: var(--text-secondary);" id="circuitStepInfo">
+                            Step 0 / 0: Initial state
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">State Amplitudes</div>
+                    </div>
+                    <div class="canvas-container">
+                        <canvas id="circuitAmplitudeCanvas" width="600" height="180"></canvas>
+                    </div>
+                    <div style="margin-top: 12px;">
+                        <div class="state-display" id="circuitAmplitudes" style="font-size: 0.8rem;">
+                            |00⟩: 1.0000 | |01⟩: 0.0000 | |10⟩: 0.0000 | |11⟩: 0.0000
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <footer class="site-footer">
+                <p>ts-quantum v0.9.0 — A comprehensive TypeScript library for quantum mechanics</p>
+                <p style="margin-top: 8px;">
+                    <a href="https://github.com/space-cadet/ts-quantum">GitHub</a> ·
+                    <a href="index.html">Docs</a> ·
+                    Built with ❤️ for the quantum community
+                </p>
+            </footer>
+        </main>
+    </div>
+
+    <script src="bundle.js"></script>
+    <script>
+// ==================== UTILITY FUNCTIONS ====================
+const TAU = 2 * Math.PI;
+
+function getCSSVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+function heatmapColor(val) {
+  const hue = (1 - val) * 240;
+  const lit = 0.2 + val * 0.5;
+  return `hsl(${hue}, 90%, ${lit * 100}%)`;
+}
+
+function formatComplex(re, im, prec = 3) {
+  if (Math.abs(im) < 1e-10) return re.toFixed(prec);
+  const sign = im >= 0 ? '+' : '-';
+  return `${re.toFixed(prec)} ${sign} ${Math.abs(im).toFixed(prec)}i`;
+}
+
+function formatAmp(re, im, prec = 3) {
+  if (Math.abs(re) < 1e-10 && Math.abs(im) < 1e-10) return '0';
+  if (Math.abs(im) < 1e-10) return re.toFixed(prec);
+  if (Math.abs(re) < 1e-10) return `${im.toFixed(prec)}i`;
+  const sign = im >= 0 ? '+' : '-';
+  return `${re.toFixed(prec)}${sign}${Math.abs(im).toFixed(prec)}i`;
+}
+
+function matMul(A, B) {
+  const n = A.length, m = B[0].length, p = B.length;
+  const C = Array.from({length: n}, () => Array(m).fill(null).map(() => ({re:0, im:0})));
+  for (let i = 0; i < n; i++)
+    for (let j = 0; j < m; j++)
+      for (let k = 0; k < p; k++) {
+        C[i][j].re += A[i][k].re * B[k][j].re - A[i][k].im * B[k][j].im;
+        C[i][j].im += A[i][k].re * B[k][j].im + A[i][k].im * B[k][j].re;
+      }
+  return C;
+}
+
+function matVecMul(M, v) {
+  const n = M.length;
+  return M.map(row => row.reduce((s, mij, j) => ({
+    re: s.re + mij.re * v[j].re - mij.im * v[j].im,
+    im: s.im + mij.re * v[j].im + mij.im * v[j].re
+  }), {re:0, im:0}));
+}
+
+function conj(z) { return {re: z.re, im: -z.im}; }
+function abs2(z) { return z.re*z.re + z.im*z.im; }
+function cmul(a, b) { return {re: a.re*b.re - a.im*b.im, im: a.re*b.im + a.im*b.re}; }
+function cadd(a, b) { return {re: a.re+b.re, im: a.im+b.im}; }
+function csub(a, b) { return {re: a.re-b.re, im: a.im-b.im}; }
+
+function normalize(v) {
+  const norm = Math.sqrt(v.reduce((s, z) => s + abs2(z), 0));
+  return v.map(z => ({re: z.re/norm, im: z.im/norm}));
+}
+
+function tensor(M1, M2) {
+  const n1 = M1.length, n2 = M2.length;
+  const N = n1 * n2;
+  const R = Array.from({length: N}, () => Array(N).fill(null).map(() => ({re:0, im:0})));
+  for (let i = 0; i < n1; i++)
+    for (let j = 0; j < n1; j++)
+      for (let k = 0; k < n2; k++)
+        for (let l = 0; l < n2; l++)
+          R[i*n2+k][j*n2+l] = cmul(M1[i][j], M2[k][l]);
+  return R;
+}
+
+function identity(n) {
+  return Array.from({length: n}, (_, i) => Array.from({length: n}, (_, j) => ({re: i===j?1:0, im:0})));
+}
+
+function applySingleQubitGate(gate, state, qubitIndex, totalQubits) {
+  let U = [[{re:1,im:0}]];
+  for (let i = 0; i < totalQubits; i++) {
+    const g = (i === qubitIndex) ? gate : identity(2);
+    U = tensor(U, g);
+  }
+  return matVecMul(U, state);
+}
+
+function applyTwoQubitGate(gate, state) {
+  return matVecMul(gate, state);
+}
+
+const GATES = {
+  X: [[{re:0,im:0},{re:1,im:0}],[{re:1,im:0},{re:0,im:0}]],
+  Y: [[{re:0,im:0},{re:0,im:-1}],[{re:0,im:1},{re:0,im:0}]],
+  Z: [[{re:1,im:0},{re:0,im:0}],[{re:0,im:0},{re:-1,im:0}]],
+  H: [[{re:1/Math.SQRT2,im:0},{re:1/Math.SQRT2,im:0}],[{re:1/Math.SQRT2,im:0},{re:-1/Math.SQRT2,im:0}]],
+  S: [[{re:1,im:0},{re:0,im:0}],[{re:0,im:0},{re:0,im:1}]],
+  T: [[{re:1,im:0},{re:0,im:0}],[{re:0,im:0},{re:Math.cos(Math.PI/4),im:Math.sin(Math.PI/4)}]],
+  I: [[{re:1,im:0},{re:0,im:0}],[{re:0,im:0},{re:1,im:0}]],
+};
+
+const CNOT = [
+  [{re:1,im:0},{re:0,im:0},{re:0,im:0},{re:0,im:0}],
+  [{re:0,im:0},{re:1,im:0},{re:0,im:0},{re:0,im:0}],
+  [{re:0,im:0},{re:0,im:0},{re:0,im:0},{re:1,im:0}],
+  [{re:0,im:0},{re:0,im:0},{re:1,im:0},{re:0,im:0}]
+];
+
+const CZ = [
+  [{re:1,im:0},{re:0,im:0},{re:0,im:0},{re:0,im:0}],
+  [{re:0,im:0},{re:1,im:0},{re:0,im:0},{re:0,im:0}],
+  [{re:0,im:0},{re:0,im:0},{re:1,im:0},{re:0,im:0}],
+  [{re:0,im:0},{re:0,im:0},{re:0,im:0},{re:-1,im:0}]
+];
+
+function Rx(theta) {
+  const c = Math.cos(theta/2), s = Math.sin(theta/2);
+  return [[{re:c,im:0},{re:0,im:-s}],[{re:0,im:-s},{re:c,im:0}]];
+}
+function Ry(theta) {
+  const c = Math.cos(theta/2), s = Math.sin(theta/2);
+  return [[{re:c,im:0},{re:-s,im:0}],[{re:s,im:0},{re:c,im:0}]];
+}
+
+// ==================== DEMO 1: QUBIT PLAYGROUND ====================
+const appQubit = {
+  theta: 0,
+  phi: 0,
+  state: [{re:1, im:0}, {re:0, im:0}],
+  isDragging: false,
+  measurements: {0: 0, 1: 0},
+  totalShots: 0,
+
+  init() {
+    this.canvas = document.getElementById('blochCanvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.updateStateDisplay();
+    this.drawBloch();
+    this.setupEvents();
+  },
+
+  setupEvents() {
+    const c = this.canvas;
+    const getAngles = (e) => {
+      const r = c.getBoundingClientRect();
+      const x = (e.clientX - r.left) * (c.width / r.width);
+      const y = (e.clientY - r.top) * (c.height / r.height);
+      const cx = c.width / 2, cy = c.height / 2;
+      const dx = (x - cx) / (c.width * 0.35);
+      const dy = (y - cy) / (c.height * 0.35);
+      let phi = Math.atan2(dx, -dy);
+      let theta = Math.acos(Math.min(1, Math.max(-1, Math.sqrt(dx*dx + dy*dy))));
+      if (isNaN(theta)) theta = 0;
+      return {theta, phi};
+    };
+
+    c.addEventListener('mousedown', e => {
+      this.isDragging = true;
+      const a = getAngles(e);
+      this.setAngles(a.theta, a.phi);
+    });
+    c.addEventListener('mousemove', e => {
+      if (!this.isDragging) return;
+      const a = getAngles(e);
+      this.setAngles(a.theta, a.phi);
+    });
+    window.addEventListener('mouseup', () => this.isDragging = false);
+
+    c.addEventListener('touchstart', e => {
+      e.preventDefault();
+      this.isDragging = true;
+      const a = getAngles(e.touches[0]);
+      this.setAngles(a.theta, a.phi);
+    }, {passive:false});
+    c.addEventListener('touchmove', e => {
+      e.preventDefault();
+      if (!this.isDragging) return;
+      const a = getAngles(e.touches[0]);
+      this.setAngles(a.theta, a.phi);
+    }, {passive:false});
+    window.addEventListener('touchend', () => this.isDragging = false);
+  },
+
+  setAngles(theta, phi) {
+    this.theta = theta;
+    this.phi = phi;
+    const st = Math.sin(theta/2), ct = Math.cos(theta/2);
+    this.state = [
+      {re: ct, im: 0},
+      {re: st * Math.cos(phi), im: st * Math.sin(phi)}
+    ];
+    this.updateStateDisplay();
+    this.drawBloch();
+  },
+
+  setState(alphaRe, alphaIm, betaRe, betaIm) {
+    this.state = normalize([{re: alphaRe, im: alphaIm}, {re: betaRe, im: betaIm}]);
+    const beta = this.state[1];
+    const alpha = this.state[0];
+    this.theta = 2 * Math.acos(Math.min(1, Math.sqrt(abs2(alpha))));
+    this.phi = Math.atan2(beta.im, beta.re);
+    if (this.theta < 1e-10) this.phi = 0;
+    this.updateStateDisplay();
+    this.drawBloch();
+  },
+
+  applyGate(name) {
+    let gate;
+    if (name === 'Rx') gate = Rx(Math.PI/2);
+    else if (name === 'Ry') gate = Ry(Math.PI/2);
+    else gate = GATES[name];
+    if (!gate) return;
+
+    const startState = [...this.state];
+    const endState = matVecMul(gate, startState);
+    let t = 0;
+    const animate = () => {
+      t += 0.08;
+      if (t >= 1) {
+        this.state = endState;
+        this.updateFromState();
+        return;
+      }
+      this.state = startState.map((s, i) => ({
+        re: s.re + (endState[i].re - s.re) * t,
+        im: s.im + (endState[i].im - s.im) * t
+      }));
+      this.updateFromState();
+      requestAnimationFrame(animate);
+    };
+    animate();
+  },
+
+  updateFromState() {
+    const alpha = this.state[0], beta = this.state[1];
+    this.theta = 2 * Math.acos(Math.min(1, Math.sqrt(abs2(alpha))));
+    this.phi = Math.atan2(beta.im, beta.re);
+    if (this.theta < 1e-10) this.phi = 0;
+    this.updateStateDisplay();
+    this.drawBloch();
+  },
+
+  resetState() {
+    this.setState(1, 0, 0, 0);
+  },
+
+  updateStateDisplay() {
+    const a = this.state[0], b = this.state[1];
+    document.getElementById('blochTheta').textContent = this.theta.toFixed(3);
+    document.getElementById('blochPhi').textContent = this.phi.toFixed(3);
+    document.getElementById('qubitStateDisplay').innerHTML =
+      `|ψ⟩ = <span class="complex-num">${formatComplex(a.re, a.im)}</span>|0⟩ + <span class="complex-num">${formatComplex(b.re, b.im)}</span>|1⟩`;
+    document.getElementById('qubitPurity').textContent = '1.0000';
+    const expZ = abs2(a) - abs2(b);
+    document.getElementById('qubitExpZ').textContent = expZ.toFixed(4);
+  },
+
+  drawBloch() {
+    const ctx = this.ctx;
+    const W = this.canvas.width, H = this.canvas.height;
+    const cx = W/2, cy = H/2, r = Math.min(W, H) * 0.38;
+    ctx.clearRect(0, 0, W, H);
+
+    const bg = getCSSVar('--bg') || '#0f1117';
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    const accent = getCSSVar('--accent') || '#58a6ff';
+    const textSec = getCSSVar('--text-secondary') || '#8b949e';
+    const text = getCSSVar('--text') || '#c9d1d9';
+    const quantum = getCSSVar('--quantum') || '#a371f7';
+
+    ctx.strokeStyle = textSec;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, TAU);
+    ctx.stroke();
+
+    ctx.globalAlpha = 0.3;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, r, r * 0.35, 0, 0, TAU);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, r * 0.35, r, 0, 0, TAU);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    ctx.strokeStyle = textSec;
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(cx - r, cy); ctx.lineTo(cx + r, cy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx, cy + r); ctx.lineTo(cx, cy - r); ctx.stroke();
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(cx - r*0.35, cy + r*0.35); ctx.lineTo(cx + r*0.35, cy - r*0.35); ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.font = 'bold 14px sans-serif';
+    ctx.fillStyle = text;
+    ctx.fillText('|0⟩', cx - 8, cy - r - 8);
+    ctx.fillText('|1⟩', cx - 8, cy + r + 20);
+    ctx.fillText('|+⟩', cx + r + 6, cy + 4);
+    ctx.fillText('|-⟩', cx - r - 28, cy + 4);
+
+    const st = Math.sin(this.theta), ct = Math.cos(this.theta);
+    const sp = Math.sin(this.phi), cp = Math.cos(this.phi);
+    const x3d = st * cp;
+    const y3d = st * sp;
+    const z3d = ct;
+    const px = cx + x3d * r;
+    const py = cy - z3d * r * 0.65 + y3d * r * 0.25;
+
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(px, py);
+    ctx.stroke();
+
+    const grad = ctx.createRadialGradient(px, py, 0, px, py, 16);
+    grad.addColorStop(0, accent);
+    grad.addColorStop(1, 'transparent');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(px, py, 16, 0, TAU);
+    ctx.fill();
+
+    ctx.fillStyle = accent;
+    ctx.beginPath();
+    ctx.arc(px, py, 5, 0, TAU);
+    ctx.fill();
+
+    ctx.globalAlpha = 0.25;
+    ctx.strokeStyle = quantum;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    const pxEq = cx + x3d * r;
+    const pyEq = cy + y3d * r * 0.25;
+    ctx.lineTo(pxEq, pyEq);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  },
+
+  measure(shots) {
+    const p0 = abs2(this.state[0]);
+    for (let i = 0; i < shots; i++) {
+      if (Math.random() < p0) this.measurements[0]++;
+      else this.measurements[1]++;
+    }
+    this.totalShots += shots;
+    this.updateHistogram();
+  },
+
+  clearMeasurements() {
+    this.measurements = {0: 0, 1: 0};
+    this.totalShots = 0;
+    this.updateHistogram();
+  },
+
+  updateHistogram() {
+    const el = document.getElementById('measurementHistogram');
+    const p0 = this.totalShots > 0 ? this.measurements[0] / this.totalShots : 0;
+    const p1 = this.totalShots > 0 ? this.measurements[1] / this.totalShots : 0;
+    const maxH = Math.max(p0, p1, 0.01);
+    el.innerHTML = `
+      <div data-label="|0⟩: ${(p0*100).toFixed(1)}%" style="height: ${Math.max(2, (p0/maxH)*140)}px;"></div>
+      <div data-label="|1⟩: ${(p1*100).toFixed(1)}%" style="height: ${Math.max(2, (p1/maxH)*140)}px;"></div>
+    `;
+  }
+};
+
+// ==================== DEMO 2: QUANTUM WALK ====================
+const appWalk = {
+  qwState: null,
+  cwState: null,
+  qwHistory: [],
+  cwHistory: [],
+  running: false,
+  stepTimer: null,
+  currentStep: 0,
+  maxSteps: 20,
+
+  init() {
+    this.reset();
+    document.getElementById('walkTheta').addEventListener('input', e => {
+      document.getElementById('walkThetaVal').textContent = e.target.value + '°';
+    });
+  },
+
+  reset() {
+    this.stop();
+    this.currentStep = 0;
+    this.maxSteps = parseInt(document.getElementById('walkSteps').value);
+    const lattice = parseInt(document.getElementById('walkLattice').value);
+    const coin = document.getElementById('walkCoin').value;
+    const theta = parseFloat(document.getElementById('walkTheta').value) * Math.PI / 180;
+
+    if (window.simulations) {
+      try {
+        this.qwState = window.simulations.initializeQuantumWalk1DCustom(lattice, coin, 'reflecting', theta);
+      } catch(e) {
+        this.qwState = this.initQWDirect(lattice, coin, theta);
+      }
+      try {
+        this.cwState = window.simulations.initializeClassicalWalk1D(lattice);
+      } catch(e) {
+        this.cwState = this.initCWDirect(lattice);
+      }
+    } else {
+      this.qwState = this.initQWDirect(lattice, coin, theta);
+      this.cwState = this.initCWDirect(lattice);
+    }
+
+    this.qwHistory = [];
+    this.cwHistory = [];
+    this.recordSnapshot();
+    this.render();
+    this.renderVariancePlot();
+  },
+
+  initQWDirect(N, coin, theta) {
+    const size = N;
+    const mid = Math.floor(size/2);
+    const amplitudes = Array.from({length: size * 2}, () => ({re:0, im:0}));
+    amplitudes[mid * 2].re = 1/Math.SQRT2;
+    amplitudes[mid * 2 + 1].re = 1/Math.SQRT2;
+
+    let coinMatrix;
+    if (coin === 'hadamard') {
+      coinMatrix = GATES.H;
+    } else if (coin === 'grover') {
+      const g = 2/2;
+      coinMatrix = [[{re:g-1,im:0},{re:g,im:0}],[{re:g,im:0},{re:g-1,im:0}]];
+    } else {
+      const ct = Math.cos(theta), st = Math.sin(theta);
+      coinMatrix = [[{re:ct,im:0},{re:st,im:0}],[{re:st,im:0},{re:-ct,im:0}]];
+    }
+
+    return {size, amplitudes, coinMatrix, mid, step: 0, type: 'quantum'};
+  },
+
+  initCWDirect(N) {
+    const size = N;
+    const mid = Math.floor(size/2);
+    const probs = Array(size).fill(0);
+    probs[mid] = 1;
+    return {size, probs, step: 0, type: 'classical'};
+  },
+
+  stepQW() {
+    const s = this.qwState;
+    const N = s.size;
+    const newAmp = Array.from({length: N*2}, () => ({re:0, im:0}));
+    for (let x = 0; x < N; x++) {
+      const left = s.amplitudes[x*2];
+      const right = s.amplitudes[x*2+1];
+      const c = s.coinMatrix;
+      const newL = cadd(cmul(c[0][0], left), cmul(c[0][1], right));
+      const newR = cadd(cmul(c[1][0], left), cmul(c[1][1], right));
+      if (x > 0) {
+        newAmp[(x-1)*2] = cadd(newAmp[(x-1)*2], newL);
+      } else {
+        newAmp[x*2+1] = cadd(newAmp[x*2+1], newL);
+      }
+      if (x < N-1) {
+        newAmp[(x+1)*2+1] = cadd(newAmp[(x+1)*2+1], newR);
+      } else {
+        newAmp[x*2] = cadd(newAmp[x*2], newR);
+      }
+    }
+    s.amplitudes = newAmp;
+    s.step++;
+  },
+
+  stepCW() {
+    const s = this.cwState;
+    const N = s.size;
+    const newProbs = Array(N).fill(0);
+    for (let x = 0; x < N; x++) {
+      if (x > 0) newProbs[x-1] += s.probs[x] * 0.5;
+      else newProbs[x] += s.probs[x] * 0.5;
+      if (x < N-1) newProbs[x+1] += s.probs[x] * 0.5;
+      else newProbs[x] += s.probs[x] * 0.5;
+    }
+    s.probs = newProbs;
+    s.step++;
+  },
+
+  recordSnapshot() {
+    if (this.qwState) {
+      const probs = [];
+      for (let i = 0; i < this.qwState.size; i++) {
+        const a = this.qwState.amplitudes[i*2];
+        const b = this.qwState.amplitudes[i*2+1];
+        probs.push(abs2(a) + abs2(b));
+      }
+      const mean = probs.reduce((s, p, i) => s + p * i, 0);
+      const mean2 = probs.reduce((s, p, i) => s + p * i * i, 0);
+      this.qwHistory.push({step: this.qwState.step, probs, variance: mean2 - mean*mean});
+    }
+    if (this.cwState) {
+      const probs = [...this.cwState.probs];
+      const mean = probs.reduce((s, p, i) => s + p * i, 0);
+      const mean2 = probs.reduce((s, p, i) => s + p * i * i, 0);
+      this.cwHistory.push({step: this.cwState.step, probs, variance: mean2 - mean*mean});
+    }
+  },
+
+  step() {
+    if (this.currentStep >= this.maxSteps) return;
+    this.stepQW();
+    this.stepCW();
+    this.currentStep++;
+    this.recordSnapshot();
+    this.render();
+    this.renderVariancePlot();
+  },
+
+  run() {
+    if (this.running) return;
+    this.running = true;
+    const speed = parseInt(document.getElementById('walkSpeed').value);
+    const loop = () => {
+      if (!this.running || this.currentStep >= this.maxSteps) {
+        this.running = false;
+        return;
+      }
+      this.step();
+      this.stepTimer = setTimeout(loop, speed);
+    };
+    loop();
+  },
+
+  stop() {
+    this.running = false;
+    if (this.stepTimer) clearTimeout(this.stepTimer);
+  },
+
+  render() {
+    this.renderWalk('Quantum', this.qwHistory[this.qwHistory.length-1], 'walkQuantum');
+    this.renderWalk('Classical', this.cwHistory[this.cwHistory.length-1], 'walkClassical');
+  },
+
+  renderWalk(label, snapshot, prefix) {
+    if (!snapshot) return;
+    const probs = snapshot.probs;
+    const variance = snapshot.variance;
+    document.getElementById(`${prefix}Stats`).textContent = `Step ${snapshot.step} | Variance: ${variance.toFixed(2)}`;
+
+    const canvas = document.getElementById(`${prefix}Canvas`);
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+
+    const accent = getCSSVar('--accent') || '#58a6ff';
+    const quantum = getCSSVar('--quantum') || '#a371f7';
+    const textSec = getCSSVar('--text-secondary') || '#8b949e';
+    const bg = getCSSVar('--bg') || '#0f1117';
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    const n = probs.length;
+    const barW = (W - 40) / n;
+    const maxP = Math.max(...probs, 0.01);
+
+    for (let i = 0; i < n; i++) {
+      const h = (probs[i] / maxP) * (H - 40);
+      const x = 20 + i * barW;
+      const y = H - 20 - h;
+      const color = label === 'Quantum' ? accent : quantum;
+      ctx.fillStyle = color;
+      ctx.globalAlpha = 0.7 + (probs[i]/maxP) * 0.3;
+      ctx.fillRect(x + 1, y, barW - 2, h);
+      ctx.globalAlpha = 1;
+    }
+
+    ctx.strokeStyle = textSec;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(20, H - 20);
+    ctx.lineTo(W - 20, H - 20);
+    ctx.stroke();
+
+    const latticeEl = document.getElementById(`${prefix}Lattice`);
+    latticeEl.innerHTML = '';
+    const mid = Math.floor(n/2);
+    for (let i = 0; i < n; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'lattice-cell';
+      const rgb = label === 'Quantum' ? '88,166,255' : '163,113,247';
+      cell.style.background = `rgba(${rgb}, ${0.15 + (probs[i]/maxP)*0.85})`;
+      cell.style.color = label === 'Quantum' ? accent : quantum;
+      cell.textContent = (i - mid).toString();
+      latticeEl.appendChild(cell);
+    }
+  },
+
+  renderVariancePlot() {
+    const canvas = document.getElementById('varianceCanvas');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+
+    const accent = getCSSVar('--accent') || '#58a6ff';
+    const quantum = getCSSVar('--quantum') || '#a371f7';
+    const textSec = getCSSVar('--text-secondary') || '#8b949e';
+    const bg = getCSSVar('--bg') || '#0f1117';
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    if (this.qwHistory.length < 2) return;
+
+    const maxStep = this.maxSteps;
+    const maxVar = Math.max(...this.qwHistory.map(h => h.variance), ...this.cwHistory.map(h => h.variance), 1);
+
+    const padL = 50, padR = 20, padT = 20, padB = 40;
+    const plotW = W - padL - padR, plotH = H - padT - padB;
+
+    ctx.strokeStyle = textSec;
+    ctx.globalAlpha = 0.2;
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 5; i++) {
+      const y = padT + plotH * i / 5;
+      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    ctx.strokeStyle = textSec;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, H - padB); ctx.lineTo(W - padR, H - padB); ctx.stroke();
+
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    this.qwHistory.forEach((h, i) => {
+      const x = padL + (h.step / maxStep) * plotW;
+      const y = H - padB - (h.variance / maxVar) * plotH;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    ctx.strokeStyle = quantum;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    this.cwHistory.forEach((h, i) => {
+      const x = padL + (h.step / maxStep) * plotW;
+      const y = H - padB - (h.variance / maxVar) * plotH;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    ctx.fillStyle = textSec;
+    ctx.font = '12px sans-serif';
+    ctx.fillText('Variance σ²', 10, padT + 10);
+    ctx.fillText('Steps', W/2, H - 10);
+
+    ctx.fillStyle = accent;
+    ctx.fillRect(W - 140, padT, 12, 12);
+    ctx.fillStyle = textSec;
+    ctx.fillText('Quantum ∝ t²', W - 120, padT + 11);
+    ctx.fillStyle = quantum;
+    ctx.fillRect(W - 140, padT + 20, 12, 12);
+    ctx.fillStyle = textSec;
+    ctx.fillText('Classical ∝ t', W - 120, padT + 31);
+  }
+};
+
+// ==================== DEMO 3: ENTANGLEMENT LAB ====================
+const appEnt = {
+  state: [{re:1/Math.SQRT2,im:0},{re:0,im:0},{re:0,im:0},{re:1/Math.SQRT2,im:0}],
+
+  init() {
+    this.update();
+  },
+
+  getSlider(id) {
+    return parseInt(document.getElementById(id).value) / 100;
+  },
+
+  update() {
+    const aR = this.getSlider('entAlphaRe'), aI = this.getSlider('entAlphaIm');
+    const bR = this.getSlider('entBetaRe'), bI = this.getSlider('entBetaIm');
+    const gR = this.getSlider('entGammaRe'), gI = this.getSlider('entGammaIm');
+    const dR = this.getSlider('entDeltaRe'), dI = this.getSlider('entDeltaIm');
+
+    document.getElementById('entAlphaReVal').textContent = aR.toFixed(2);
+    document.getElementById('entAlphaImVal').textContent = aI.toFixed(2);
+    document.getElementById('entBetaReVal').textContent = bR.toFixed(2);
+    document.getElementById('entBetaImVal').textContent = bI.toFixed(2);
+    document.getElementById('entGammaReVal').textContent = gR.toFixed(2);
+    document.getElementById('entGammaImVal').textContent = gI.toFixed(2);
+    document.getElementById('entDeltaReVal').textContent = dR.toFixed(2);
+    document.getElementById('entDeltaImVal').textContent = dI.toFixed(2);
+
+    this.state = normalize([{re:aR,im:aI},{re:bR,im:bI},{re:gR,im:gI},{re:dR,im:dI}]);
+    this.renderAll();
+  },
+
+  preset(name) {
+    const presets = {
+      bell:   {a:71, b:0, g:0, d:71, ai:0, bi:0, gi:0, di:0},
+      product:{a:100, b:0, g:0, d:0, ai:0, bi:0, gi:0, di:0},
+      w:      {a:0, b:71, g:71, d:0, ai:0, bi:0, gi:0, di:0},
+      maximal:{a:50, b:0, g:0, d:50, ai:0, bi:0, gi:0, di:0}
+    };
+    const p = presets[name];
+    if (!p) return;
+    ['entAlphaRe','entBetaRe','entGammaRe','entDeltaRe'].forEach((id, i) => {
+      document.getElementById(id).value = [p.a,p.b,p.g,p.d][i];
+    });
+    ['entAlphaIm','entBetaIm','entGammaIm','entDeltaIm'].forEach((id, i) => {
+      document.getElementById(id).value = [p.ai,p.bi,p.gi,p.di][i];
+    });
+    this.update();
+  },
+
+  renderAll() {
+    this.renderDensityMatrix();
+    this.renderMeasures();
+    this.renderSchmidt();
+  },
+
+  renderDensityMatrix() {
+    const s = this.state;
+    const rho = [];
+    for (let i = 0; i < 4; i++) {
+      rho[i] = [];
+      for (let j = 0; j < 4; j++) {
+        rho[i][j] = cmul(s[i], conj(s[j]));
+      }
+    }
+
+    const grid = document.getElementById('densityGrid');
+    grid.innerHTML = '';
+    const maxMag = Math.max(...rho.flat().map(z => Math.sqrt(abs2(z))));
+    const labels = ['|00⟩','|01⟩','|10⟩','|11⟩'];
+
+    for (let i = 0; i < 4; i++) {
+      for (let j = 0; j < 4; j++) {
+        const cell = document.createElement('div');
+        cell.className = 'heatmap-cell';
+        const mag = Math.sqrt(abs2(rho[i][j]));
+        const val = maxMag > 0 ? mag / maxMag : 0;
+        cell.style.background = heatmapColor(val);
+        cell.textContent = mag.toFixed(2);
+        cell.title = `${labels[i]}⟨${labels[j].slice(1,-1)}| = ${formatComplex(rho[i][j].re, rho[i][j].im)}`;
+        grid.appendChild(cell);
+      }
+    }
+  },
+
+  renderMeasures() {
+    const s = this.state;
+    const purity = s.reduce((sum, z) => sum + abs2(z)*abs2(z), 0);
+    document.getElementById('entPurity').textContent = purity.toFixed(4);
+
+    const rhoA = [[{re:0,im:0},{re:0,im:0}],[{re:0,im:0},{re:0,im:0}]];
+    rhoA[0][0] = cadd(cmul(s[0], conj(s[0])), cmul(s[1], conj(s[1])));
+    rhoA[0][1] = cadd(cmul(s[0], conj(s[2])), cmul(s[1], conj(s[3])));
+    rhoA[1][0] = conj(rhoA[0][1]);
+    rhoA[1][1] = cadd(cmul(s[2], conj(s[2])), cmul(s[3], conj(s[3])));
+
+    const tr = rhoA[0][0].re + rhoA[1][1].re;
+    const det = rhoA[0][0].re * rhoA[1][1].re - (rhoA[0][1].re*rhoA[0][1].re + rhoA[0][1].im*rhoA[0][1].im);
+    const disc = Math.max(0, tr*tr - 4*det);
+    const ev1 = Math.max(0, (tr + Math.sqrt(disc)) / 2);
+    const ev2 = Math.max(0, (tr - Math.sqrt(disc)) / 2);
+
+    let entropy = 0;
+    [ev1, ev2].forEach(p => {
+      if (p > 1e-10) entropy -= p * Math.log2(p);
+    });
+    document.getElementById('entEntropy').textContent = entropy.toFixed(4);
+
+    const ad = cmul(s[0], s[3]);
+    const bc = cmul(s[1], s[2]);
+    const diff = csub(ad, bc);
+    const concurrence = 2 * Math.sqrt(abs2(diff));
+    document.getElementById('entConcurrence').textContent = concurrence.toFixed(4);
+
+    const sc1 = Math.sqrt(ev1);
+    const sc2 = Math.sqrt(ev2);
+    const negativity = (1 - Math.abs(sc1 - sc2)) / 2;
+    document.getElementById('entNegativity').textContent = negativity.toFixed(4);
+
+    const maxCHSH = 2 * Math.sqrt(1 + concurrence*concurrence);
+    const chshText = maxCHSH > 2
+      ? `CHSH = ${maxCHSH.toFixed(3)} > 2 (violated ✓)`
+      : `CHSH = ${maxCHSH.toFixed(3)} ≤ 2 (not violated)`;
+    document.getElementById('bellInequality').textContent = chshText;
+  },
+
+  renderSchmidt() {
+    const s = this.state;
+    const rhoA = [[{re:0,im:0},{re:0,im:0}],[{re:0,im:0},{re:0,im:0}]];
+    rhoA[0][0] = cadd(cmul(s[0], conj(s[0])), cmul(s[1], conj(s[1])));
+    rhoA[0][1] = cadd(cmul(s[0], conj(s[2])), cmul(s[1], conj(s[3])));
+    rhoA[1][0] = conj(rhoA[0][1]);
+    rhoA[1][1] = cadd(cmul(s[2], conj(s[2])), cmul(s[3], conj(s[3])));
+
+    const tr = rhoA[0][0].re + rhoA[1][1].re;
+    const det = rhoA[0][0].re * rhoA[1][1].re - (rhoA[0][1].re*rhoA[0][1].re + rhoA[0][1].im*rhoA[0][1].im);
+    const disc = Math.max(0, tr*tr - 4*det);
+    const ev1 = Math.max(0, (tr + Math.sqrt(disc)) / 2);
+    const ev2 = Math.max(0, (tr - Math.sqrt(disc)) / 2);
+    const sc1 = Math.sqrt(ev1);
+    const sc2 = Math.sqrt(ev2);
+
+    document.getElementById('schmidtDisplay').textContent =
+      `λ₁ = ${sc1.toFixed(4)}, λ₂ = ${sc2.toFixed(4)}  |  λ₁² = ${ev1.toFixed(4)}, λ₂² = ${ev2.toFixed(4)}`;
+
+    const canvas = document.getElementById('schmidtCanvas');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+
+    const accent = getCSSVar('--accent') || '#58a6ff';
+    const quantum = getCSSVar('--quantum') || '#a371f7';
+    const textSec = getCSSVar('--text-secondary') || '#8b949e';
+    const bg = getCSSVar('--bg') || '#0f1117';
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    const maxS = Math.max(sc1, sc2, 0.01);
+    const barW = 60, gap = 80;
+    const startX = (W - 2*barW - gap) / 2;
+    const maxH = H - 50;
+
+    const h1 = (sc1 / maxS) * maxH;
+    ctx.fillStyle = accent;
+    ctx.fillRect(startX, H - 30 - h1, barW, h1);
+    ctx.fillStyle = textSec;
+    ctx.font = '14px sans-serif';
+    ctx.fillText('λ₁', startX + barW/2 - 6, H - 10);
+    ctx.fillText(sc1.toFixed(3), startX + 5, H - 40 - h1);
+
+    const h2 = (sc2 / maxS) * maxH;
+    ctx.fillStyle = quantum;
+    ctx.fillRect(startX + barW + gap, H - 30 - h2, barW, h2);
+    ctx.fillStyle = textSec;
+    ctx.fillText('λ₂', startX + barW + gap + barW/2 - 6, H - 10);
+    ctx.fillText(sc2.toFixed(3), startX + barW + gap + 5, H - 40 - h2);
+
+    ctx.strokeStyle = textSec;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(startX - 10, H - 30);
+    ctx.lineTo(startX + 2*barW + gap + 10, H - 30);
+    ctx.stroke();
+  }
+};
+
+// ==================== DEMO 4: ANGULAR MOMENTUM ====================
+const appAngular = {
+  j: 0.5,
+  m: 0.5,
+
+  init() {
+    this.updateMOptions();
+    this.updateCG();
+    this.update();
+  },
+
+  updateMOptions() {
+    const j = parseFloat(document.getElementById('amJ').value);
+    const mSel = document.getElementById('amM');
+    const oldM = parseFloat(mSel.value);
+    mSel.innerHTML = '';
+    const mVals = [];
+    for (let m = -j; m <= j + 1e-6; m += 1) mVals.push(m);
+    mVals.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m;
+      const label = Number.isInteger(m) ? m.toString() : (m > 0 ? '+' : '') + (Math.abs(m*2)) + '/2';
+      opt.textContent = label;
+      if (Math.abs(m - oldM) < 0.1 || (mVals.length === 1)) opt.selected = true;
+      mSel.appendChild(opt);
+    });
+  },
+
+  update() {
+    this.j = parseFloat(document.getElementById('amJ').value);
+    this.m = parseFloat(document.getElementById('amM').value);
+
+    const jz = this.m;
+    const j2 = this.j * (this.j + 1);
+    const dim = Math.round(2 * this.j + 1);
+
+    document.getElementById('amJz').textContent = (jz >= 0 ? '+' : '') + jz.toFixed(2) + ' ℏ';
+    document.getElementById('amJ2').textContent = j2.toFixed(2) + ' ℏ²';
+    document.getElementById('amDim').textContent = dim;
+    document.getElementById('amDeg').textContent = `2j+1 = ${dim}`;
+
+    const mVals = [];
+    for (let m = -this.j; m <= this.j + 1e-6; m += 1) mVals.push(m);
+    const idx = mVals.indexOf(this.m);
+    const vec = Array(dim).fill(0);
+    vec[idx] = 1;
+    const vecStr = '[' + vec.join(', ') + ']';
+
+    let stateLabel = `|${this.j}, ${this.m}⟩`;
+    if (this.j === 0.5) {
+      stateLabel = this.m === 0.5 ? '|↑⟩ = |1/2, +1/2⟩' : '|↓⟩ = |1/2, -1/2⟩';
+    } else if (this.j === 1) {
+      const mLabel = {'1':'|1, 1⟩ = |+1⟩', '0':'|1, 0⟩ = |0⟩', '-1':'|1, -1⟩ = |-1⟩'};
+      stateLabel = mLabel[this.m.toString()] || stateLabel;
+    }
+    document.getElementById('amStateVec').textContent = `${stateLabel} = ${vecStr}`;
+
+    this.renderLadder(mVals, idx);
+  },
+
+  renderLadder(mVals, activeIdx) {
+    const container = document.getElementById('ladderContainer');
+    container.innerHTML = '';
+
+    const accent = getCSSVar('--accent') || '#58a6ff';
+
+    mVals.forEach((m, i) => {
+      const row = document.createElement('div');
+      row.className = 'ladder-rung';
+
+      const mLabel = document.createElement('span');
+      mLabel.className = 'ladder-m-label';
+      const mStr = Number.isInteger(m) ? m.toString() : (m > 0 ? '+' : '-') + (Math.abs(m*2)) + '/2';
+      mLabel.textContent = mStr;
+      row.appendChild(mLabel);
+
+      const stateBall = document.createElement('div');
+      stateBall.className = 'ladder-state' + (i === activeIdx ? ' active' : '');
+      stateBall.textContent = Number.isInteger(m) ? `m=${m}` : `m=${mStr}`;
+      if (i === activeIdx) {
+        stateBall.style.borderColor = accent;
+      }
+      row.appendChild(stateBall);
+      container.appendChild(row);
+
+      if (i < mVals.length - 1) {
+        const arrow = document.createElement('div');
+        arrow.className = 'ladder-arrow';
+        arrow.innerHTML = '↓';
+        arrow.style.margin = '-4px 0';
+        container.appendChild(arrow);
+      }
+    });
+  },
+
+  ladderUp() {
+    const mVals = [];
+    for (let m = -this.j; m <= this.j + 1e-6; m += 1) mVals.push(m);
+    const idx = mVals.indexOf(this.m);
+    if (idx < mVals.length - 1) {
+      document.getElementById('amM').value = mVals[idx + 1];
+      this.update();
+    }
+  },
+
+  ladderDown() {
+    const mVals = [];
+    for (let m = -this.j; m <= this.j + 1e-6; m += 1) mVals.push(m);
+    const idx = mVals.indexOf(this.m);
+    if (idx > 0) {
+      document.getElementById('amM').value = mVals[idx - 1];
+      this.update();
+    }
+  },
+
+  updateCG() {
+    const j1 = parseFloat(document.getElementById('cgJ1').value);
+    const j2 = parseFloat(document.getElementById('cgJ2').value);
+    const resultEl = document.getElementById('cgResult');
+
+    const jMin = Math.abs(j1 - j2);
+    const jMax = j1 + j2;
+    const jVals = [];
+    for (let j = jMin; j <= jMax + 1e-6; j += 1) jVals.push(j);
+
+    let html = '<div style="font-size:0.9rem; margin-top:8px;">';
+    html += `<strong>Coupled basis states for j₁=${j1}, j₂=${j2}:</strong><br>`;
+    html += `Possible total j: ${jVals.map(j => Number.isInteger(j) ? j : j*2+'/2').join(', ')}<br><br>`;
+
+    jVals.forEach(j => {
+      const mVals = [];
+      for (let m = -j; m <= j + 1e-6; m += 1) mVals.push(m);
+      html += `<div style="margin-bottom:8px; padding:8px; background:var(--bg-elevated); border-radius:6px;">`;
+      html += `<strong>j = ${Number.isInteger(j) ? j : j*2+'/2'}</strong> (${mVals.length} states):<br>`;
+      mVals.forEach(m => {
+        const mStr = Number.isInteger(m) ? m : (m > 0 ? '+' : '') + Math.abs(m*2) + '/2';
+        html += `|j=${Number.isInteger(j)?j:j*2+'/2'}, m=${mStr}⟩ — dimension degeneracy preserved<br>`;
+      });
+      html += `</div>`;
+    });
+
+    html += `<div style="margin-top:12px; font-size:0.8rem; color:var(--text-secondary);">`;
+    html += `Total Hilbert space dimension: ${Math.round((2*j1+1)*(2*j2+1))} = Σ(2j+1) over all coupled j`;
+    html += `</div></div>`;
+    resultEl.innerHTML = html;
+  }
+};
+
+// ==================== DEMO 5: CIRCUIT BUILDER ====================
+const appCircuit = {
+  gates: [],
+  state: [{re:1,im:0},{re:0,im:0},{re:0,im:0},{re:0,im:0}],
+  numQubits: 2,
+  stepIndex: 0,
+
+  init() {
+    this.reset();
+  },
+
+  reset() {
+    this.gates = [];
+    this.state = [{re:1,im:0},{re:0,im:0},{re:0,im:0},{re:0,im:0}];
+    this.stepIndex = 0;
+    this.numQubits = 2;
+    this.renderCircuit();
+    this.renderState();
+    this.renderAmplitudes();
+    this.updateStepInfo();
+  },
+
+  clear() {
+    this.reset();
+  },
+
+  removeLast() {
+    this.gates.pop();
+    this.renderCircuit();
+    this.stepIndex = 0;
+    this.state = [{re:1,im:0},{re:0,im:0},{re:0,im:0},{re:0,im:0}];
+    this.renderState();
+    this.renderAmplitudes();
+    this.updateStepInfo();
+  },
+
+  addGate(name, target) {
+    if (name === 'CNOT') {
+      this.gates.push({name: 'CNOT', control: 0, target: 1});
+    } else if (name === 'CZ') {
+      this.gates.push({name: 'CZ', control: 0, target: 1});
+    } else {
+      this.gates.push({name, target: target ?? 0});
+    }
+    this.renderCircuit();
+    this.stepIndex = 0;
+    this.state = [{re:1,im:0},{re:0,im:0},{re:0,im:0},{re:0,im:0}];
+    this.renderState();
+    this.renderAmplitudes();
+    this.updateStepInfo();
+  },
+
+  getGateMatrix(g) {
+    if (g.name === 'CNOT') return CNOT;
+    if (g.name === 'CZ') return CZ;
+    return GATES[g.name] || GATES.I;
+  },
+
+  applyGateAtStep(gate, state) {
+    if (gate.name === 'CNOT' || gate.name === 'CZ') {
+      return applyTwoQubitGate(this.getGateMatrix(gate), state);
+    }
+    return applySingleQubitGate(this.getGateMatrix(gate), state, gate.target, this.numQubits);
+  },
+
+  step() {
+    if (this.stepIndex >= this.gates.length) return;
+    const gate = this.gates[this.stepIndex];
+    this.state = this.applyGateAtStep(gate, this.state);
+    this.stepIndex++;
+    this.renderState();
+    this.renderAmplitudes();
+    this.renderCircuit();
+    this.updateStepInfo();
+  },
+
+  runAll() {
+    this.state = [{re:1,im:0},{re:0,im:0},{re:0,im:0},{re:0,im:0}];
+    this.stepIndex = 0;
+    for (let i = 0; i < this.gates.length; i++) {
+      this.state = this.applyGateAtStep(this.gates[i], this.state);
+      this.stepIndex++;
+    }
+    this.renderState();
+    this.renderAmplitudes();
+    this.renderCircuit();
+    this.updateStepInfo();
+  },
+
+  renderCircuit() {
+    const container = document.getElementById('circuitDiagram');
+    const n = this.numQubits;
+    const stepW = 50;
+    const totalW = Math.max(400, 80 + this.gates.length * stepW + 60);
+
+    let svg = `<svg width="${totalW}" height="${n * 50 + 20}" style="overflow:visible">`;
+    const accent = getCSSVar('--accent') || '#58a6ff';
+    const textSec = getCSSVar('--text-secondary') || '#8b949e';
+    const text = getCSSVar('--text') || '#c9d1d9';
+    const bgCard = getCSSVar('--bg-card') || '#1c2128';
+
+    for (let i = 0; i < n; i++) {
+      const y = 30 + i * 50;
+      svg += `<text x="5" y="${y+5}" fill="${textSec}" font-size="13" font-family="monospace">q${i}</text>`;
+      svg += `<line x1="45" y1="${y}" x2="${totalW - 30}" y2="${y}" stroke="${textSec}" stroke-width="2"/>`;
+    }
+
+    this.gates.forEach((g, idx) => {
+      const x = 65 + idx * stepW;
+      const isActive = idx < this.stepIndex;
+      const color = isActive ? accent : textSec;
+      if (g.name === 'CNOT') {
+        const cy = 30 + g.control * 50;
+        const ty = 30 + g.target * 50;
+        svg += `<circle cx="${x}" cy="${cy}" r="5" fill="${accent}"/>`;
+        svg += `<line x1="${x}" y1="${cy}" x2="${x}" y2="${ty}" stroke="${accent}" stroke-width="2"/>`;
+        svg += `<circle cx="${x}" cy="${ty}" r="12" fill="none" stroke="${accent}" stroke-width="2"/>`;
+        svg += `<line x1="${x-8}" y1="${ty}" x2="${x+8}" y2="${ty}" stroke="${accent}" stroke-width="2"/>`;
+        svg += `<line x1="${x}" y1="${ty-8}" x2="${x}" y2="${ty+8}" stroke="${accent}" stroke-width="2"/>`;
+      } else if (g.name === 'CZ') {
+        const cy = 30 + g.control * 50;
+        const ty = 30 + g.target * 50;
+        svg += `<circle cx="${x}" cy="${cy}" r="5" fill="${accent}"/>`;
+        svg += `<line x1="${x}" y1="${cy}" x2="${x}" y2="${ty}" stroke="${accent}" stroke-width="2"/>`;
+        svg += `<rect x="${x-14}" y="${ty-14}" width="28" height="28" fill="none" stroke="${accent}" stroke-width="2" rx="3"/>`;
+        svg += `<text x="${x}" y="${ty+5}" text-anchor="middle" fill="${accent}" font-size="14" font-weight="600">Z</text>`;
+      } else {
+        const y = 30 + g.target * 50;
+        svg += `<rect x="${x-14}" y="${y-14}" width="28" height="28" fill="${bgCard}" stroke="${color}" stroke-width="2" rx="3"/>`;
+        svg += `<text x="${x}" y="${y+5}" text-anchor="middle" fill="${color}" font-size="14" font-weight="600">${g.name}</text>`;
+      }
+
+      if (idx === this.stepIndex - 1) {
+        svg += `<circle cx="${x}" cy="${n*50 + 10}" r="3" fill="${accent}"/>`;
+      }
+    });
+
+    const endX = totalW - 30;
+    for (let i = 0; i < n; i++) {
+      const y = 30 + i * 50;
+      svg += `<path d="M${endX-8},${y-8} L${endX+8},${y-8} L${endX+8},${y+8} L${endX-8},${y+8} Z" fill="none" stroke="${textSec}" stroke-width="1.5"/>`;
+    }
+
+    svg += '</svg>';
+    container.innerHTML = svg;
+  },
+
+  renderState() {
+    const labels = ['|00⟩','|01⟩','|10⟩','|11⟩'];
+    const parts = this.state.map((z, i) => {
+      const mag = Math.sqrt(abs2(z));
+      if (mag < 1e-4) return '';
+      return `<span class="complex-num">${formatAmp(z.re, z.im)}</span>${labels[i]}`;
+    }).filter(Boolean);
+    document.getElementById('circuitState').innerHTML = parts.length
+      ? '|ψ⟩ = ' + parts.join(' + ')
+      : '|ψ⟩ = 0';
+  },
+
+  renderAmplitudes() {
+    const canvas = document.getElementById('circuitAmplitudeCanvas');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+
+    const accent = getCSSVar('--accent') || '#58a6ff';
+    const quantum = getCSSVar('--quantum') || '#a371f7';
+    const textSec = getCSSVar('--text-secondary') || '#8b949e';
+    const bg = getCSSVar('--bg') || '#0f1117';
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    const n = this.state.length;
+    const labels = ['|00⟩','|01⟩','|10⟩','|11⟩'];
+    const barW = (W - 80) / n;
+    const maxMag = Math.max(...this.state.map(z => Math.sqrt(abs2(z))), 0.01);
+
+    for (let i = 0; i < n; i++) {
+      const mag = Math.sqrt(abs2(this.state[i]));
+      const h = (mag / maxMag) * (H - 50);
+      const x = 40 + i * barW;
+      const y = H - 30 - h;
+
+      ctx.fillStyle = accent;
+      ctx.globalAlpha = 0.6 + (mag/maxMag) * 0.4;
+      ctx.fillRect(x + 4, y, barW - 8, h);
+      ctx.globalAlpha = 1;
+
+      ctx.fillStyle = textSec;
+      ctx.font = '13px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(labels[i], x + barW/2, H - 12);
+
+      const phase = Math.atan2(this.state[i].im, this.state[i].re);
+      const arcR = 10;
+      ctx.strokeStyle = quantum;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x + barW/2, y - 18, arcR, -Math.PI/2, -Math.PI/2 + phase);
+      ctx.stroke();
+    }
+
+    const textParts = this.state.map((z, i) => `${labels[i]}: ${formatComplex(z.re, z.im, 3)}`);
+    document.getElementById('circuitAmplitudes').textContent = textParts.join(' | ');
+  },
+
+  updateStepInfo() {
+    const info = document.getElementById('circuitStepInfo');
+    if (this.stepIndex === 0) {
+      info.textContent = `Step 0 / ${this.gates.length}: Initial state |00⟩`;
+    } else if (this.stepIndex <= this.gates.length) {
+      const g = this.gates[this.stepIndex - 1];
+      const desc = g.name === 'CNOT' ? `CNOT (control=${g.control}, target=${g.target})`
+        : g.name === 'CZ' ? `CZ (control=${g.control}, target=${g.target})`
+        : `${g.name} on qubit ${g.target}`;
+      info.textContent = `Step ${this.stepIndex} / ${this.gates.length}: Applied ${desc}`;
+    } else {
+      info.textContent = `Complete: ${this.gates.length} gates applied`;
+    }
+  }
+};
+
+// ==================== NAVIGATION & THEME ====================
+function initNavigation() {
+  const navLinks = document.querySelectorAll('.nav-link[data-demo]');
+  const sections = document.querySelectorAll('.demo-section');
+
+  navLinks.forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const demo = link.dataset.demo;
+      navLinks.forEach(l => l.classList.remove('active'));
+      link.classList.add('active');
+      sections.forEach(s => s.classList.remove('active'));
+      document.getElementById(`demo-${demo}`).classList.add('active');
+
+      if (demo === 'qubit') appQubit.drawBloch();
+      if (demo === 'walk') { appWalk.render(); appWalk.renderVariancePlot(); }
+      if (demo === 'entanglement') appEnt.renderAll();
+      if (demo === 'circuit') { appCircuit.renderCircuit(); appCircuit.renderAmplitudes(); }
+    });
+  });
+}
+
+function initTheme() {
+  const btn = document.getElementById('themeToggle');
+  const isDark = !document.documentElement.classList.contains('light-theme');
+  btn.innerHTML = isDark ? '🌙 Dark' : '☀️ Light';
+
+  btn.addEventListener('click', () => {
+    document.documentElement.classList.toggle('light-theme');
+    const nowDark = !document.documentElement.classList.contains('light-theme');
+    btn.innerHTML = nowDark ? '🌙 Dark' : '☀️ Light';
+    appQubit.drawBloch();
+    appWalk.render();
+    appWalk.renderVariancePlot();
+    appEnt.renderAll();
+    appCircuit.renderAmplitudes();
+  });
+}
+
+function initMobileMenu() {
+  const menuBtn = document.getElementById('menuToggle');
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+
+  menuBtn.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('show');
+  });
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('show');
+  });
+}
+
+// ==================== INITIALIZATION ====================
+document.addEventListener('DOMContentLoaded', () => {
+  initNavigation();
+  initTheme();
+  initMobileMenu();
+
+  appQubit.init();
+  appWalk.init();
+  appEnt.init();
+  appAngular.init();
+  appCircuit.init();
+
+  window.addEventListener('resize', () => {
+    appQubit.drawBloch();
+    appWalk.render();
+    appWalk.renderVariancePlot();
+    appCircuit.renderAmplitudes();
+  });
+});
+    </script>
+</body>
+</html>
