@@ -54115,18 +54115,20 @@
     });
   }
   function initMobile() {
-    const topBar = document.querySelector(".top-bar");
-    const hamburger = document.createElement("button");
-    hamburger.className = "mobile-menu-btn";
-    hamburger.innerHTML = "\u2630";
-    hamburger.style.cssText = `
-    background: none; border: none; font-size: 1.3rem; cursor: pointer;
-    color: var(--text-secondary); padding: 4px; margin-right: 8px;
-  `;
+    const hamburger = document.getElementById("hamburger");
+    const sidebar = document.getElementById("sidebar");
+    if (!hamburger || !sidebar) return;
     hamburger.addEventListener("click", () => {
-      document.getElementById("sidebar").classList.toggle("open");
+      sidebar.classList.toggle("open");
     });
-    topBar.insertBefore(hamburger, topBar.firstChild);
+    document.addEventListener("click", (e3) => {
+      if (window.innerWidth > 768) return;
+      if (!sidebar.classList.contains("open")) return;
+      const target = e3.target;
+      if (!sidebar.contains(target) && !hamburger.contains(target)) {
+        sidebar.classList.remove("open");
+      }
+    });
   }
   function init() {
     initSidebar();

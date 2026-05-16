@@ -278,6 +278,30 @@ body {
   color: var(--text-primary);
 }
 
+.top-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.hamburger {
+  display: none;
+  background: none;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  padding: 6px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+}
+
+.hamburger:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
 .top-bar-actions {
   display: flex;
   gap: 8px;
@@ -591,6 +615,7 @@ body {
     bottom: 0;
     transform: translateX(-100%);
     box-shadow: var(--shadow-lg);
+    z-index: 100;
   }
 
   .sidebar.open {
@@ -599,6 +624,12 @@ body {
 
   .main {
     margin-left: 0;
+  }
+
+  .hamburger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .content {
