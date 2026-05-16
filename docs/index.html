@@ -312,7 +312,7 @@
             
             <div class="nav-section">
                 <h3>Getting Started</h3>
-                <a href="/showcase.html" class="nav-link">🎯 Interactive Showcase</a>
+                <a href="showcase.html" class="nav-link">🎯 Interactive Showcase</a>
                 <a href="api/index.html" class="nav-link">📚 Full API Documentation</a>
             </div>
             
@@ -499,7 +499,7 @@
                 if (href.endsWith('.md')) {
                     e.preventDefault();
                     showMarkdown(href);
-                } else if (href.endsWith('.html') && !href.includes('api/') && href !== '/showcase.html') {
+                } else if (href.endsWith('.html') && !href.includes('api/') && href !== 'showcase.html') {
                     e.preventDefault();
                     showHtmlPage(href);
                 }
