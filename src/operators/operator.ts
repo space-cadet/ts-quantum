@@ -522,8 +522,9 @@ export class MatrixOperator implements IOperator {
     //     .map(() => math.complex(0, 0)));
 
     // Perform partial trace
-    const traceRange = Array(this.dimension).fill(0)
-      .map((_, i) => i);
+    // traceRange should be the dimension of the traced-out subsystems, not the full dimension
+    const traceOutDim = traceOutIndices.reduce((prod, idx) => prod * dims[idx], 1);
+    const traceRange = Array(traceOutDim).fill(0).map((_, i) => i);
 
     // Implementation of partial trace operation
     for (let i = 0; i < remainingDim; i++) {

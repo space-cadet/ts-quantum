@@ -68535,17 +68535,18 @@
         const mathMatrix = toMathMatrix(matrix);
         try {
           const result = math.eigs(mathMatrix);
-          const values = result.values.valueOf();
-          const complexValues = values.map((v) => {
+          const rawValues = result.values.valueOf();
+          const allValues = rawValues.map((v) => {
             if (typeof v === "number") {
               return math.complex(v, 0);
             }
             return v;
           });
           if (!options.computeEigenvectors) {
-            return { values: complexValues };
+            return { values: allValues };
           }
           let vectors;
+          let complexValues;
           try {
             const eigenvectors = result.eigenvectors;
             const sortedEigenvectors = eigenvectors.sort((a, b) => {
@@ -68553,13 +68554,36 @@
               const bVal = math.isNumber(b.value) ? b.value : math.isComplex(b.value) ? b.value.re : Number(b.value.toString());
               return aVal - bVal;
             });
+            complexValues = [...allValues].sort((a, b) => {
+              const aVal = a.re;
+              const bVal = b.re;
+              return aVal - bVal;
+            });
             vectors = sortedEigenvectors.map((entry) => {
-              const vectorData = entry.vector.valueOf();
-              return vectorData.map((v) => {
+              const rawVector = entry.vector.valueOf();
+              let vectorData;
+              if (Array.isArray(rawVector) && rawVector.length > 0 && Array.isArray(rawVector[0])) {
+                vectorData = rawVector.map((row) => row[0]);
+              } else {
+                vectorData = rawVector;
+              }
+              const complexVector = vectorData.map((v) => {
                 if (typeof v === "number") {
                   return math.complex(v, 0);
                 }
                 return v;
+              });
+              const normSquared = complexVector.reduce((sum2, v) => {
+                const c = v;
+                return sum2 + c.re * c.re + c.im * c.im;
+              }, 0);
+              const norm = Math.sqrt(normSquared);
+              if (norm < 1e-12) {
+                return complexVector;
+              }
+              return complexVector.map((v) => {
+                const c = v;
+                return math.complex(c.re / norm, c.im / norm);
               });
             });
             if (options.enforceOrthogonality && vectors) {
@@ -68571,7 +68595,7 @@
             } else {
               console.warn("Unknown eigenvector computation error");
             }
-            return { values: complexValues };
+            return { values: allValues };
           }
           return {
             values: complexValues,
@@ -68615,7 +68639,7 @@
             }, 0);
             const maxComponent = vector[maxMagnitudeIdx];
             const currentPhase = math.arg(maxComponent);
-            const correction = math.exp(-currentPhase);
+            const correction = math.exp(math.complex(0, -currentPhase));
             return vector.map((v) => math.multiply(v, correction));
           });
         }
@@ -69793,7 +69817,8 @@
           (0, validation_1.validatePartialTrace)(dims, this.dimension, traceOutIndices);
           const remainingDim = dims.filter((_, i) => !traceOutIndices.includes(i)).reduce((a, b) => a * b, 1);
           const resultMatrix = createZeroMatrix(remainingDim);
-          const traceRange = Array(this.dimension).fill(0).map((_, i) => i);
+          const traceOutDim = traceOutIndices.reduce((prod, idx) => prod * dims[idx], 1);
+          const traceRange = Array(traceOutDim).fill(0).map((_, i) => i);
           for (let i = 0; i < remainingDim; i++) {
             for (let j = 0; j < remainingDim; j++) {
               for (const k of traceRange) {
@@ -69967,7 +69992,7 @@
           }
           const funcValues = values.map((v) => func(v));
           const fD = Array(dim).fill(null).map((_, i) => Array(dim).fill(null).map((_2, j) => i === j ? funcValues[i] : math.complex(0, 0)));
-          const U = vectors;
+          const U = (0, matrixOperations_1.transpose)(vectors);
           const UDagger = (0, matrixOperations_1.adjoint)(U);
           const temp = (0, matrixOperations_1.multiplyMatrices)(U, fD);
           return (0, matrixOperations_1.multiplyMatrices)(temp, UDagger);
@@ -72142,7 +72167,7 @@
         const kMax = Math.min(j1 + j2 - j, j1 - m1, j2 + m2);
         for (let k = Math.ceil(kMin); k <= Math.floor(kMax); k++) {
           const sign2 = k % 2 === 0 ? 1 : -1;
-          const logDenominatorTerms = (0, math_1.logFactorial)(k) + (0, math_1.logFactorial)(Math.round(j1 + j2 - j - k)) + (0, math_1.logFactorial)(Math.round(j1 - m1 - k)) + (0, math_1.logFactorial)(Math.round(j2 + m2 - k)) + (0, math_1.logFactorial)(Math.round(j - j1 + m2 + k)) + (0, math_1.logFactorial)(Math.round(j - j2 - m1 + k));
+          const logDenominatorTerms = (0, math_1.logFactorial)(k) + (0, math_1.logFactorial)(Math.round(j1 + j2 - j - k)) + (0, math_1.logFactorial)(Math.round(j1 - m1 - k)) + (0, math_1.logFactorial)(Math.round(j2 + m2 - k)) + (0, math_1.logFactorial)(Math.round(j - j2 + m1 + k)) + (0, math_1.logFactorial)(Math.round(j - j1 - m2 + k));
           const termValue = Math.exp(-logDenominatorTerms);
           if (!isNaN(termValue) && isFinite(termValue)) {
             sum2 += sign2 * termValue;
@@ -72936,7 +72961,7 @@
           return math.complex(0, 0);
         }
         const cgCoeff = (0, composition_1.clebschGordan)(j1, m1, j2, m2, j3, -m3);
-        const phase = phaseFactor(j1 - j2 + m3);
+        const phase = phaseFactor(j1 - j2 - m3);
         const normalization = 1 / Math.sqrt(2 * j3 + 1);
         const result = math.multiply(phase * normalization, cgCoeff);
         return result;
@@ -72986,19 +73011,25 @@
         }
         const zMin = Math.max(j1 + j2 + j3, j1 + l2 + l3, l1 + j2 + l3, l1 + l2 + j3);
         const zMax = Math.min(j1 + j2 + l1 + l2, j2 + j3 + l2 + l3, j3 + j1 + l3 + l1);
-        let sumLog = -Infinity;
+        let maxLog = -Infinity;
+        const terms = [];
         for (let z = Math.round(zMin); z <= Math.round(zMax); z++) {
+          const logNumer = (0, math_1.logFactorial)(z + 1);
           const logDenom = (0, math_1.logFactorial)(z - Math.round(j1 + j2 + j3)) + (0, math_1.logFactorial)(z - Math.round(j1 + l2 + l3)) + (0, math_1.logFactorial)(z - Math.round(l1 + j2 + l3)) + (0, math_1.logFactorial)(z - Math.round(l1 + l2 + j3)) + (0, math_1.logFactorial)(Math.round(j1 + j2 + l1 + l2 - z)) + (0, math_1.logFactorial)(Math.round(j2 + j3 + l2 + l3 - z)) + (0, math_1.logFactorial)(Math.round(j3 + j1 + l3 + l1 - z));
-          const logTerm = -logDenom;
-          if (sumLog === -Infinity) {
-            sumLog = logTerm;
-          } else {
-            const maxLog = Math.max(sumLog, logTerm);
-            sumLog = maxLog + Math.log(Math.exp(sumLog - maxLog) + Math.exp(logTerm - maxLog));
+          const logMag = logNumer - logDenom;
+          const sign2 = Math.pow(-1, z);
+          terms.push({ logMag, sign: sign2 });
+          if (logMag > maxLog) {
+            maxLog = logMag;
           }
         }
-        const phaseFactor2 = Math.pow(-1, Math.round(j1 + j2 + j3 + l1 + l2 + l3));
-        const result = phaseFactor2 * delta1 * delta2 * delta3 * delta4 * Math.exp(sumLog);
+        let sum2 = 0;
+        if (maxLog !== -Infinity) {
+          for (const term of terms) {
+            sum2 += term.sign * Math.exp(term.logMag - maxLog);
+          }
+        }
+        const result = delta1 * delta2 * delta3 * delta4 * sum2 * Math.exp(maxLog);
         return math.complex(result, 0);
       }
       function wigner9j(j1, j2, j3, l1, l2, l3, k1, k2, k3) {
@@ -73160,8 +73191,8 @@
          * Calculates the quantum distance on the Bloch sphere
          * This matches the Provost-Vallee quantum distance for qubit states
          *
-         * The relationship is: D_quantum = √2 * sin(θ_bloch/2)
-         * where θ_bloch is the angle between Bloch vectors
+         * For qubits, |⟨ψ₁|ψ₂⟩| = cos(γ/2) where γ is the angle between Bloch vectors.
+         * The quantum distance is D = √(2 - 2|⟨ψ₁|ψ₂⟩|) = √(2 - 2cos(γ/2)).
          *
          * @param theta1 Polar angle of first state
          * @param phi1 Azimuthal angle of first state
@@ -73179,7 +73210,7 @@
           const dotProduct = x1 * x2 + y1 * y2 + z1 * z2;
           const clampedDot = Math.max(-1, Math.min(1, dotProduct));
           const blochAngle = Math.acos(clampedDot);
-          return Math.sqrt(2) * Math.sin(blochAngle / 2);
+          return Math.sqrt(Math.max(0, 2 - 2 * Math.cos(blochAngle / 2)));
         }
         /**
          * Verifies that quantum distance matches Bloch sphere calculation

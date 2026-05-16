@@ -4,6 +4,7 @@
  * Produces:
  * - web/bundle.js                  (legacy bundle from web/simulations.ts, used by showcase.html)
  * - web/qrw-refactored.bundle.js    (refactored QRW app bundle from web/js/bundle.js)
+ * - web/showcase-v2/showcase-v2.bundle.js  (new modular showcase v2 app)
  */
 
 const path = require('path');
@@ -43,8 +44,24 @@ async function build() {
     }
   });
 
+  // Showcase v2 bundle (modular app + demos)
+  await esbuild.build({
+    entryPoints: [path.join(webDir, 'showcase-v2', 'js', 'app.ts')],
+    bundle: true,
+    platform: 'browser',
+    target: 'es2020',
+    outfile: path.join(webDir, 'showcase-v2', 'showcase-v2.bundle.js'),
+    absWorkingDir: repoRoot,
+    sourcemap: true,
+    logLevel: 'info',
+    define: {
+      'process.env.NODE_ENV': '"browser"'
+    }
+  });
+
   console.log(`Built: ${path.join(webDir, 'bundle.js')}`);
   console.log(`Built: ${path.join(webDir, 'qrw-refactored.bundle.js')}`);
+  console.log(`Built: ${path.join(webDir, 'showcase-v2', 'showcase-v2.bundle.js')}`);
 }
 
 build().catch(function(err) {
