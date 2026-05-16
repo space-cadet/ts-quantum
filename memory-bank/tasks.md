@@ -1,5 +1,5 @@
 # Task Registry
-*Last Updated: 2026-05-16 12:30:00 IST*
+*Last Updated: 2026-05-16 18:35:00 IST*
 
 ## Active Tasks
 | ID | Title | Status | Priority | Started | Dependencies | Details |
@@ -8,6 +8,7 @@
 | T10a | Quantum Random Walk Refactoring - Modular Architecture | ✅ | HIGH | 2026-01-07 | T10 | [Details](tasks/T10a.md) |
 | T11 | QRW Sidebar Navigation and Educational Content Implementation | ✅ | HIGH | 2026-01-08 | T10 | [Details](tasks/T11.md) |
 | T12 | Critical Bug Fixes — Test Suite Restoration | ✅ | CRITICAL | 2026-05-16 | — | [Details](tasks/T12.md) |
+| T13 | Showcase v2 — Interactive Quantum Simulations Redesign | ✅ | HIGH | 2026-05-16 | T12 | [Details](tasks/T13.md) |
 
 ## Completed Tasks (Phase 1 & 2)
 | ID | Title | Completed | Phase |
@@ -25,3 +26,4 @@
 | T10a | Quantum Random Walk Refactoring - Modular Architecture | 2026-01-07 | Enhanced |
 | T11 | QRW Sidebar Navigation and Educational Content | 2026-01-08 | Web |
 | T12 | Critical Bug Fixes — Test Suite Restoration | 2026-05-16 | Core |
+| T13 | Showcase v2 — Interactive Quantum Simulations Redesign | 2026-05-16 | Web |

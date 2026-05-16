@@ -91,23 +91,26 @@
 - ✅ Collapsible sidebar with educational content
 - ✅ MathJax integration, quick controls
 
-## Phase 4: Maintenance (COMPLETED - May 16, 2026) ✅
+## Phase 5: Showcase Redesign (COMPLETED - May 16, 2026) ✅
 
-### T12: Critical Bug Fixes — Test Suite Restoration ✅
+### T13: Showcase v2 — Interactive Quantum Simulations Redesign ✅
 **Status**: COMPLETED | **Progress**: 100%
-- ✅ 29 failing tests fixed across 8 test files
-- ✅ Wigner 6j/3j symbols corrected (verified with sympy)
-- ✅ Clebsch-Gordan coefficients accurate
-- ✅ Bloch sphere geometry formula fixed
-- ✅ Eigendecomposition critical bug: `math.exp(Complex)` vs `math.exp(number)`
-- ✅ Matrix functions restored
-- ✅ Integration tests using proper StateVector API
-- ✅ Web simulations using proper imports
-- ✅ **Final result: 451/451 tests passing (100%)**
+- ✅ Modular HTML/CSS/JS architecture (no inline styles)
+- ✅ Three interactive demos using ONLY ts-quantum exports
+- ✅ Qubit Playground — Interactive Bloch sphere, gate buttons, measurement
+- ✅ Quantum Walk Explorer — Side-by-side quantum vs classical walk
+- ✅ Entanglement Lab — Density matrix, entanglement measures, CHSH test
+- ✅ Light color scheme with dark theme toggle
+- ✅ Responsive design with mobile sidebar (hamburger + overlay)
+- ✅ Desktop sidebar collapse with CSS transitions
+- ✅ Shared component architecture (layout.css, layout.js, sidebar.html, top-bar.html)
+- ✅ All pages unified under v2 design (showcase v1, docs, showcase v2)
+- ✅ GitHub Pages deployment with .nojekyll
+- ✅ Critical bug fix: partialTrace trace range corrected
 
 ## Overall Project Status
-**Total Phases**: 4 (Core → Enhanced → Web → Maintenance)
-**Completion**: 100% (12/12 tasks completed)
+**Total Phases**: 5 (Core → Enhanced → Web → Maintenance → Showcase Redesign)
+**Completion**: 100% (13/13 tasks completed)
 **Blockers**: None
 **Current Focus**: Ready for new feature development
 
@@ -117,6 +120,7 @@
 - **Phase 2 Completion**: 2026-01-01 18:30:00 IST (Sparse operators)
 - **Phase 3 Completion**: 2026-01-04 11:11:11 IST (Web showcase)
 - **Phase 4 Completion**: 2026-05-16 12:30:00 IST (Test suite restoration)
+- **Phase 5 Completion**: 2026-05-16 18:35:00 IST (Showcase v2 redesign)
 - **Total Project Duration**: ~10 months from extraction to full maintenance
 
 ## Key Milestones
@@ -126,6 +130,7 @@
 4. ✅ Sparse operator support for performance in large systems
 5. ✅ Web showcase and deployment infrastructure for public access
 6. ✅ Test suite restored to 100% — mathematical correctness verified
+7. ✅ Showcase v2 — Modern, responsive, modular interactive demos
 
 ## Technical Health
 
@@ -135,8 +140,10 @@
 | Build | Passing ✅ |
 | Web Build | Passing ✅ |
 | Type Check | Passing ✅ |
+| GitHub Pages | Deployed ✅ |
 
 ## Next Priorities
 1. T10 Phase 2: 2D quantum walks
-2. CI/CD setup to prevent test regressions
-3. New feature development
+2. Add more demo modules (angular momentum, circuit builder)
+3. CI/CD setup to prevent test regressions
+4. Add S, T, Rx, Ry gates to ts-quantum exports

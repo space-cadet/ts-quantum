@@ -4,6 +4,32 @@
 
 ### 2026-05-16
 
+#### 18:35:00 IST - T13: Showcase v2 — Interactive Quantum Simulations Redesign Complete
+- Created `web/showcase-v2/index.html` - Modular HTML shell with component placeholders
+- Created `web/showcase-v2/css/showcase.css` - Demo-specific styles (cards, controls, canvas)
+- Created `web/showcase-v2/js/app.ts` - App controller with demo registry, sidebar nav, theme toggle
+- Created `web/showcase-v2/js/demos/qubit-playground.ts` - Interactive Bloch sphere with drag-to-rotate, 8 gate buttons, measurement histogram
+- Created `web/showcase-v2/js/demos/quantum-walk.ts` - Quantum vs classical walk with variance chart, parameter controls
+- Created `web/showcase-v2/js/demos/entanglement-lab.ts` - Entanglement measures (entropy, concurrence, negativity, purity), density matrix heatmap, CHSH test
+- Created `web/showcase-v2/components/layout.css` - Shared layout styles (sidebar, top-bar, mobile overlay, responsive)
+- Created `web/showcase-v2/components/layout.js` - Shared JS (component injection, theme toggle, sidebar collapse, mobile behavior)
+- Created `web/showcase-v2/components/sidebar.html` - Reusable sidebar with logo, nav sections, footer
+- Created `web/showcase-v2/components/top-bar.html` - Reusable top-bar with hamburger, title, theme toggle
+- Created `web/showcase-v2/components/docs.css` - Documentation markdown styles
+- Created `web/showcase-v2/docs-layout.html` - Documentation page template
+- Created `docs/.nojekyll` - Disable Jekyll processing for GitHub Pages
+- Modified `src/operators/operator.ts` - **CRITICAL FIX**: `partialTrace` trace range. Changed from `this.dimension` to `traceOutDim` (product of traced-out subsystem dimensions). Fixed negative entropy and Schmidt coefficients > 1.
+- Modified `web/showcase.html` - Replaced 1500-line inline CSS with shared `layout.css` + demo styles. Added hamburger button, mobile overlay, theme toggle.
+- Modified `docs/index.html` - Full v2 styling with markdown rendering + MathJax preserved. Added sidebar icons for collapsed state.
+- Modified `web/build-bundle.js` - Added showcase-v2 bundle entry point + auto-copy to docs/
+- Updated `memory-bank/tasks/T13.md` - Complete task documentation for showcase redesign
+- Created `memory-bank/edits/2026-05-16/183500-T13.md` - Edit chunk with full change log
+- Created `memory-bank/sessions/2026-05-16-afternoon.md` - Session documentation
+- Updated `memory-bank/tasks.md` - Added T13 to completed tasks registry
+- Updated `memory-bank/activeContext.md` - Updated focus to T13 completion
+- Updated `memory-bank/session_cache.md` - Updated current session metadata
+- Verification: All 451 tests passing, build succeeds, GitHub Pages deployed
+
 #### 12:30:00 IST - T12: Critical Bug Fixes — Test Suite Restoration Complete
 - Modified `src/angularMomentum/wignerSymbols.ts` - Fixed Wigner 6j Racah formula: added missing `(z+1)!` numerator; corrected per-term `(-1)^z` phase. Fixed Wigner 3j global phase: `(-1)^(j1-j2-m3)` instead of `(-1)^(j1-j2+m3)`
 - Modified `src/angularMomentum/composition.ts` - Fixed CG coefficient Racah formula: corrected swapped signs in two denominator factorial terms; removed incorrect extra `(-1)^(j1-j2+m)` phase factor
