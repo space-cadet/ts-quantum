@@ -1,47 +1,33 @@
 # Active Context
-*Last Updated: 2026-06-24 10:35 IST*
+*Last Updated: 2026-06-25 04:58 IST*
 
 ## Current Focus
-T14: Intertwiner Module Enhancement — Added n-valent intertwiner construction, volume operator, and Z₂ spectrum diagnostics
+**T21**: Checkpointing + Worker Thread Support for lattice gauge theory simulations.
 
-## Bug Fixes (2026-06-24)
-- **index.ts**: Added `export * from './intertwiner'` to make intertwiner module available from main package
-- **volumeOperator.ts**: Fixed `checkZ2Structure()` to handle zero eigenvalues properly
-  - Old algorithm: paired by sorted absolute value (broke when zeros present)
-  - New algorithm: groups by absolute value, verifies equal counts of +q and -q
-- **nValent.ts**: Added parity check — odd number of half-integer spins returns dimension 0 (can't couple to J=0)
+**Status**: 🔄 Planning complete, implementation pending.
+
+**Scope**:
+- `src/lattice/checkpoint.ts` — Save/resume simulation state
+- Worker thread wrappers for parallel β sweeps
+- Validation: L=8 results must match single-threaded version
+
+## Previous Work (T20)
+Z₂ Lattice Gauge Theory module complete:
+- `src/lattice/geometry.ts` — Lattice types (2D square, triangular, 3D cubic)
+- `src/lattice/gaugeField.ts` — Z2GaugeField with toJSON/fromJSON
+- `src/lattice/action.ts` — Wilson action
+- `src/lattice/monteCarlo.ts` — Metropolis algorithm
+- `src/lattice/observables.ts` — Plaquette, specific heat, Wilson loops, Binder cumulant, jackknife error
 
 ## Integration with timesarrow
 - ts-quantum serves as general-purpose LQG library
 - timesarrow-numerics imports ts-quantum for domain-specific calculations
-- T25 (Volume Operator Extension) uses ts-quantum intertwiner tools
+- T20 Phase 1 complete: L=16, 18 β values, 100k sweeps, errors ~0.0005
 
-## Context (2026-06-24)
-Added general-purpose intertwiner and volume operator tools to support the timesarrow numerical simulation project. The new features extend ts-quantum's LQG capabilities beyond the previous 2,3,4-valent limitations to arbitrary n-valent nodes, with volume operator diagonalization and Z₂ structure verification.
-
-### Files Added
-- `src/intertwiner/nValent.ts` — General n-valent intertwiner construction via recursive coupling
-- `src/intertwiner/volumeOperator.ts` — Volume operator matrix construction, diagonalization, Z₂ diagnostics
-
-### Functions Added
-- `constructNValentBasis(n, j)` — Build intertwiner space for n-valent node with equal spins
-- `buildVolumeOperatorMatrix(space)` — Construct Q̂ matrix in intertwiner basis
-- `diagonalizeSymmetric(matrix)` — Jacobi eigenvalue algorithm for real symmetric matrices
-- `checkZ2Structure(eigenvalues)` — Verify ±q degeneracy pattern
-- `computeVolumeSpectrum(space)` — Convenience: build + diagonalize + diagnose
-
-### Updated Files
-- `src/intertwiner/index.ts` — Added exports for new functions, updated module header
-
-### Design Decisions
-- General-purpose code stays in ts-quantum (reusable across LQG projects)
-- Domain-specific code (Z₂ gauge theory, CZX PEPS, etc.) stays in timesarrow-numerics
-- timesarrow-numerics imports from ts-quantum as dependency
-
-## Previous Context (T13: Showcase v2 — 2026-05-16)
-Successfully redesigned the ts-quantum web showcase with a modern, modular architecture. Three interactive demos using only library exports. Fixed critical `partialTrace` bug discovered during development. All pages unified under v2 design system.
-
-## Recent Changes (T13: Showcase v2 - 2026-05-16 Afternoon/Evening)
+## Design Decisions
+- Coarse checkpointing first (per-β completion tracking)
+- Fine-grained checkpointing deferred until L≥32 needed
+- Worker threads over Rust/WASM for T21 (parallel β sweeps, not inner loop optimization)
 
 ### Session Work (2 sessions, 12:30-18:35 IST, May 16)
 1. **Showcase v2 Foundation** — Modular HTML/CSS/JS architecture with component system
