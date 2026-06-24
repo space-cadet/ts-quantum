@@ -43,7 +43,10 @@ export {
   buildVolumeOperatorMatrix,
   diagonalizeSymmetric,
   checkZ2Structure,
-  computeVolumeSpectrum
+  computeVolumeSpectrum,
+  GeometricEmbedding,
+  createGeometricEmbedding,
+  buildGeneric6ValentEmbedding
 } from './volumeOperator';
 
 // Export tensor operations (Phase 3 - to be implemented)

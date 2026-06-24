@@ -21,7 +21,71 @@ import * as math from 'mathjs';
  * @param intertwinerSpace Intertwiner space with basis states
  * @returns Real symmetric matrix Q[i][j] = ⟨Φ_i|Q̂|Φ_j⟩
  */
-export function buildVolumeOperatorMatrix(intertwinerSpace: IntertwinerSpace): number[][] {
+/**
+ * Geometric embedding for n-valent vertices
+ * 
+ * Specifies the spatial orientation of edges and computes ε_{ijk} factors.
+ * For a vertex embedded in 3D, ε_{ijk} = sign of the scalar triple product
+ * of the edge direction vectors.
+ */
+export interface GeometricEmbedding {
+  /** Edge direction vectors (unit vectors in 3D) */
+  edgeDirections: number[][];
+  
+  /** Precomputed ε_{ijk} for all triples (i<j<k) */
+  epsilonTriplets: Map<string, number>;
+}
+
+/**
+ * Create a geometric embedding from edge direction vectors
+ */
+export function createGeometricEmbedding(directions: number[][]): GeometricEmbedding {
+  const n = directions.length;
+  const epsilonTriplets = new Map<string, number>();
+  
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      for (let k = j + 1; k < n; k++) {
+        const di = directions[i];
+        const dj = directions[j];
+        const dk = directions[k];
+        
+        // Scalar triple product: di · (dj × dk)
+        const tripleProduct = 
+          di[0] * (dj[1] * dk[2] - dj[2] * dk[1]) -
+          di[1] * (dj[0] * dk[2] - dj[2] * dk[0]) +
+          di[2] * (dj[0] * dk[1] - dj[1] * dk[0]);
+        
+        const eps = Math.abs(tripleProduct) < 1e-10 ? 0 : Math.sign(tripleProduct);
+        epsilonTriplets.set(`${i},${j},${k}`, eps);
+      }
+    }
+  }
+  
+  return { edgeDirections: directions, epsilonTriplets };
+}
+
+/**
+ * Build a generic 6-valent geometric embedding (non-coplanar edges)
+ */
+export function buildGeneric6ValentEmbedding(): GeometricEmbedding {
+  // 6 edges pointing to vertices of a triangular prism
+  // This ensures non-coplanar triples
+  const directions = [
+    [1, 0, 0],           // edge 0: +x
+    [-0.5, Math.sqrt(3)/2, 0],  // edge 1: 120° in xy
+    [-0.5, -Math.sqrt(3)/2, 0], // edge 2: 240° in xy
+    [0.5, Math.sqrt(3)/6, 1],   // edge 3: upper triangle
+    [-0.5, Math.sqrt(3)/6, 1],  // edge 4: upper triangle
+    [0, -Math.sqrt(3)/3, 1],    // edge 5: upper triangle
+  ];
+  
+  return createGeometricEmbedding(directions);
+}
+export function buildVolumeOperatorMatrix(
+  intertwinerSpace: IntertwinerSpace,
+  embedding?: GeometricEmbedding
+): number[][] {
   const { basisStates, dimension, edgeSpins } = intertwinerSpace;
   
   if (dimension === 0) {
@@ -52,9 +116,9 @@ export function buildVolumeOperatorMatrix(intertwinerSpace: IntertwinerSpace): n
     return [];
   }
   
-  // For n=6, j=1/2: numerical computation
+  // For n=6, j=1/2: numerical computation with optional geometric embedding
   if (n === 6) {
-    return computeVolumeMatrix6Valent(basisStates);
+    return computeVolumeMatrix6Valent(basisStates, embedding);
   }
   
   // Generic placeholder for other cases
@@ -69,16 +133,20 @@ export function buildVolumeOperatorMatrix(intertwinerSpace: IntertwinerSpace): n
  * We compute the matrix elements numerically by expanding in the full
  * tensor product basis (dimension 64) and projecting onto the singlet.
  */
-function computeVolumeMatrix6Valent(basisStates: IntertwinerBasisState[]): number[][] {
+function computeVolumeMatrix6Valent(
+  basisStates: IntertwinerBasisState[],
+  embedding?: GeometricEmbedding
+): number[][] {
   const dim = basisStates.length;  // Should be 5 for 6-valent j=1/2
   const Q: number[][] = Array(dim).fill(0).map(() => Array(dim).fill(0));
   
   // For each pair of basis states, compute <Φ_a| Q̂ |Φ_b>
+  // For j=1/2 in |j,m⟩ basis, Q̂ has purely imaginary matrix elements.
+  // We store the imaginary part (the real part is zero).
   for (let a = 0; a < dim; a++) {
-    for (let b = a; b < dim; b++) {  // Only compute upper triangle
-      const val = computeVolumeElement6Valent(basisStates[a], basisStates[b]);
-      Q[a][b] = val;
-      Q[b][a] = val;
+    for (let b = 0; b < dim; b++) {
+      const val = computeVolumeElement6Valent(basisStates[a], basisStates[b], embedding);
+      Q[a][b] = val; // val is the imaginary part of the matrix element
     }
   }
   
@@ -88,12 +156,17 @@ function computeVolumeMatrix6Valent(basisStates: IntertwinerBasisState[]): numbe
 /**
  * Compute single volume operator matrix element for 6-valent j=1/2
  * 
- * Uses the fact that for j=1/2, the angular momentum operators are Pauli matrices.
- * The volume operator is a sum over triple products of these operators.
+ * Q̂ = Σ_{i<j<k} J_i · (J_j × J_k)  (abstract intertwiner, all signs = +1)
+ * 
+ * For j=1/2: J = (1/2)σ, so J_i · (J_j × J_k) = (1/8) Σ_{a,b,c} ε_{abc} σ_i^a σ_j^b σ_k^c
+ * 
+ * The matrix element ⟨Φ_a| Q̂ |Φ_b⟩ is computed by summing over all triples
+ * and all computational basis states.
  */
 function computeVolumeElement6Valent(
   stateA: IntertwinerBasisState,
-  stateB: IntertwinerBasisState
+  stateB: IntertwinerBasisState,
+  embedding?: GeometricEmbedding
 ): number {
   const vecA = stateA.stateVector;
   const vecB = stateB.stateVector;
@@ -102,22 +175,210 @@ function computeVolumeElement6Valent(
     throw new Error('State vectors must have same dimension');
   }
   
-  // For 6-valent j=1/2, the full space is 2^6 = 64 dimensional
-  // The intertwiner states live in a 5-dimensional subspace
+  const n = 6; // 6-valent
+  const totalDim = vecA.dimension; // Should be 64 = 2^6
   
-  // The volume operator Q̂ = Σ_{i<j<k} ε_{ijk} J_i · (J_j × J_k)
-  // where J_i acts on edge i with J = (1/2)σ
-  //
-  // For j=1/2, the operator J_i · (J_j × J_k) can be computed as:
-  // Σ_{α=x,y,z} J_i^α ⊗ J_j^β ⊗ J_k^γ ε_{αβγ}
-  //
-  // This is a 3-edge operator. For 6-valent, we sum over all C(6,3) = 20 triples.
+  let total = 0;
   
-  // For now, return 0 (placeholder) with a note that full implementation
-  // requires explicit construction of the 6-valent intertwiner basis
-  // and numerical evaluation of the triple product operators.
+  // Sum over all edge triples with geometric embedding factors
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      for (let k = j + 1; k < n; k++) {
+        let epsilon = 1; // default: all-positive (abstract intertwiner)
+        if (embedding) {
+          epsilon = embedding.epsilonTriplets.get(`${i},${j},${k}`) ?? 0;
+        }
+        if (epsilon === 0) continue; // coplanar triples don't contribute
+        
+        const contribution = epsilon * computeTripleProductElement(vecA, vecB, i, j, k, totalDim);
+        total += contribution;
+      }
+    }
+  }
   
-  return 0;
+  return total;
+}
+
+/**
+ * Compute matrix element of J_i · (J_j × J_k) between two states.
+ * 
+ * For j=1/2, this operator only connects basis states that differ at exactly
+ * 2 of the 3 edges (i,j,k). The matrix elements involve Pauli matrix overlaps.
+ */
+function computeTripleProductElement(
+  vecA: StateVector,
+  vecB: StateVector,
+  i: number,
+  j: number,
+  k: number,
+  totalDim: number
+): number {
+  let sumRe = 0;
+  let sumIm = 0;
+  
+  // Iterate over all computational basis states |s⟩
+  for (let s = 0; s < totalDim; s++) {
+    const coeffB = vecB.amplitudes[s];
+    const absB = Math.sqrt(coeffB.re * coeffB.re + coeffB.im * coeffB.im);
+    if (absB < 1e-15) continue;
+    
+    const si = (s >> i) & 1;
+    const sj = (s >> j) & 1;
+    const sk = (s >> k) & 1;
+    
+    // Apply operator to |s⟩: only 2-flip terms contribute
+    // Case 1: flips at i and j, preserve k
+    if (si !== sj) {
+      const sip = 1 - si;
+      const sjp = 1 - sj;
+      const skp = sk;
+      const sPrime = (s & ~((1 << i) | (1 << j) | (1 << k))) | (sip << i) | (sjp << j) | (skp << k);
+      
+      const coeffA = vecA.amplitudes[sPrime];
+      const me = tripleProductMatrixElement(si, sj, sk, sip, sjp, skp);
+      
+      // conj(coeffA) * coeffB * me
+      // Let z1 = conj(coeffA) = a - ib, z2 = coeffB = c + id, z3 = me = e + if
+      // z1*z2 = (ac+bd) + i(ad-bc)
+      // (z1*z2)*z3 = [(ac+bd)e - (ad-bc)f] + i[(ac+bd)f + (ad-bc)e]
+      const a = coeffA.re, b = coeffA.im;
+      const c = coeffB.re, d = coeffB.im;
+      const e = me.re, f = me.im;
+      
+      const termRe = (a*c + b*d)*e - (a*d - b*c)*f;
+      const termIm = (a*c + b*d)*f + (a*d - b*c)*e;
+      
+      sumRe += termRe;
+      sumIm += termIm;
+    }
+    
+    // Case 2: flips at i and k, preserve j
+    if (si !== sk) {
+      const sip = 1 - si;
+      const sjp = sj;
+      const skp = 1 - sk;
+      const sPrime = (s & ~((1 << i) | (1 << j) | (1 << k))) | (sip << i) | (sjp << j) | (skp << k);
+      
+      const coeffA = vecA.amplitudes[sPrime];
+      const me = tripleProductMatrixElement(si, sj, sk, sip, sjp, skp);
+      
+      const a = coeffA.re, b = coeffA.im;
+      const c = coeffB.re, d = coeffB.im;
+      const e = me.re, f = me.im;
+      
+      const termRe = (a*c + b*d)*e - (a*d - b*c)*f;
+      const termIm = (a*c + b*d)*f + (a*d - b*c)*e;
+      
+      sumRe += termRe;
+      sumIm += termIm;
+    }
+    
+    // Case 3: flips at j and k, preserve i
+    if (sj !== sk) {
+      const sip = si;
+      const sjp = 1 - sj;
+      const skp = 1 - sk;
+      const sPrime = (s & ~((1 << i) | (1 << j) | (1 << k))) | (sip << i) | (sjp << j) | (skp << k);
+      
+      const coeffA = vecA.amplitudes[sPrime];
+      const me = tripleProductMatrixElement(si, sj, sk, sip, sjp, skp);
+      
+      const a = coeffA.re, b = coeffA.im;
+      const c = coeffB.re, d = coeffB.im;
+      const e = me.re, f = me.im;
+      
+      const termRe = (a*c + b*d)*e - (a*d - b*c)*f;
+      const termIm = (a*c + b*d)*f + (a*d - b*c)*e;
+      
+      sumRe += termRe;
+      sumIm += termIm;
+    }
+  }
+  
+  // The triple product operator in |j,m⟩ basis has purely imaginary matrix elements.
+  // For Hermitian operators in a real basis, the matrix is purely imaginary antisymmetric.
+  // We return the imaginary part here; the real part is zero.
+  return sumIm;
+}
+
+/**
+ * Compute the matrix element ⟨s'| J_i·(J_j×J_k) |s⟩ for a single pair of
+ * computational basis states that differ at exactly 2 of the 3 positions.
+ * 
+ * Returns the complex matrix element. For j=1/2, this is purely imaginary.
+ */
+function tripleProductMatrixElement(
+  si: number, sj: number, sk: number,
+  sip: number, sjp: number, skp: number
+): { re: number; im: number } {
+  // Count flips
+  const flipsI = si !== sip ? 1 : 0;
+  const flipsJ = sj !== sjp ? 1 : 0;
+  const flipsK = sk !== skp ? 1 : 0;
+  const totalFlips = flipsI + flipsJ + flipsK;
+  
+  if (totalFlips !== 2) {
+    return { re: 0, im: 0 };
+  }
+  
+  // Pauli matrix elements for J = (1/2)σ:
+  // J^x flip: ⟨0|J^x|1⟩ = 1/2, ⟨1|J^x|0⟩ = 1/2
+  // J^y flip: ⟨0|J^y|1⟩ = -i/2, ⟨1|J^y|0⟩ = i/2
+  // J^z preserve: ⟨0|J^z|0⟩ = 1/2, ⟨1|J^z|1⟩ = -1/2
+  
+  let resultIm = 0;
+  
+  if (flipsI && flipsJ && !flipsK) {
+    // Flips at i,j; preserve at k
+    const jx_i = 0.5;
+    const jy_i_coeff = (si === 0) ? 0.5 : -0.5; // coefficient of i in ⟨s'_i|J^y|s_i⟩
+    
+    const jx_j = 0.5;
+    const jy_j_coeff = (sj === 0) ? 0.5 : -0.5;
+    
+    const jz_k = (sk === 0) ? 0.5 : -0.5;
+    
+    // J^x_i J^y_j J^z_k - J^y_i J^x_j J^z_k
+    // = (1/2)(i*jy_j_coeff)(jz_k) - (i*jy_i_coeff)(1/2)(jz_k)
+    resultIm = jx_i * jy_j_coeff * jz_k - jy_i_coeff * jx_j * jz_k;
+    
+  } else if (flipsI && !flipsJ && flipsK) {
+    // Flips at i,k; preserve at j
+    const jx_i = 0.5;
+    const jy_i_coeff = (si === 0) ? 0.5 : -0.5;
+    
+    const jx_k = 0.5;
+    const jy_k_coeff = (sk === 0) ? 0.5 : -0.5;
+    
+    const jz_j = (sj === 0) ? 0.5 : -0.5;
+    
+    // J^x_i J^z_j J^y_k - J^y_i J^z_j J^x_k
+    // ε_{xzy} = -1, ε_{yzx} = +1? Let me use the direct formula.
+    // O = J^x_i J^y_j J^z_k - J^y_i J^x_j J^z_k + J^y_i J^z_j J^x_k - J^z_i J^y_j J^x_k + J^z_i J^x_j J^y_k - J^x_i J^z_j J^y_k
+    // For flips at i,k and preserve at j: a∈{x,y}, c∈{x,y}, b=z
+    // Non-zero terms: J^x_i J^z_j J^y_k (ε_{xzy}=-1) and J^y_i J^z_j J^x_k (ε_{yzx}=+1?)
+    // ε_{x z y} = -ε_{x y z} = -1
+    // ε_{y z x} = +ε_{y x z} = -1? No wait.
+    // ε_{abc} with a=x, b=z, c=y: ε_{xzy} = -1 (odd permutation of xyz)
+    // ε_{abc} with a=y, b=z, c=x: ε_{yzx} = +1 (even permutation of xyz)
+    resultIm = -jx_i * jy_k_coeff * jz_j + jy_i_coeff * jz_j * jx_k;
+    
+  } else if (!flipsI && flipsJ && flipsK) {
+    // Flips at j,k; preserve at i
+    const jx_j = 0.5;
+    const jy_j_coeff = (sj === 0) ? 0.5 : -0.5;
+    
+    const jx_k = 0.5;
+    const jy_k_coeff = (sk === 0) ? 0.5 : -0.5;
+    
+    const jz_i = (si === 0) ? 0.5 : -0.5;
+    
+    // J^z_i J^x_j J^y_k - J^z_i J^y_j J^x_k
+    // ε_{zxy} = +1, ε_{zyx} = -1
+    resultIm = jz_i * jx_j * jy_k_coeff - jz_i * jy_j_coeff * jx_k;
+  }
+  
+  return { re: 0, im: resultIm };
 }
 
 /**
@@ -234,6 +495,68 @@ export function diagonalizeSymmetric(matrix: number[][]): {
  * @param tolerance Numerical tolerance for degeneracy check
  * @returns True if spectrum shows ±q pairs
  */
+/**
+ * Diagonalize a real antisymmetric matrix via block-symmetric embedding
+ * 
+ * For real antisymmetric Q, iQ is Hermitian. We diagonalize iQ by
+ * constructing the real symmetric block matrix M = [[0, Q], [-Q, 0]]
+ * and extracting eigenvalues.
+ */
+function diagonalizeAntisymmetric(Q: number[][]): {
+  eigenvalues: number[];
+  eigenvectors: number[][];
+} {
+  const n = Q.length;
+  if (n === 0) return { eigenvalues: [], eigenvectors: [] };
+  
+  // Check symmetry: Q should be antisymmetric
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
+      if (Math.abs(Q[i][j] + Q[j][i]) > 1e-10) {
+        console.warn(`Matrix not antisymmetric at (${i},${j}): ${Q[i][j]} vs ${Q[j][i]}`);
+      }
+    }
+  }
+  
+  // Construct block matrix M = [[0, Q], [-Q, 0]]
+  const size = 2 * n;
+  const M: number[][] = Array(size).fill(0).map(() => Array(size).fill(0));
+  
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
+      M[i][j + n] = Q[i][j];         // top-right = Q
+      M[i + n][j] = -Q[i][j];        // bottom-left = -Q
+    }
+  }
+  
+  // Diagonalize M (symmetric)
+  const { eigenvalues: eigsM, eigenvectors: vecsM } = diagonalizeSymmetric(M);
+  
+  // Eigenvalues of M come in ± pairs with multiplicity 2
+  // We need to extract eigenvalues of iQ with half the multiplicity
+  const eigenvalueCounts = new Map<number, number>();
+  for (const val of eigsM) {
+    const rounded = Math.round(val / 1e-10) * 1e-10; // round to avoid floating point issues
+    eigenvalueCounts.set(rounded, (eigenvalueCounts.get(rounded) || 0) + 1);
+  }
+  
+  const eigenvalues: number[] = [];
+  for (const [val, count] of eigenvalueCounts) {
+    const halfCount = Math.round(count / 2);
+    for (let i = 0; i < halfCount; i++) {
+      eigenvalues.push(val);
+    }
+  }
+  
+  // Sort eigenvalues
+  eigenvalues.sort((a, b) => a - b);
+  
+  // For eigenvectors, extract from vecsM (first n components of eigenvectors with positive eigenvalues)
+  // This is a bit involved; for now, return empty eigenvectors
+  const eigenvectors: number[][] = [];
+  
+  return { eigenvalues, eigenvectors };
+}
 export function checkZ2Structure(eigenvalues: number[], tolerance: number = 1e-10): boolean {
   if (eigenvalues.length === 0) return true;
   
@@ -280,14 +603,45 @@ export function checkZ2Structure(eigenvalues: number[], tolerance: number = 1e-1
  * @param intertwinerSpace Intertwiner space
  * @returns Spectrum and diagnostic info
  */
-export function computeVolumeSpectrum(intertwinerSpace: IntertwinerSpace): {
+export function computeVolumeSpectrum(
+  intertwinerSpace: IntertwinerSpace,
+  embedding?: GeometricEmbedding
+): {
   eigenvalues: number[];
   eigenvectors: number[][];
   hasZ2Structure: boolean;
   dimension: number;
 } {
-  const Q = buildVolumeOperatorMatrix(intertwinerSpace);
-  const { eigenvalues, eigenvectors } = diagonalizeSymmetric(Q);
+  const Q = buildVolumeOperatorMatrix(intertwinerSpace, embedding);
+  
+  // Detect if matrix is antisymmetric (for 6-valent and higher with j=1/2)
+  let isAntisymmetric = false;
+  if (Q.length > 0) {
+    isAntisymmetric = true;
+    for (let i = 0; i < Q.length; i++) {
+      for (let j = 0; j < Q.length; j++) {
+        if (Math.abs(Q[i][j] + Q[j][i]) > 1e-10) {
+          isAntisymmetric = false;
+          break;
+        }
+      }
+      if (!isAntisymmetric) break;
+    }
+  }
+  
+  let eigenvalues: number[];
+  let eigenvectors: number[][];
+  
+  if (isAntisymmetric) {
+    const result = diagonalizeAntisymmetric(Q);
+    eigenvalues = result.eigenvalues;
+    eigenvectors = result.eigenvectors;
+  } else {
+    const result = diagonalizeSymmetric(Q);
+    eigenvalues = result.eigenvalues;
+    eigenvectors = result.eigenvectors;
+  }
+  
   const hasZ2Structure = checkZ2Structure(eigenvalues);
   
   return {
