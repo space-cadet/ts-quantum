@@ -46,3 +46,6 @@ export * from './angularMomentum';
 
 // Export geometry module
 export * from './geometry';
+
+// Export from intertwiner module
+export * from './intertwiner';

@@ -28,6 +28,11 @@ export function constructNValentBasis(n: number, j: number): IntertwinerSpace {
     throw new Error('Spin j must be non-negative integer or half-integer');
   }
   
+  // Quick parity check: odd number of half-integer spins cannot couple to J=0
+  if (n % 2 === 1 && Math.abs(2 * j % 2 - 1) < 1e-10) {
+    return { dimension: 0, basisStates: [], edgeSpins: Array(n).fill(j), totalJ: 0 };
+  }
+  
   const edgeSpins = Array(n).fill(j);
   
   // Special cases: delegate to existing optimized implementations

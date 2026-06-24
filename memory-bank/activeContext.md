@@ -4,6 +4,18 @@
 ## Current Focus
 T14: Intertwiner Module Enhancement — Added n-valent intertwiner construction, volume operator, and Z₂ spectrum diagnostics
 
+## Bug Fixes (2026-06-24)
+- **index.ts**: Added `export * from './intertwiner'` to make intertwiner module available from main package
+- **volumeOperator.ts**: Fixed `checkZ2Structure()` to handle zero eigenvalues properly
+  - Old algorithm: paired by sorted absolute value (broke when zeros present)
+  - New algorithm: groups by absolute value, verifies equal counts of +q and -q
+- **nValent.ts**: Added parity check — odd number of half-integer spins returns dimension 0 (can't couple to J=0)
+
+## Integration with timesarrow
+- ts-quantum serves as general-purpose LQG library
+- timesarrow-numerics imports ts-quantum for domain-specific calculations
+- T25 (Volume Operator Extension) uses ts-quantum intertwiner tools
+
 ## Context (2026-06-24)
 Added general-purpose intertwiner and volume operator tools to support the timesarrow numerical simulation project. The new features extend ts-quantum's LQG capabilities beyond the previous 2,3,4-valent limitations to arbitrary n-valent nodes, with volume operator diagonalization and Z₂ structure verification.
 
