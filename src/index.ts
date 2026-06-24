@@ -49,3 +49,6 @@ export * from './geometry';
 
 // Export from intertwiner module
 export * from './intertwiner';
+
+// Export lattice gauge theory module
+export * from './lattice';
