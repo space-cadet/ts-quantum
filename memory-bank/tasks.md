@@ -1,30 +1,13 @@
-# Task Registry
-*Last Updated: 2026-05-16 18:35:00 IST*
+# ts-quantum Project Memory Bank
+
+*Created: 2026-06-24*
 
 ## Active Tasks
-| ID | Title | Status | Priority | Started | Dependencies | Details |
-|----|-------|--------|----------|---------|--------------|---------|
-| T10 | Dedicated Quantum Random Walk Demo Page | 🔄 | HIGH | 2026-01-05 | T9, T7 | [Details](tasks/T10.md) |
-| T10a | Quantum Random Walk Refactoring - Modular Architecture | ✅ | HIGH | 2026-01-07 | T10 | [Details](tasks/T10a.md) |
-| T11 | QRW Sidebar Navigation and Educational Content Implementation | ✅ | HIGH | 2026-01-08 | T10 | [Details](tasks/T11.md) |
-| T12 | Critical Bug Fixes — Test Suite Restoration | ✅ | CRITICAL | 2026-05-16 | — | [Details](tasks/T12.md) |
-| T14 | Intertwiner Enhancement — n-valent, volume operator, Z₂ diagnostics | 🔄 | HIGH | 2026-06-24 | — | [Details](tasks/T14.md) |
-| T13 | Showcase v2 — Interactive Quantum Simulations Redesign | ✅ | HIGH | 2026-05-16 | T12 | [Details](tasks/T13.md) |
+- **T20**: Z₂ Lattice Gauge Theory Module — COMPLETE → See `tasks/T20-lattice-module.md`
 
-## Completed Tasks (Phase 1 & 2)
-| ID | Title | Completed | Phase |
-|----|-------|-----------|-------|
-| T0 | Extract standalone package | 2025-07-06 | Core |
-| T1 | Fix build errors | 2025-07-06 | Core |
-| T2 | Package validation | 2025-07-06 | Core |
-| T3 | Documentation review | 2025-07-07 | Core |
-| T4 | Prepare for publishing | 2025-07-07 | Core |
-| T5 | Generate Interactive Webpages | 2025-07-07 | Enhanced |
-| T6 | Native Sparse Operator Support | 2026-01-01 | Enhanced |
-| T7 | Web Showcase and Deployment | 2026-01-04 | Web |
-| T8 | Documentation System Redesign | 2026-01-04 | Web |
-| T9 | 1D Quantum Random Walk Implementation | 2026-01-04 | Web |
-| T10a | Quantum Random Walk Refactoring - Modular Architecture | 2026-01-07 | Enhanced |
-| T11 | QRW Sidebar Navigation and Educational Content | 2026-01-08 | Web |
-| T12 | Critical Bug Fixes — Test Suite Restoration | 2026-05-16 | Core |
-| T13 | Showcase v2 — Interactive Quantum Simulations Redesign | 2026-05-16 | Web |
+## Project Structure
+- `src/lattice/` — Lattice gauge theory primitives (geometry, gaugeField, action, monteCarlo, observables)
+- `src/core/` — Core types and utilities
+- `src/geometry/` — Quantum distance, intertwiner geometry
+- `src/states/` — State vectors, density matrices
+- `src/operators/` — Operators, gates, Hamiltonians
