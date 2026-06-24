@@ -8,6 +8,7 @@
 | T10a | Quantum Random Walk Refactoring - Modular Architecture | ✅ | HIGH | 2026-01-07 | T10 | [Details](tasks/T10a.md) |
 | T11 | QRW Sidebar Navigation and Educational Content Implementation | ✅ | HIGH | 2026-01-08 | T10 | [Details](tasks/T11.md) |
 | T12 | Critical Bug Fixes — Test Suite Restoration | ✅ | CRITICAL | 2026-05-16 | — | [Details](tasks/T12.md) |
+| T14 | Intertwiner Enhancement — n-valent, volume operator, Z₂ diagnostics | 🔄 | HIGH | 2026-06-24 | — | [Details](tasks/T14.md) |
 | T13 | Showcase v2 — Interactive Quantum Simulations Redesign | ✅ | HIGH | 2026-05-16 | T12 | [Details](tasks/T13.md) |
 
 ## Completed Tasks (Phase 1 & 2)

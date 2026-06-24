@@ -1,10 +1,32 @@
 # Active Context
-*Last Updated: 2026-05-16 18:35:00 IST*
+*Last Updated: 2026-06-24 10:35 IST*
 
 ## Current Focus
-T13: Showcase v2 — Interactive Quantum Simulations Redesign - COMPLETED
+T14: Intertwiner Module Enhancement — Added n-valent intertwiner construction, volume operator, and Z₂ spectrum diagnostics
 
-## Context
+## Context (2026-06-24)
+Added general-purpose intertwiner and volume operator tools to support the timesarrow numerical simulation project. The new features extend ts-quantum's LQG capabilities beyond the previous 2,3,4-valent limitations to arbitrary n-valent nodes, with volume operator diagonalization and Z₂ structure verification.
+
+### Files Added
+- `src/intertwiner/nValent.ts` — General n-valent intertwiner construction via recursive coupling
+- `src/intertwiner/volumeOperator.ts` — Volume operator matrix construction, diagonalization, Z₂ diagnostics
+
+### Functions Added
+- `constructNValentBasis(n, j)` — Build intertwiner space for n-valent node with equal spins
+- `buildVolumeOperatorMatrix(space)` — Construct Q̂ matrix in intertwiner basis
+- `diagonalizeSymmetric(matrix)` — Jacobi eigenvalue algorithm for real symmetric matrices
+- `checkZ2Structure(eigenvalues)` — Verify ±q degeneracy pattern
+- `computeVolumeSpectrum(space)` — Convenience: build + diagonalize + diagnose
+
+### Updated Files
+- `src/intertwiner/index.ts` — Added exports for new functions, updated module header
+
+### Design Decisions
+- General-purpose code stays in ts-quantum (reusable across LQG projects)
+- Domain-specific code (Z₂ gauge theory, CZX PEPS, etc.) stays in timesarrow-numerics
+- timesarrow-numerics imports from ts-quantum as dependency
+
+## Previous Context (T13: Showcase v2 — 2026-05-16)
 Successfully redesigned the ts-quantum web showcase with a modern, modular architecture. Three interactive demos using only library exports. Fixed critical `partialTrace` bug discovered during development. All pages unified under v2 design system.
 
 ## Recent Changes (T13: Showcase v2 - 2026-05-16 Afternoon/Evening)
