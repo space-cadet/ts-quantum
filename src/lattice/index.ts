@@ -14,3 +14,4 @@ export * from './gaugeField';
 export * from './action';
 export * from './monteCarlo';
 export * from './observables';
+export * from './checkpoint';

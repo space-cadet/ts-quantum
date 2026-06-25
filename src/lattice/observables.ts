@@ -34,18 +34,74 @@ export function averagePlaquette(field: Z2GaugeField): number {
 }
 
 /**
- * Compute specific heat: C_V = (⟨S²⟩ - ⟨S⟩²) / V
- * where S is the action and V is the volume (number of sites)
+ * Compute plaquette moments: ⟨P⟩, ⟨P²⟩, ⟨P⁴⟩ in a single pass
+ * Useful for susceptibility, specific heat, and Binder cumulant
  */
-export function specificHeat(
-  actionValues: number[],
-  beta: number,
+export interface PlaquetteMoments {
+  mean: number;      // ⟨P⟩
+  meanSq: number;    // ⟨P²⟩
+  meanFourth: number; // ⟨P⁴⟩
+}
+
+export function averagePlaquetteMoments(field: Z2GaugeField): PlaquetteMoments {
+  const lattice = field.lattice;
+  let sum = 0;
+  let sumSq = 0;
+  let sumFourth = 0;
+  let count = 0;
+  
+  for (let site = 0; site < lattice.numSites; site++) {
+    const plaquettes = lattice.plaquettes(site);
+    for (const plaq of plaquettes) {
+      let product = 1;
+      let currentSite = site;
+      
+      for (let i = 0; i < plaq.sites.length - 1; i++) {
+        product *= field.getLink(currentSite, plaq.directions[i]);
+        currentSite = plaq.sites[i + 1];
+      }
+      
+      sum += product;
+      sumSq += product * product;
+      sumFourth += product * product * product * product;
+      count++;
+    }
+  }
+  
+  const mean = sum / count;
+  return {
+    mean,
+    meanSq: sumSq / count,
+    meanFourth: sumFourth / count
+  };
+}
+
+/**
+ * Compute susceptibility: χ = L² (⟨P²⟩ - ⟨P⟩²)
+ * 
+ * For second-order transitions, peak height scales as L^(γ/ν)
+ * 2D Ising: γ = 7/4, ν = 1 → χ_peak ~ L^(7/4)
+ */
+export function susceptibility(
+  mean: number,
+  meanSq: number,
   volume: number
 ): number {
-  const meanS = actionValues.reduce((a, b) => a + b, 0) / actionValues.length;
-  const meanS2 = actionValues.reduce((a, b) => a + b * b, 0) / actionValues.length;
-  
-  return (meanS2 - meanS * meanS) / volume;
+  return volume * (meanSq - mean * mean);
+}
+
+/**
+ * Compute plaquette-based specific heat: C = β² (⟨P²⟩ - ⟨P⟩²)
+ * 
+ * For second-order transitions, peak height scales as L^(α/ν)
+ * 2D Ising: α = 0 → C_peak ~ log(L) or constant (marginal)
+ */
+export function plaquetteSpecificHeat(
+  mean: number,
+  meanSq: number,
+  beta: number
+): number {
+  return beta * beta * (meanSq - mean * mean);
 }
 
 /**
@@ -125,6 +181,8 @@ export function averageWilsonLoop(
  */
 export function jackknifeError(values: number[]): number {
   const n = values.length;
+  if (n <= 1) return 0; // Can't compute error with < 2 samples
+  
   const mean = values.reduce((a, b) => a + b, 0) / n;
   
   let variance = 0;
