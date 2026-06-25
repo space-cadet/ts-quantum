@@ -9,40 +9,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Initialize tasks schema
-function initSchema(db) {
-  await sqlite.exec(`
-    PRAGMA foreign_keys = OFF;
-    
-    CREATE TABLE IF NOT EXISTS task_items (
-      id TEXT PRIMARY KEY,
-      title TEXT NOT NULL,
-      status TEXT NOT NULL CHECK(status IN ('pending','in_progress','completed','paused')),
-      priority TEXT NOT NULL CHECK(priority IN ('low','medium','high')),
-      started TEXT NOT NULL,
-      updated TEXT,
-      details TEXT NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS task_subtasks (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      task_id TEXT NOT NULL,
-      section TEXT,
-      position INTEGER NOT NULL,
-      text TEXT NOT NULL,
-      checked INTEGER NOT NULL CHECK(checked IN (0, 1)),
-      FOREIGN KEY(task_id) REFERENCES task_items(id) ON DELETE CASCADE
-    );
-    
-    CREATE TABLE IF NOT EXISTS task_dependencies (
-      task_id TEXT NOT NULL,
-      depends_on TEXT NOT NULL,
-      FOREIGN KEY(task_id) REFERENCES task_items(id) ON DELETE CASCADE,
-      FOREIGN KEY(depends_on) REFERENCES task_items(id) ON DELETE CASCADE,
-      PRIMARY KEY(task_id, depends_on)
-    );
-    
-    PRAGMA foreign_keys = ON;
-  `);
+async function initSchema() {
+  // Schema already initialized by schema.sql + init-schema.js
+  // Just verify tables exist
+  const tables = sqlite.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='task_items'").get();
+  if (!tables) {
+    throw new Error('task_items table not found. Run init-schema.js first.');
+  }
+  console.log('✓ Database schema verified\n');
 }
 
 function normalizeStatus(statusCell) {
@@ -127,11 +101,11 @@ function parseTasks(content) {
 }
 
 // Insert tasks into database
-function populateDatabase(db, tasks) {
+async function populateDatabase(tasks) {
   console.log(`Populating database with ${tasks.length} tasks...\n`);
 
   const insertTask = sqlite.prepare(`
-    INSERT OR IGNORE INTO task_items (id, title, status, priority, started, updated, details)
+    INSERT OR IGNORE INTO task_items (id, title, status, priority, started, last_updated, details)
     VALUES (?, ?, ?, ?, ?, ?, ?)
   `);
   
@@ -146,13 +120,13 @@ function populateDatabase(db, tasks) {
   `);
   
   // Disable foreign keys temporarily
-  db.pragma('foreign_keys = OFF');
+  await sqlite.pragma('foreign_keys = OFF');
   
   let successCount = 0;
   let errorCount = 0;
   
   // Insert all tasks first
-  sqlite.transaction(() => {
+  await sqlite.transaction(() => {
     tasks.forEach(task => {
       try {
         insertTask.run(
@@ -174,7 +148,7 @@ function populateDatabase(db, tasks) {
   })();
   
   // Then insert dependencies
-  sqlite.transaction(() => {
+  await sqlite.transaction(() => {
     tasks.forEach(task => {
       task.dependencies.forEach(depId => {
         try {
@@ -188,7 +162,7 @@ function populateDatabase(db, tasks) {
 
   // Then insert subtasks (from task files)
   const subtasks = parseTaskSubtasks();
-  sqlite.transaction(() => {
+  await sqlite.transaction(() => {
     subtasks.forEach(st => {
       try {
         insertSubtask.run(st.taskId, st.section, st.position, st.text, st.checked);
@@ -199,7 +173,7 @@ function populateDatabase(db, tasks) {
   })();
   
   // Re-enable foreign keys
-  db.pragma('foreign_keys = ON');
+  await sqlite.pragma('foreign_keys = ON');
   
   console.log(`\n✓ Successfully inserted ${successCount} tasks`);
   if (errorCount > 0) {
@@ -313,11 +287,11 @@ async function main() {
     const dbPath = join(__dirname, 'memory_bank.db');
     await sqlite.openDb(dbPath);
     
-    await sqlite.exec('DROP TABLE IF EXISTS task_dependencies');
-    await sqlite.exec('DROP TABLE IF EXISTS task_subtasks');
-    await sqlite.exec('DROP TABLE IF EXISTS task_items');
+    await sqlite.exec('DELETE FROM task_dependencies;');
+    await sqlite.exec('DELETE FROM task_subtasks;');
+    await sqlite.exec('DELETE FROM task_items;');
     
-    initSchema(db);
+    await initSchema();
     console.log('✓ Database schema initialized\n');
 
     console.log('Parsing tasks...\n');
@@ -330,7 +304,7 @@ async function main() {
       return;
     }
 
-    populateDatabase(db, tasks);
+    await populateDatabase(tasks);
     
     console.log('\n=====================================');
     console.log('Database Statistics:\n');

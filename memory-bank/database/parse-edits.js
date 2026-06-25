@@ -194,7 +194,7 @@ function parseEditHistory(content) {
 /**
  * Populate the database with parsed entries
  */
-function populateDatabase(db, entries) {
+async function populateDatabase(entries) {
   console.log(`Populating database with ${entries.length} entries...\n`);
 
   // Prepare statements
@@ -217,7 +217,7 @@ function populateDatabase(db, entries) {
       try {
         const timestamp = parseDateTime(entry.date, entry.time, entry.timezone);
 
-        const result = insertEntry.run(
+        insertEntry.run(
           entry.date,
           entry.time,
           entry.timezone,
@@ -226,7 +226,7 @@ function populateDatabase(db, entries) {
           entry.taskDescription
         );
 
-        const entryId = result.lastInsertRowid;
+        const entryId = sqlite.prepare('SELECT last_insert_rowid() AS id').get().id;
 
         // Insert modifications
         for (const mod of entry.modifications) {
@@ -248,7 +248,7 @@ function populateDatabase(db, entries) {
     }
   });
 
-  insertAll(entries);
+  await insertAll(entries);
 
   console.log(`\n✓ Successfully inserted ${successCount} entries`);
   if (errorCount > 0) {
@@ -259,7 +259,7 @@ function populateDatabase(db, entries) {
 /**
  * Display database statistics
  */
-function displayStats(db) {
+function displayStats() {
   console.log('\n=====================================');
   console.log('Database Statistics:\n');
 
@@ -302,11 +302,11 @@ async function main() {
 
     // Clear existing tables
     console.log('Clearing existing database data...\n');
-    await sqlite.exec('DROP TABLE IF EXISTS file_modifications');
-    await sqlite.exec('DROP TABLE IF EXISTS edit_entries');
+    await sqlite.exec('DELETE FROM file_modifications;');
+    await sqlite.exec('DELETE FROM edit_entries;');
 
     // Initialize schema
-    initDatabase(db);
+    await initDatabase();
 
     // Parse the content
     console.log('Parsing edit history...\n');
@@ -320,10 +320,10 @@ async function main() {
     }
 
     // Populate database
-    populateDatabase(db, entries);
+    await populateDatabase(entries);
 
     // Display statistics
-    displayStats(db);
+    displayStats();
 
     if(process.argv.includes('--test')) {
       if(runTests()) {

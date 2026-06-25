@@ -16,7 +16,7 @@ const __dirname = dirname(__filename);
 /**
  * Initialize session_cache schema
  */
-function initSchema(db) {
+async function initSchema() {
   await sqlite.exec(`
     CREATE TABLE IF NOT EXISTS session_cache (
       session_id TEXT PRIMARY KEY,  -- Derived from implicit session file or 'current'
@@ -100,8 +100,8 @@ async function main() {
     
     // Clear existing table
     console.log('Clearing existing session_cache data...\n');
-    await sqlite.exec('DROP TABLE IF EXISTS session_cache');
-    initSchema(db);
+    await sqlite.exec('DELETE FROM session_cache;');
+    await initSchema();
 
     // Parse content
     console.log('Parsing session cache...\n');
