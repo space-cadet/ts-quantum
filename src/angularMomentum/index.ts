@@ -9,3 +9,5 @@ export * from './composition';
 export * from './stateAnalysis';
 export * from './multiSpinState';
 export * from './wignerSymbols';
+export * from './su2';
+export * from './representation';
