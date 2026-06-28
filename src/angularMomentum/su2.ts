@@ -161,9 +161,8 @@ export function su2ToEuler(g: SU2Element): { alpha: number; beta: number; gamma:
   const sinHalfBeta = Math.sqrt((b as any).re ** 2 + (b as any).im ** 2);
   const cosHalfBeta = Math.sqrt((a as any).re ** 2 + (a as any).im ** 2);
   
-  // Clamp for numerical stability
-  const sinBetaClamped = Math.max(-1, Math.min(1, 2 * sinHalfBeta * cosHalfBeta));
-  const beta = Math.asin(sinBetaClamped);
+  // β = 2 * acos(|a|) = 2 * asin(|b|) ∈ [0, π]
+  const beta = 2 * Math.acos(Math.max(0, Math.min(1, cosHalfBeta)));
   
   if (Math.abs(sinHalfBeta) < 1e-10) {
     // beta ≈ 0, g is essentially exp(-i(α+γ)Jz)
