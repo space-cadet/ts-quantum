@@ -1,3 +1,11 @@
+# Session: 2026-05-16 Afternoon
+
+**Started**: -
+**Focus Task**: T13 (Showcase v2) + T12 continuation (partialTrace fix)*
+**Status**: ✅ UNKNOWN
+
+## Work Done
+
 # T13: Showcase v2 — Interactive Quantum Simulations Redesign
 
 *Session: 2026-05-16 12:30–18:35 IST*
@@ -77,3 +85,5 @@
 - Add more demo modules (angular momentum, circuit builder)
 - Deploy to custom domain
 - Add S, T, Rx, Ry gates to ts-quantum exports
+
+

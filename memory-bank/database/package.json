@@ -2,5 +2,8 @@
   "name": "ts-quantum-memory-bank",
   "version": "1.0.0",
   "type": "module",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "sql.js": "^1.14.1"
+  }
 }
