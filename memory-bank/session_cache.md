@@ -3,12 +3,12 @@
 *Created: 2026-06-28 17:31:13 IST*
 *Last Updated: 2026-07-18 00:35:09 IST*
 
-**Started**: 2026-07-18 00:35:09 IST
-**Focus Task**: T14 follow-on: local CZX/intertwiner audit
+**Started**: 2026-07-18 00:56 IST
+**Focus Task**: T14: Review and pull CZX intertwiner audit from Terra
 **Session File**: `sessions/2026-07-18-early-morning.md`
-**Status**: ✅ Local audit complete; many-vertex scientific validation remains external to this package
+**Status**: ✅ CZX audit pulled and reviewed; memory-bank updated
 
-**2026-07-18 checkpoint:** Added `ControlledZ` and a modular `models/czx` audit. The local CZX candidate satisfies $U^2=I$ in the full 16-dimensional space but has nonzero leakage from the four-spin-half SU(2) singlet subspace.
+**2026-07-18 checkpoint (00:56 IST):** Pulled Terra's CZX intertwiner audit (`b93820b`). Reviewed `src/models/czx.ts`, `__tests__/czx.test.ts`, and `memory-bank/implementation-details/czx-intertwiner-audit.md`. Terra's implementation is sound: the literal four-qubit CZX is an involution on the full 16-dimensional space but does not preserve the four-spin-half SU(2) singlet subspace. This is a correct negative result — important for ruling out a naive local realization. No code changes needed. All 115 tests pass.
 
 ## Overview
 
