@@ -36,3 +36,12 @@ export const CNOT = new MatrixOperator([
     [math.complex(0,  0), math.complex(0,  0), math.complex(0,  0), math.complex(1,  0)],
     [math.complex(0,  0), math.complex(0,  0), math.complex(1,  0), math.complex(0,  0)]
 ], 'unitary');
+
+// Controlled-Z gate for a two-qubit system.  It is diagonal in the
+// computational basis and applies a minus sign only to |11>.
+export const ControlledZ = new MatrixOperator([
+    [math.complex(1, 0), math.complex(0, 0), math.complex(0, 0), math.complex(0, 0)],
+    [math.complex(0, 0), math.complex(1, 0), math.complex(0, 0), math.complex(0, 0)],
+    [math.complex(0, 0), math.complex(0, 0), math.complex(1, 0), math.complex(0, 0)],
+    [math.complex(0, 0), math.complex(0, 0), math.complex(0, 0), math.complex(-1, 0)]
+], 'unitary');

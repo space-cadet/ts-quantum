@@ -9,13 +9,29 @@ import {
   PauliY,
   PauliZ,  // Phase flip
   Hadamard,
-  CNOT
+  CNOT,
+  ControlledZ
 } from '../src/operators/gates';
 import { StateVector } from '../src/states/stateVector';
 // import { math.complex } from '../complex';
 import * as math from 'mathjs';
 
 describe('Quantum Gates', () => {
+  describe('Controlled-Z Gate', () => {
+    it('applies a minus sign only to |11>', () => {
+      const state11 = StateVector.computationalBasis(4, 3);
+      const state10 = StateVector.computationalBasis(4, 2);
+
+      expect(ControlledZ.apply(state11).amplitudes[3]).toEqual(math.complex(-1, 0));
+      expect(ControlledZ.apply(state10).amplitudes[2]).toEqual(math.complex(1, 0));
+    });
+
+    it('is self-inverse', () => {
+      const state = StateVector.computationalBasis(4, 3);
+      expect(ControlledZ.compose(ControlledZ).apply(state).equals(state)).toBe(true);
+    });
+  });
+
   describe('Pauli X (NOT) Gate', () => {
     it('flips basis states', () => {
       const state0 = new StateVector(2, [

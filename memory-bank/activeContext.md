@@ -1,12 +1,15 @@
 # Active Context
-*Last Updated: 2026-06-28 22:59 IST*
+*Last Updated: 2026-07-18 00:35 IST*
 
 ## Current Focus
-**T14**: SU(2) Haar Measure Sampling + Representation Matrices — ✅ COMPLETED
+**T14 follow-on**: Local CZX symmetry and SU(2) intertwiner audit — checkpoint complete
 
-**Status**: Implementation complete with full test coverage. Ready for T1 (FK Vertex Amplitude).
+**Status**: `ControlledZ` and a local CZX audit are implemented and fully tested. The literal four-qubit CZX operator is an involution on the full Hilbert space, but it does not preserve the four-spin-half SU(2) singlet/intertwiner subspace.
 
 ### What Was Delivered
+- `src/operators/gates.ts` — `ControlledZ` gate with computational-basis and involution tests
+- `src/models/czx.ts` — local CZX construction plus projection/leakage audit against an `IntertwinerSpace`
+- `__tests__/czx.test.ts` — full-space involution and singlet-subspace leakage tests
 - `src/angularMomentum/su2.ts` — SU(2) group operations, Haar sampling, Euler angles
 - `src/angularMomentum/representation.ts` — Wigner D-matrices, characters, state rotation
 - `__tests__/angularMomentum/su2.test.ts` — 21 tests (group ops, Euler angles, Haar stats)
@@ -18,9 +21,7 @@
 2. **Wigner d-matrix coefficient**: `√(num)/den` (was `√(num/den)` losing precision)
 
 ## Next Priority
-**T1**: FK Vertex Amplitude — Monte Carlo integration using T14 modules
-- Imports: `sampleSU2Haar()`, `representationMatrix()`, `characterSU2()`
-- Location: `src/spinFoam/` (new package)
+Use the local audit only as infrastructure for timesarrow T35a. The next scientific gate is a minimal many-vertex candidate state and its symmetry action; do not promote the local CZX operator to a microscopic realization claim.
 
 ## Previous Work
 **T20**: Z₂ Lattice Gauge Theory — Complete (see timesarrow memory bank)

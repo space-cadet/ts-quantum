@@ -1,10 +1,19 @@
 # Edit History
 
-*Last Updated: 2026-06-28 17:31:13 IST*
+*Last Updated: 2026-07-18 00:35:09 IST*
 
 ---
 
 ## 2026-06-28
+
+## 2026-07-18
+
+#### 00:35:09 IST - T14 follow-on: Added local CZX and SU(2) intertwiner audit infrastructure
+- Modified `src/operators/gates.ts` - Added the `ControlledZ` gate.
+- Created `src/models/czx.ts` - Added the on-site CZX construction and a projection/leakage audit for an `IntertwinerSpace`.
+- Modified `src/index.ts`, `__tests__/gates.test.ts`, and `__tests__/czx.test.ts` - Exported the module and covered gate behavior, involution, and the expected singlet-subspace leakage.
+- Modified `memory-bank/activeContext.md`, `memory-bank/session_cache.md`, and `memory-bank/tasks/T14.md` - Recorded the scope, negative result, and handoff boundary.
+- Created `memory-bank/sessions/2026-07-18-early-morning.md` and `memory-bank/implementation-details/czx-intertwiner-audit.md` - Added durable session and implementation records.
 
 #### 23:01:07 IST - T14: Complete SU(2) module with Haar sampling, representation matrices, and comprehensive tests
 - Created `src/angularMomentum/su2.ts` - Created src/angularMomentum/su2.ts
@@ -237,4 +246,3 @@
 - Updated `src/index.ts` - Removed quantum graph exports
 - Updated `README.md` - Changed package name references to ts-quantum
 - Created `LICENSE` - Added MIT license file
-

@@ -52,3 +52,6 @@ export * from './intertwiner';
 
 // Export lattice gauge theory module
 export * from './lattice';
+
+// Export finite-dimensional CZX model helpers.
+export * from './models/czx';

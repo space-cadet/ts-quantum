@@ -1,12 +1,14 @@
 # Session Cache
 
 *Created: 2026-06-28 17:31:13 IST*
-*Last Updated: 2026-06-28 17:31:13 IST*
+*Last Updated: 2026-07-18 00:35:09 IST*
 
-**Started**: 2026-06-28 17:31:07 IST
-**Focus Task**: T14: SU(2) Haar Measure Sampling (Core)
-**Session File**: `sessions/2026-06-28-evening.md`
-**Status**: 🔄 Active: 1, Paused: 0, Completed: 14
+**Started**: 2026-07-18 00:35:09 IST
+**Focus Task**: T14 follow-on: local CZX/intertwiner audit
+**Session File**: `sessions/2026-07-18-early-morning.md`
+**Status**: ✅ Local audit complete; many-vertex scientific validation remains external to this package
+
+**2026-07-18 checkpoint:** Added `ControlledZ` and a modular `models/czx` audit. The local CZX candidate satisfies $U^2=I$ in the full 16-dimensional space but has nonzero leakage from the four-spin-half SU(2) singlet subspace.
 
 ## Overview
 
