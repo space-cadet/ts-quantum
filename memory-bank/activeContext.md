@@ -1,5 +1,5 @@
 # Active Context
-*Last Updated: 2026-07-18 00:56 IST*
+*Last Updated: 2026-07-21 17:12 IST*
 
 ## Current Focus
 **T14 follow-on**: Local CZX symmetry and SU(2) intertwiner audit — checkpoint complete
@@ -19,6 +19,28 @@
 ### Bugs Fixed During Implementation
 1. **β angle extraction**: `β = 2·acos(|a|)` (was `asin(sin β)` giving [0, π/2])
 2. **Wigner d-matrix coefficient**: `√(num)/den` (was `√(num/den)` losing precision)
+
+## New: Sparse Lanczos Eigensolver (2026-07-21)
+
+Added sparse matrix eigensolver capability to `SparseOperator`:
+
+- **`src/operators/sparseEigensolver.ts`** — Lanczos algorithm for finding extreme eigenvalues of large sparse Hermitian matrices
+  - `lanczosIteration()`: builds tridiagonal Lanczos matrix via matrix-free H|v⟩ application
+  - `findLowestEigenvalues()`: computes k lowest eigenvalues/vectors via Lanczos + dense diagonalization of T-matrix
+  - Handles numerical orthogonality via full re-orthogonalization
+  - Supports both real symmetric and complex Hermitian matrices
+  
+- **`SparseOperator.eigenDecompose()`** updated to use sparse eigensolver instead of dense fallback
+  - Automatically selects sparse path for matrices > 256×256 or with sparsity > 50%
+  - Falls back to dense for small matrices
+
+- **Tests**: `__tests__/sparseEigensolver.test.ts` — 102 lines, 6 tests covering:
+  - Diagonal matrix eigenvalues
+  - Real symmetric matrix
+  - Complex Hermitian matrix
+  - Accuracy to 1e-10 relative tolerance
+
+All 498 tests pass. This was built to support timesarrow T35a parent Hamiltonian verification (16-qubit system, dim = 65,536).
 
 ## Next Priority
 Use the local audit only as infrastructure for timesarrow T35a. The next scientific gate is a minimal many-vertex candidate state and its symmetry action; do not promote the local CZX operator to a microscopic realization claim.
