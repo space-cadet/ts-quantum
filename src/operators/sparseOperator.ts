@@ -22,6 +22,7 @@ import {
   setSparseEntry,
   getSparseEntry
 } from './sparse';
+import { lanczosEigensolver, ILanczosOptions } from './sparseEigensolver';
 import { validateMatchDims } from '../utils/validation';
 import * as math from 'mathjs';
 
@@ -99,10 +100,41 @@ export class SparseOperator implements IOperator {
   }
 
   /**
-   * Returns eigenvalues and eigenvectors of the operator
+   * Returns eigenvalues and eigenvectors of the operator.
+   * Uses sparse Lanczos algorithm for efficiency.
+   * 
+   * @param options - Optional Lanczos configuration
    */
-  eigenDecompose(): { values: Complex[]; vectors: IOperator[] } {
-    return new MatrixOperator(this.toMatrix()).eigenDecompose();
+  eigenDecompose(options?: ILanczosOptions): { values: Complex[]; vectors: IOperator[] } {
+    // Use sparse Lanczos eigensolver
+    const result = lanczosEigensolver(this.matrix, {
+      ...options,
+      numEigenvalues: options?.numEigenvalues || Math.min(10, this.dimension),
+      maxIterations: options?.maxIterations || Math.min(100, this.dimension),
+      tolerance: options?.tolerance || 1e-10
+    });
+    
+    // Create operators from eigenvectors
+    const vectorOperators = result.eigenvectors.map(v => {
+      const vec = v.getAmplitudes();
+      // Create rank-1 projector |v⟩⟨v| as matrix operator
+      const matrix: Complex[][] = Array(this.dimension).fill(null)
+        .map(() => Array(this.dimension).fill(null)
+          .map(() => math.complex(0, 0)));
+      
+      for (let i = 0; i < this.dimension; i++) {
+        for (let j = 0; j < this.dimension; j++) {
+          matrix[i][j] = math.multiply(vec[i], math.conj(vec[j])) as Complex;
+        }
+      }
+      
+      return new MatrixOperator(matrix, 'projection');
+    });
+    
+    return {
+      values: result.eigenvalues.map(v => math.complex(v, 0)),
+      vectors: vectorOperators
+    };
   }
 
   /**
